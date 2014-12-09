@@ -4,7 +4,7 @@
 package com.sothaw.mapjfx;
 
 /**
- * TODO: description.
+ * Test application.
  *
  * @author P.J. Meisch (pj.meisch@sothawo.com).
  */

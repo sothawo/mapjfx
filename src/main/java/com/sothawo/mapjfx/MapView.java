@@ -4,7 +4,7 @@
 package com.sothawo.mapjfx;
 
 /**
- * TODO: description.
+ * Map component.
  *
  * @author P.J. Meisch (pj.meisch@sothawo.com).
  */
