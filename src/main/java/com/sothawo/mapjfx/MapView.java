@@ -25,7 +25,7 @@ public class MapView extends Region {
         webView = new WebView();
         getChildren().add(webView);
         // TODO: load local code containing openlayers script
-        webView.getEngine().load("http://www.sothawo.com");
+        webView.getEngine().load("http://openlayers.org/en/v3.0.0/examples/simple.html");
 
         // resize the webview with this region by observing the changes
         // TODO: can this be done by connecting the webview's properties to this object properties?
