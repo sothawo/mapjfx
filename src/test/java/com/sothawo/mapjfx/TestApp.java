@@ -1,7 +1,7 @@
 /*
  * (c) 2014 P.J. Meisch (pj.meisch@sothawo.com).
  */
-package com.sothaw.mapjfx;
+package com.sothawo.mapjfx;
 
 import com.sothawo.mapjfx.MapView;
 import javafx.application.Application;

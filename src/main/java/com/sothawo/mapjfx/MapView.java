@@ -8,6 +8,8 @@ import javafx.beans.value.ObservableValue;
 import javafx.scene.layout.Region;
 import javafx.scene.web.WebView;
 
+import java.net.URL;
+
 /**
  * Map component.
  *
@@ -25,7 +27,9 @@ public class MapView extends Region {
         webView = new WebView();
         getChildren().add(webView);
         // TODO: load local code containing openlayers script
-        webView.getEngine().load("http://openlayers.org/en/v3.0.0/examples/simple.html");
+        URL mapviewUrl = getClass().getResource("/mapview.html");
+        webView.getEngine().load(mapviewUrl.toExternalForm());
+//        webView.getEngine().load("http://openlayers.org/en/v3.0.0/examples/simple.html");
 
         // resize the webview with this region by observing the changes
         // TODO: can this be done by connecting the webview's properties to this object properties?
