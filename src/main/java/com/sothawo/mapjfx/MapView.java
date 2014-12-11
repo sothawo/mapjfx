@@ -15,8 +15,6 @@
 */
 package com.sothawo.mapjfx;
 
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.scene.layout.Region;
 import javafx.scene.web.WebView;
 
@@ -36,26 +34,14 @@ public class MapView extends Region {
 // --------------------------- CONSTRUCTORS ---------------------------
 
     public MapView() {
+        // initialize the WebView, resize it with this region by letting it observe the changes and add it as child
         webView = new WebView();
+        webView.prefWidthProperty().bind(widthProperty());
+        webView.prefHeightProperty().bind(heightProperty());
         getChildren().add(webView);
-        // TODO: load local code containing openlayers script
+
+        // load the html containing the OL code
         URL mapviewUrl = getClass().getResource("/mapview.html");
         webView.getEngine().load(mapviewUrl.toExternalForm());
-//        webView.getEngine().load("http://openlayers.org/en/v3.0.0/examples/simple.html");
-
-        // resize the webview with this region by observing the changes
-        // TODO: can this be done by connecting the webview's properties to this object properties?
-        widthProperty().addListener(new ChangeListener<Number>() {
-            @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                webView.setPrefWidth(newValue.doubleValue());
-            }
-        });
-        heightProperty().addListener(new ChangeListener<Number>() {
-            @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                webView.setPrefHeight(newValue.doubleValue());
-            }
-        });
     }
 }
