@@ -20,6 +20,8 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Test application.
@@ -27,10 +29,14 @@ import javafx.stage.Stage;
  * @author P.J. Meisch (pj.meisch@sothawo.com).
  */
 public class Showcase extends Application {
+
+    private static final Logger logger = LoggerFactory.getLogger(Showcase.class);
+
 // -------------------------- OTHER METHODS --------------------------
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        logger.info("starting Showcase...");
         BorderPane borderPane = new BorderPane();
 
         Button btn = new Button();
@@ -44,9 +50,11 @@ public class Showcase extends Application {
 
         Scene scene = new Scene(borderPane, 800, 600);
 
-        primaryStage.setTitle("Hello World!");
+        primaryStage.setTitle("Sothawo mapjfx Showcase");
         primaryStage.setScene(scene);
+        logger.debug("showing scene...");
         primaryStage.show();
+        logger.debug("start finished.");
     }
 
 // --------------------------- main() method ---------------------------
