@@ -3,7 +3,6 @@
  */
 package com.sothawo.mapjfx;
 
-import com.sothawo.mapjfx.MapView;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -15,7 +14,7 @@ import javafx.stage.Stage;
  *
  * @author P.J. Meisch (pj.meisch@sothawo.com).
  */
-public class TestApp extends Application {
+public class Showcase extends Application {
 // -------------------------- OTHER METHODS --------------------------
 
     @Override
