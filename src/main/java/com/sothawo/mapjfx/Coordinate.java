@@ -102,10 +102,10 @@ public final class Coordinate {
 
     @Override
     public String toString() {
-        return "Coordinate{" +
+        return "[" +
                 "latitude=" + latitude +
                 ", longitude=" + longitude +
-                ", label='" + label + '\'' +
-                '}';
+                ((null != label) ? (", '" + label + '\'') : "") +
+                ']';
     }
 }
