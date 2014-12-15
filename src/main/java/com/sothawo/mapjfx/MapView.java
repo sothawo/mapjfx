@@ -24,6 +24,7 @@ import javafx.concurrent.Worker;
 import javafx.scene.layout.Region;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
+import netscape.javascript.JSObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,10 +88,6 @@ public final class MapView extends Region {
         return center;
     }
 
-    public boolean getInitialized() {
-        return initialized.get();
-    }
-
     /**
      * initializes the MapView. The internal HTML file is loaded into the contained WebView and the necessary setup is
      * made for communication between this object and the Javascript elements on the web page.
@@ -107,6 +104,9 @@ public final class MapView extends Region {
                                     Worker.State newValue) {
                     logger.debug("WebEngine loader state  {} -> {}", oldValue, newValue);
                     if (Worker.State.SUCCEEDED == newValue) {
+                        // set an interface object named 'app' in the web engine
+                        ((JSObject) webEngine.executeScript("window")).setMember("app", new JavaApp());
+
                         initialized.set(true);
                         // check if a cordinate was set in the constructor
                         if (null != getCenter()) {
@@ -123,16 +123,18 @@ public final class MapView extends Region {
         }
     }
 
-    public Coordinate getCenter() {
-        return center.get();
+    /**
+     * sets the center property
+     *
+     * @param center
+     *         new center
+     */
+    public void setCenter(Coordinate center) {
+        setCenter(center, true);
     }
 
-    public void setCenter(Coordinate center) {
-        this.center.set(center);
-        if (getInitialized()) {
-            logger.debug("setting center in OpenLayers map: {}", getCenter());
-            webEngine.executeScript("setCenter(" + center.getLatitude() + "," + center.getLongitude() + ")");
-        }
+    public Coordinate getCenter() {
+        return center.get();
     }
 
     /**
@@ -140,5 +142,46 @@ public final class MapView extends Region {
      */
     public ReadOnlyBooleanProperty initializedProperty() {
         return initialized.getReadOnlyProperty();
+    }
+
+    /**
+     * sets the center property and eventually propagates the new center to the map
+     *
+     * @param center
+     *         new center
+     * @param sendToMap
+     *         flag, if map should be changed
+     */
+    private void setCenter(Coordinate center, boolean sendToMap) {
+        this.center.set(center);
+        if (sendToMap && getInitialized()) {
+            logger.debug("setting center in OpenLayers map: {}", getCenter());
+            webEngine.executeScript("setCenter(" + center.getLatitude() + ',' + center.getLongitude() + ')');
+        }
+    }
+
+    public boolean getInitialized() {
+        return initialized.get();
+    }
+
+// -------------------------- INNER CLASSES --------------------------
+
+    /**
+     * JavaScript interface object. Methods of an object of this class are called from JS code in the web page.
+     */
+    public class JavaApp {
+// -------------------------- OTHER METHODS --------------------------
+
+        public void centerMovedTo(String lat, String lon) {
+            if (null == lat || null == lon) {
+                return;
+            }
+            try {
+                logger.debug("map moved by JS to {}/{}", lat, lon);
+                setCenter(new Coordinate(Double.valueOf(lat), Double.valueOf(lon)), false);
+            } catch (NumberFormatException e) {
+                logger.warn("illegal coordinate strings {}/{}", lat, lon);
+            }
+        }
     }
 }

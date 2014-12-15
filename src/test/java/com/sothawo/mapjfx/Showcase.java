@@ -19,7 +19,6 @@ import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Insets;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -41,9 +40,9 @@ public class Showcase extends Application {
     private static final Logger logger = LoggerFactory.getLogger(Showcase.class);
 
     /** some coordinates from around town */
-    private static final Coordinate coordKarlsruheCastle = new Coordinate(49.013517, 8.404435, "Karlsruhe castle");
-    private static final Coordinate coordKarlsruheHarbour = new Coordinate(49.015511, 8.323497, "Karlsruhe harbour");
-    private static final Coordinate coordKarlsruheStation = new Coordinate(48.993284, 8.402186, "Karlsruhe station");
+    private static final Coordinate coordKarlsruheCastle = new Coordinate(49.013517, 8.404435);
+    private static final Coordinate coordKarlsruheHarbour = new Coordinate(49.015511, 8.323497);
+    private static final Coordinate coordKarlsruheStation = new Coordinate(48.993284, 8.402186);
 
     /** the MapView */
     private MapView mapView;
@@ -106,6 +105,7 @@ public class Showcase extends Application {
 
     /**
      * creates the top pane with the different location buttons
+     *
      * @return Pane
      */
     private Pane createTopPane() {
@@ -134,6 +134,7 @@ public class Showcase extends Application {
 
     /**
      * creates the top pane with the different location buttons
+     *
      * @return Pane
      */
     private Pane createBottomPane() {
