@@ -18,9 +18,13 @@ package com.sothawo.mapjfx;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,39 +35,45 @@ import org.slf4j.LoggerFactory;
  * @author P.J. Meisch (pj.meisch@sothawo.com).
  */
 public class Showcase extends Application {
+// ------------------------------ FIELDS ------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Showcase.class);
 
     /** some coordinates from around town */
     private static final Coordinate coordKarlsruheCastle = new Coordinate(49.013517, 8.404435);
     private static final Coordinate coordKarlsruheHarbour = new Coordinate(49.015511, 8.323497);
+    private static final Coordinate coordKarlsruheStation = new Coordinate(48.993284, 8.402186);
+
+    /** the top pane with the buttons */
+    private Pane topPane;
+
+    /** the MapView */
+    private MapView mapView;
+
 
 // -------------------------- OTHER METHODS --------------------------
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-
         logger.info("starting showcase...");
         BorderPane borderPane = new BorderPane();
 
         // MapView in the center with an initial ccordinate (optional)
-        MapView mapView = new MapView(coordKarlsruheHarbour);
+        mapView = new MapView(coordKarlsruheHarbour);
         borderPane.setCenter(mapView);
         // add listener for mapView initialization state
         mapView.initializedProperty().addListener(new ChangeListener<Boolean>() {
             @Override
             public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
                 if (newValue) {
-                    // TODO: Button enabling
+                    topPane.setDisable(false);
                 }
             }
         });
 
         // on top some buttons with coordinates
-        Button btn = new Button();
-        btn.setText("Karlsruhe castle");
-        btn.setOnAction(event -> mapView.setCenter(coordKarlsruheCastle));
-        borderPane.setTop(btn);
+        createTopPane();
+        borderPane.setTop(topPane);
 
         // at the bottom some infos
 
@@ -78,6 +88,34 @@ public class Showcase extends Application {
         primaryStage.show();
 
         logger.debug("application started.");
+    }
+
+    /**
+     * creates the top pane with the different location buttons
+     * @return Pane
+     */
+    private void createTopPane() {
+        HBox hbox = new HBox();
+        hbox.setPadding(new Insets(5, 5, 5, 5));
+        hbox.setSpacing(5);
+
+        Button btn = new Button();
+        btn.setText("Karlsruhe castle");
+        btn.setOnAction(event -> mapView.setCenter(coordKarlsruheCastle));
+        hbox.getChildren().add(btn);
+
+        btn = new Button();
+        btn.setText("Karlsruhe harbour");
+        btn.setOnAction(event -> mapView.setCenter(coordKarlsruheHarbour));
+        hbox.getChildren().add(btn);
+
+        btn = new Button();
+        btn.setText("Karlsruhe station");
+        btn.setOnAction(event -> mapView.setCenter(coordKarlsruheStation));
+        hbox.getChildren().add(btn);
+
+        hbox.setDisable(true);
+        topPane = hbox;
     }
 
 // --------------------------- main() method ---------------------------
