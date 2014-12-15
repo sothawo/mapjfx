@@ -16,6 +16,8 @@
 package com.sothawo.mapjfx;
 
 import javafx.application.Application;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.layout.BorderPane;
@@ -54,6 +56,21 @@ public class Showcase extends Application {
         primaryStage.setScene(scene);
         logger.debug("showing scene...");
         primaryStage.show();
+
+        // add listener for mapView initialization
+        mapView.initializedProperty().addListener(new ChangeListener<Boolean>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                if(newValue) {
+                    logger.debug("mapView initialized");
+                }
+            }
+        });
+        // now initialize the mapView
+        logger.debug("initializing mapView...");
+        mapView.initialize();
+
+
         logger.debug("start finished.");
     }
 
