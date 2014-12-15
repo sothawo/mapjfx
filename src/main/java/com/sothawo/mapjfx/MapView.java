@@ -53,11 +53,26 @@ public final class MapView extends Region {
     private final ReadOnlyBooleanWrapper initialized = new ReadOnlyBooleanWrapper(false);
 
     /** Property containing the map's center */
-    private final SimpleObjectProperty<Coordinate> center = new SimpleObjectProperty<>(new Coordinate(0.0, 0.0));
+    private final SimpleObjectProperty<Coordinate> center;
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
+    /**
+     * create a MapView with no initial center coordinate.
+     */
     public MapView() {
+        this(null);
+    }
+
+    /**
+     * create a MapView with nthe given initial center coordinate.
+     *
+     * @param centerCoordinate
+     *         initial center coordinate
+     */
+    public MapView(Coordinate centerCoordinate) {
+        center = new SimpleObjectProperty<>(centerCoordinate);
+
         // instantiate the WebView, resize it with this region by letting it observe the changes and add it as child
         WebView webView = new WebView();
         webEngine = webView.getEngine();
@@ -72,10 +87,6 @@ public final class MapView extends Region {
         return center;
     }
 
-    public Coordinate getCenter() {
-        return center.get();
-    }
-
     public boolean getInitialized() {
         return initialized.get();
     }
@@ -85,6 +96,7 @@ public final class MapView extends Region {
      * made for communication between this object and the Javascript elements on the web page.
      */
     public void initialize() {
+        logger.debug("initializing...");
         URL mapviewUrl = getClass().getResource(MAPVIEW_HTML);
         if (null == mapviewUrl) {
             logger.error("resource not found: {}", MAPVIEW_HTML);
@@ -96,6 +108,11 @@ public final class MapView extends Region {
                     logger.debug("WebEngine loader state  {} -> {}", oldValue, newValue);
                     if (Worker.State.SUCCEEDED == newValue) {
                         initialized.set(true);
+                        // check if a cordinate was set in the constructor
+                        if (null != getCenter()) {
+                            setCenter(getCenter());
+                            logger.debug("initialized.");
+                        }
                     } else if (Worker.State.FAILED == newValue) {
                         logger.error("error loading {}", MAPVIEW_HTML);
                     }
@@ -106,16 +123,22 @@ public final class MapView extends Region {
         }
     }
 
+    public Coordinate getCenter() {
+        return center.get();
+    }
+
+    public void setCenter(Coordinate center) {
+        this.center.set(center);
+        if (getInitialized()) {
+            logger.debug("setting center in OpenLayers map: {}", getCenter());
+            webEngine.executeScript("setCenter(" + center.getLatitude() + "," + center.getLongitude() + ")");
+        }
+    }
+
     /**
      * @return the readonly initialized property.
      */
     public ReadOnlyBooleanProperty initializedProperty() {
         return initialized.getReadOnlyProperty();
-    }
-
-    public void setCenter(Coordinate center) {
-        // TODO: check init state
-        this.center.set(center);
-        webEngine.executeScript("setCenter(" + center.getLatitude() + "," + center.getLongitude() + ")");
     }
 }

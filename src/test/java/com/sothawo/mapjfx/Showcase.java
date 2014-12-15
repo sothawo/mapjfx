@@ -26,7 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Test application.
+ * Showcase application.
  *
  * @author P.J. Meisch (pj.meisch@sothawo.com).
  */
@@ -34,24 +34,27 @@ public class Showcase extends Application {
 
     private static final Logger logger = LoggerFactory.getLogger(Showcase.class);
 
+    /** some coordinates from around town */
+    private static final Coordinate coordKarlsruheCastle = new Coordinate(49.013517, 8.404435);
+    private static final Coordinate coordKarlsruheHarbour = new Coordinate(49.015511, 8.323497);
+
 // -------------------------- OTHER METHODS --------------------------
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        Coordinate coordKaCastle = new Coordinate(49.013517, 8.404435);
 
         logger.info("starting showcase...");
         BorderPane borderPane = new BorderPane();
 
-        // MapView in the center
-        MapView mapView = new MapView();
+        // MapView in the center with an initial ccordinate (optional)
+        MapView mapView = new MapView(coordKarlsruheHarbour);
         borderPane.setCenter(mapView);
-        // add listener for mapView initialization
+        // add listener for mapView initialization state
         mapView.initializedProperty().addListener(new ChangeListener<Boolean>() {
             @Override
             public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
                 if (newValue) {
-                    logger.debug("mapView initialized");
+                    // TODO: Button enabling
                 }
             }
         });
@@ -59,13 +62,12 @@ public class Showcase extends Application {
         // on top some buttons with coordinates
         Button btn = new Button();
         btn.setText("Karlsruhe castle");
-        btn.setOnAction(event -> mapView.setCenter(coordKaCastle));
+        btn.setOnAction(event -> mapView.setCenter(coordKarlsruheCastle));
         borderPane.setTop(btn);
 
         // at the bottom some infos
 
         // now initialize the mapView
-        logger.debug("initializing mapView...");
         mapView.initialize();
 
         // show the whole thing
@@ -74,7 +76,7 @@ public class Showcase extends Application {
         primaryStage.setTitle("sothawo mapjfx showcase");
         primaryStage.setScene(scene);
         primaryStage.show();
-        
+
         logger.debug("application started.");
     }
 
