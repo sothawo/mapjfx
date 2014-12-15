@@ -58,7 +58,7 @@ public class Showcase extends Application {
         logger.info("starting showcase...");
         BorderPane borderPane = new BorderPane();
 
-        // MapView in the center with an initial ccordinate (optional)
+        // MapView in the center with an initial coordinate (optional)
         mapView = new MapView(coordKarlsruheHarbour);
         borderPane.setCenter(mapView);
         // add listener for mapView initialization state
