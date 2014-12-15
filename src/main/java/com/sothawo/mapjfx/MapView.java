@@ -17,6 +17,7 @@ package com.sothawo.mapjfx;
 
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Worker;
@@ -33,6 +34,8 @@ import java.net.URL;
  * observed as well as bindings/observations to other properties should be established. Then the #initialize() Method
  * must be called. When the MapView is initialized and ready to be used, the #initializedProperty is set to true.
  *
+ * No map is displayed until #setCenter(Coordinate) is called.
+ *
  * @author P.J. Meisch (pj.meisch@sothawo.com).
  */
 public final class MapView extends Region {
@@ -43,11 +46,14 @@ public final class MapView extends Region {
     /** URL of the html code for the WebView */
     private static final String MAPVIEW_HTML = "/mapview.html";
 
+    /** the WebEngine of the WebView containing the OpenLayers Map */
+    private final WebEngine webEngine;
+
     /** readonly property that informs if this MapView is fully initialized */
     private final ReadOnlyBooleanWrapper initialized = new ReadOnlyBooleanWrapper(false);
 
-    /** the WebEngine of the WebView containing the OpenLayers Map */
-    private final WebEngine webEngine;
+    /** Property containing the map's center */
+    private final SimpleObjectProperty<Coordinate> center = new SimpleObjectProperty<>(new Coordinate(0.0, 0.0));
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
@@ -61,6 +67,14 @@ public final class MapView extends Region {
     }
 
 // -------------------------- OTHER METHODS --------------------------
+
+    public SimpleObjectProperty<Coordinate> centerProperty() {
+        return center;
+    }
+
+    public Coordinate getCenter() {
+        return center.get();
+    }
 
     public boolean getInitialized() {
         return initialized.get();
@@ -97,5 +111,11 @@ public final class MapView extends Region {
      */
     public ReadOnlyBooleanProperty initializedProperty() {
         return initialized.getReadOnlyProperty();
+    }
+
+    public void setCenter(Coordinate center) {
+        // TODO: check init state
+        this.center.set(center);
+        webEngine.executeScript("setCenter(" + center.getLatitude() + "," + center.getLongitude() + ")");
     }
 }

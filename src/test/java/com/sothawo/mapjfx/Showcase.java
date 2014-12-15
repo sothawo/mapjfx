@@ -38,40 +38,44 @@ public class Showcase extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        logger.info("starting Showcase...");
+        Coordinate coordKaCastle = new Coordinate(49.013517, 8.404435);
+
+        logger.info("starting showcase...");
         BorderPane borderPane = new BorderPane();
 
-        Button btn = new Button();
-        btn.setText("Say 'Hello World'");
-        btn.setOnAction(event -> System.out.println("Hello World!"));
-        borderPane.setTop(btn);
-
-
+        // MapView in the center
         MapView mapView = new MapView();
         borderPane.setCenter(mapView);
-
-        Scene scene = new Scene(borderPane, 800, 600);
-
-        primaryStage.setTitle("Sothawo mapjfx Showcase");
-        primaryStage.setScene(scene);
-        logger.debug("showing scene...");
-        primaryStage.show();
-
         // add listener for mapView initialization
         mapView.initializedProperty().addListener(new ChangeListener<Boolean>() {
             @Override
             public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-                if(newValue) {
+                if (newValue) {
                     logger.debug("mapView initialized");
                 }
             }
         });
+
+        // on top some buttons with coordinates
+        Button btn = new Button();
+        btn.setText("Karlsruhe castle");
+        btn.setOnAction(event -> mapView.setCenter(coordKaCastle));
+        borderPane.setTop(btn);
+
+        // at the bottom some infos
+
         // now initialize the mapView
         logger.debug("initializing mapView...");
         mapView.initialize();
 
+        // show the whole thing
+        Scene scene = new Scene(borderPane, 800, 600);
 
-        logger.debug("start finished.");
+        primaryStage.setTitle("sothawo mapjfx showcase");
+        primaryStage.setScene(scene);
+        primaryStage.show();
+        
+        logger.debug("application started.");
     }
 
 // --------------------------- main() method ---------------------------
