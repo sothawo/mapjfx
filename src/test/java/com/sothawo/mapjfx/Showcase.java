@@ -128,8 +128,7 @@ public class Showcase extends Application {
         hbox.setPadding(new Insets(5, 5, 5, 5));
         hbox.setSpacing(5);
 
-        Coordinate center = mapView.getCenter();
-        Label labelCenter = new Label(center == null ? "" : center.toString());
+        Label labelCenter = new Label();
         hbox.getChildren().add(labelCenter);
 
         // add an observer for the map's center property to adjust the corresponding label
