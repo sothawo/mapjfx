@@ -40,9 +40,9 @@ public class Showcase extends Application {
     private static final Logger logger = LoggerFactory.getLogger(Showcase.class);
 
     /** some coordinates from around town */
-    private static final Coordinate coordKarlsruheCastle = new Coordinate(49.013517, 8.404435);
-    private static final Coordinate coordKarlsruheHarbour = new Coordinate(49.015511, 8.323497);
-    private static final Coordinate coordKarlsruheStation = new Coordinate(48.993284, 8.402186);
+    private static final Coordinate coordKarlsruheCastle = new Coordinate(49.013517, 8.404435, "Karlsruhe castle");
+    private static final Coordinate coordKarlsruheHarbour = new Coordinate(49.015511, 8.323497, "Karlsruhe harbour");
+    private static final Coordinate coordKarlsruheStation = new Coordinate(48.993284, 8.402186, "Karlsruhe station");
 
     /** the top pane with the buttons */
     private Pane topPane;

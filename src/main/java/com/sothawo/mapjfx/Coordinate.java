@@ -16,7 +16,7 @@
 package com.sothawo.mapjfx;
 
 /**
- * Coordinates with longitude and latitude values. Immutable objects.
+ * Coordinates with longitude and latitude values. and an optional label. Immutable objects.
  *
  * @author P.J.Meisch (pj.meisch@jaroso.de)
  */
@@ -27,10 +27,14 @@ public final class Coordinate {
     private final Double latitude;
     /** longitude value */
     private final Double longitude;
+    /** label */
+    private final String label;
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
     /**
+     * creates a coordinate with no label
+     *
      * parameter order lat/lon according to EPSG:4326 spec.
      *
      * @param latitude
@@ -39,11 +43,27 @@ public final class Coordinate {
      *         if either value is null
      */
     public Coordinate(Double latitude, Double longitude) {
+        this(latitude, longitude, null);
+    }
+
+    /**
+     * creates a coordinate with a label label
+     *
+     * parameter order lat/lon according to EPSG:4326 spec.
+     *
+     * @param latitude
+     * @param longitude
+     * @param label
+     * @throws java.lang.IllegalArgumentException
+     *         if either value is null
+     */
+    public Coordinate(Double latitude, Double longitude, String label) {
         if (null == latitude || null == longitude) {
             throw new IllegalArgumentException();
         }
         this.latitude = latitude;
         this.longitude = longitude;
+        this.label = label;
     }
 
 // --------------------- GETTER / SETTER METHODS ---------------------
@@ -65,6 +85,7 @@ public final class Coordinate {
 
         Coordinate that = (Coordinate) o;
 
+        if (label != null ? !label.equals(that.label) : that.label != null) return false;
         if (!latitude.equals(that.latitude)) return false;
         if (!longitude.equals(that.longitude)) return false;
 
@@ -75,6 +96,7 @@ public final class Coordinate {
     public int hashCode() {
         int result = latitude.hashCode();
         result = 31 * result + longitude.hashCode();
+        result = 31 * result + (label != null ? label.hashCode() : 0);
         return result;
     }
 
@@ -83,6 +105,7 @@ public final class Coordinate {
         return "Coordinate{" +
                 "latitude=" + latitude +
                 ", longitude=" + longitude +
+                ", label='" + label + '\'' +
                 '}';
     }
 }
