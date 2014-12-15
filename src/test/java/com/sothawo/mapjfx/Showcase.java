@@ -47,10 +47,6 @@ public class Showcase extends Application {
     /** the MapView */
     private MapView mapView;
 
-    /** the label displaying the current center */
-    private Label labelCenter;
-
-
 // -------------------------- OTHER METHODS --------------------------
 
     @Override
@@ -79,16 +75,6 @@ public class Showcase extends Application {
                 }
             }
         });
-
-        // add an observer for the map's center property to adjust the corresponding label
-        mapView.centerProperty().addListener(new ChangeListener<Coordinate>() {
-            @Override
-            public void changed(ObservableValue<? extends Coordinate> observable, Coordinate oldValue,
-                                Coordinate newValue) {
-                labelCenter.setText(newValue == null ? "" : newValue.toString());
-            }
-        });
-
 
         // now initialize the mapView
         mapView.initialize();
@@ -143,9 +129,17 @@ public class Showcase extends Application {
         hbox.setSpacing(5);
 
         Coordinate center = mapView.getCenter();
-        labelCenter = new Label(center == null ? "" : center.toString());
+        Label labelCenter = new Label(center == null ? "" : center.toString());
         hbox.getChildren().add(labelCenter);
 
+        // add an observer for the map's center property to adjust the corresponding label
+        mapView.centerProperty().addListener(new ChangeListener<Coordinate>() {
+            @Override
+            public void changed(ObservableValue<? extends Coordinate> observable, Coordinate oldValue,
+                                Coordinate newValue) {
+                labelCenter.setText(newValue == null ? "" : newValue.toString());
+            }
+        });
         return hbox;
     }
 // --------------------------- main() method ---------------------------
