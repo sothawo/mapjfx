@@ -90,7 +90,7 @@ public class Showcase extends Application {
     }
 
     /**
-     * creates the top pane with the different location buttons
+     * creates the top pane with the different location buttons.
      *
      * @return Pane
      */
@@ -119,7 +119,7 @@ public class Showcase extends Application {
     }
 
     /**
-     * creates the top pane with the different location buttons
+     * creates the bottom pane with status labels.
      *
      * @return Pane
      */
