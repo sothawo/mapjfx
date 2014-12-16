@@ -17,6 +17,7 @@ package com.sothawo.mapjfx;
 
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -42,6 +43,13 @@ import java.net.URL;
 public final class MapView extends Region {
 // ------------------------------ FIELDS ------------------------------
 
+    /** minimal zoom level, OL defines this as 0 */
+    public static final int MIN_ZOOM = 0;
+    /** maximal zoom level, OL defines this as 28 */
+    public static final int MAX_ZOOM = 28;
+    /** initial zoom value for the map */
+    public static final int INITIAL_ZOOM = 15;
+
     private static final Logger logger = LoggerFactory.getLogger(MapView.class);
 
     /** URL of the html code for the WebView */
@@ -53,8 +61,11 @@ public final class MapView extends Region {
     /** readonly property that informs if this MapView is fully initialized */
     private final ReadOnlyBooleanWrapper initialized = new ReadOnlyBooleanWrapper(false);
 
-    /** Property containing the map's center */
-    private final SimpleObjectProperty<Coordinate> center;
+    /** property containing the map's center */
+    private SimpleObjectProperty<Coordinate> center;
+
+    /** property containing the map's zoom */
+    private SimpleDoubleProperty zoom;
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
@@ -72,14 +83,33 @@ public final class MapView extends Region {
      *         initial center coordinate
      */
     public MapView(Coordinate centerCoordinate) {
-        center = new SimpleObjectProperty<>(centerCoordinate);
-
+        initProperties(centerCoordinate);
         // instantiate the WebView, resize it with this region by letting it observe the changes and add it as child
         WebView webView = new WebView();
         webEngine = webView.getEngine();
         webView.prefWidthProperty().bind(widthProperty());
         webView.prefHeightProperty().bind(heightProperty());
         getChildren().add(webView);
+    }
+
+    /**
+     * iitializes the JavaFX properties.
+     *
+     * @param centerCoordinate
+     *         optional coordinate for the center property
+     */
+    private final void initProperties(Coordinate centerCoordinate) {
+        center = new SimpleObjectProperty<>(centerCoordinate);
+
+        // the zoom property needs a change listener as it might be bound to i.e. a slider; then the setter is not
+        // called on changes
+        zoom = new SimpleDoubleProperty(INITIAL_ZOOM);
+        zoom.addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                setZoom(newValue.doubleValue(), true);
+            }
+        });
     }
 
 // -------------------------- OTHER METHODS --------------------------
@@ -111,8 +141,9 @@ public final class MapView extends Region {
                         // check if a cordinate was set in the constructor
                         if (null != getCenter()) {
                             setCenter(getCenter());
-                            logger.debug("initialized.");
                         }
+                        setZoom(INITIAL_ZOOM);
+                        logger.debug("initialized.");
                     } else if (Worker.State.FAILED == newValue) {
                         logger.error("error loading {}", MAPVIEW_HTML);
                     }
@@ -133,8 +164,8 @@ public final class MapView extends Region {
         setCenter(center, true);
     }
 
-    public Coordinate getCenter() {
-        return center.get();
+    public void setZoom(double zoom) {
+        setZoom(zoom, true);
     }
 
     /**
@@ -160,8 +191,40 @@ public final class MapView extends Region {
         }
     }
 
+    public Coordinate getCenter() {
+        return center.get();
+    }
+
+    /**
+     * sets the zoom level and eventually propagates it to the map
+     *
+     * @param zoom
+     *         new zoom level mus be between #MIN_ZOOM and #MAX_ZOOM
+     * @param sendToMap
+     *         flag, if map should be changed
+     */
+    public void setZoom(double zoom, boolean sendToMap) {
+        zoom = Math.round(zoom);
+        if (zoom < MIN_ZOOM || zoom > MAX_ZOOM) {
+            return;
+        }
+        this.zoom.set(zoom);
+        if (sendToMap && getInitialized()) {
+            logger.debug("setting zoom in OpenLayers map: {}", getZoom());
+            webEngine.executeScript("setZoom(" + getZoom() + ')');
+        }
+    }
+
     public boolean getInitialized() {
         return initialized.get();
+    }
+
+    public double getZoom() {
+        return zoom.get();
+    }
+
+    public SimpleDoubleProperty zoomProperty() {
+        return zoom;
     }
 
 // -------------------------- INNER CLASSES --------------------------
@@ -181,6 +244,17 @@ public final class MapView extends Region {
                 setCenter(new Coordinate(Double.valueOf(lat), Double.valueOf(lon)), false);
             } catch (NumberFormatException e) {
                 logger.warn("illegal coordinate strings {}/{}", lat, lon);
+            }
+        }
+
+        public void zoomChanged(String zoom) {
+            if (null != zoom) {
+                try {
+                    logger.debug("zoom changed by JS to {}", zoom);
+                    setZoom(Double.valueOf(zoom), false);
+                } catch (NumberFormatException e) {
+                    logger.warn("illegal zoom string {}", zoom);
+                }
             }
         }
     }

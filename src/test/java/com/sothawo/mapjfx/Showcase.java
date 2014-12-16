@@ -22,9 +22,11 @@ import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.Slider;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
 import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -114,6 +116,18 @@ public class Showcase extends Application {
         btn.setOnAction(event -> mapView.setCenter(coordKarlsruheStation));
         hbox.getChildren().add(btn);
 
+        Slider slider = new Slider(MapView.MIN_ZOOM, MapView.MAX_ZOOM, MapView.INITIAL_ZOOM);
+        slider.setBlockIncrement(1);
+        slider.setShowTickMarks(true);
+        slider.setShowTickLabels(true);
+        slider.setSnapToTicks(true);
+        slider.setMajorTickUnit(MapView.MAX_ZOOM / 4);
+        slider.setMinorTickCount((MapView.MAX_ZOOM / 4) - 1);
+        slider.valueProperty().bindBidirectional(mapView.zoomProperty());
+        slider.setSnapToTicks(true);
+        HBox.setHgrow(slider, Priority.ALWAYS);
+        hbox.getChildren().add(slider);
+
         hbox.setDisable(true);
         return hbox;
     }
@@ -126,17 +140,28 @@ public class Showcase extends Application {
     private Pane createBottomPane() {
         HBox hbox = new HBox();
         hbox.setPadding(new Insets(5, 5, 5, 5));
-        hbox.setSpacing(5);
+        hbox.setSpacing(10);
 
+        // label for showing the map's center
         Label labelCenter = new Label();
         hbox.getChildren().add(labelCenter);
-
         // add an observer for the map's center property to adjust the corresponding label
         mapView.centerProperty().addListener(new ChangeListener<Coordinate>() {
             @Override
             public void changed(ObservableValue<? extends Coordinate> observable, Coordinate oldValue,
                                 Coordinate newValue) {
-                labelCenter.setText(newValue == null ? "" : newValue.toString());
+                labelCenter.setText(newValue == null ? "" : ("center: " + newValue.toString()));
+            }
+        });
+
+        // label for showing the map's zoom
+        Label labelZoom = new Label();
+        hbox.getChildren().add(labelZoom);
+        // add an observer to adjust the label
+        mapView.zoomProperty().addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                labelZoom.setText(null == newValue ? "" : ("zoom: " + newValue.toString()));
             }
         });
         return hbox;
