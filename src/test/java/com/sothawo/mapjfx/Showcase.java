@@ -59,6 +59,8 @@ public class Showcase extends Application {
         // MapView in the center with an initial coordinate (optional)
         // the MapView is created first as the other elements reference it
         mapView = new MapView(coordKarlsruheHarbour);
+        // animate pan and zoom with 500ms
+        mapView.setAnimationDuration(500);
         borderPane.setCenter(mapView);
 
         // at the top some buttons with coordinates
@@ -114,6 +116,11 @@ public class Showcase extends Application {
         btn = new Button();
         btn.setText("Karlsruhe station");
         btn.setOnAction(event -> mapView.setCenter(coordKarlsruheStation));
+        hbox.getChildren().add(btn);
+
+        btn = new Button();
+        btn.setText("zoom 16");
+        btn.setOnAction(event -> mapView.setZoom(16));
         hbox.getChildren().add(btn);
 
         Slider slider = new Slider(MapView.MIN_ZOOM, MapView.MAX_ZOOM, MapView.INITIAL_ZOOM);
