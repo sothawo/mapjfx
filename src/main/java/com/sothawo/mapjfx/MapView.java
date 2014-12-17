@@ -283,7 +283,13 @@ public final class MapView extends Region {
             }
             try {
                 logger.debug("JS reports new center value {}/{}", lat, lon);
-                setCenter(new Coordinate(Double.valueOf(lat), Double.valueOf(lon)));
+                Coordinate newCenter = new Coordinate(Double.valueOf(lat), Double.valueOf(lon));
+                // OL sets the center to slightly different values than what was passed in #setCenterInMap(), this is
+                // caused by pixel/rounding calculation. Here we only change the center property when the difference
+                // is greater that in the 8th digit after the decimal point
+                if(!newCenter.isNear(getCenter(), 8)) {
+                    setCenter(newCenter);
+                }
             } catch (NumberFormatException e) {
                 logger.warn("illegal coordinate strings {}/{}", lat, lon);
             }
