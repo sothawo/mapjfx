@@ -2,7 +2,7 @@
 
 ## about
 
-mapjfx uses OpenLayers to provide a JavaFX Pane with a map. More Information about the project 
+mapjfx uses OpenLayers to provide a JavaFX8 Pane with a map. More Information about the project 
 can be found at [the sothawo website](http://www.sothawo.com/projects/mapjfx/)
 
 ## license
