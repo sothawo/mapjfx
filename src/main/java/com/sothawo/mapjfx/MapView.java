@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URL;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Map component. To use the MapView, construct it and add it to your scene. Then the #initializedProperty should be
@@ -61,7 +62,7 @@ public final class MapView extends Region {
     /** readonly property that informs if this MapView is fully initialized */
     private final ReadOnlyBooleanWrapper initialized = new ReadOnlyBooleanWrapper(false);
 
-    /** property containing the map's center */
+    /** property containing the map's center. */
     private SimpleObjectProperty<Coordinate> center;
 
     /**
@@ -70,8 +71,14 @@ public final class MapView extends Region {
      */
     private SimpleDoubleProperty zoom;
 
-    /** property containing the map's animation duration in ms */
+    /** property containing the map's animation duration in ms. */
     private SimpleDoubleProperty animationDuration;
+
+    /** used to store the last coordinate that was reported by the map to prevent setting it again in the map */
+    private AtomicReference<Coordinate> lastCoordinateFromMap = new AtomicReference<>();
+
+    /** used to store the last zoom value that was reported by the map to prevent setting it again in the map */
+    private AtomicReference<Double> lastZoomFromMap = new AtomicReference<>();
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
@@ -110,8 +117,11 @@ public final class MapView extends Region {
             @Override
             public void changed(ObservableValue<? extends Coordinate> observable, Coordinate oldValue,
                                 Coordinate newValue) {
-                logger.debug("center changed from {} to {}", oldValue, newValue);
-                setCenterInMap();
+                // check if this is the same value that was just reported from the map using object equality
+                if (newValue != lastCoordinateFromMap.get()) {
+                    logger.debug("center changed from {} to {}", oldValue, newValue);
+                    setCenterInMap();
+                }
             }
         });
 
@@ -119,37 +129,15 @@ public final class MapView extends Region {
         zoom.addListener(new ChangeListener<Number>() {
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                logger.debug("zoom changed from {} to {}", oldValue, newValue);
-                setZoomInMap();
+                // check if this is the same value that was just reported from the map using object equality
+                if (newValue != lastZoomFromMap.get()) {
+                    logger.debug("zoom changed from {} to {}", oldValue, newValue);
+                    setZoomInMap();
+                }
             }
         });
 
         animationDuration = new SimpleDoubleProperty(0);
-    }
-
-    /**
-     * sets the value of the actual zoom property in the OL map.
-     */
-    private void setZoomInMap() {
-        if (getInitialized()) {
-            int zoomInt = (int) getZoom();
-            logger.debug("setting zoom in OpenLayers map: {}", zoomInt);
-            webEngine.executeScript("setZoom(" + zoomInt + ',' + animationDuration.get() + ')');
-        }
-    }
-
-    /**
-     * @return true if the MapView is initialized.
-     */
-    public boolean getInitialized() {
-        return initialized.get();
-    }
-
-    /**
-     * @return the current zoom value.
-     */
-    public double getZoom() {
-        return zoom.get();
     }
 
 // -------------------------- OTHER METHODS --------------------------
@@ -222,18 +210,28 @@ public final class MapView extends Region {
     }
 
     /**
-     * sets the zoom level. the zoom value is rounded to the next whole number using Math#round() and then checked to be
-     * in the range be #MIN_ZOOM and #MAX_ZOOM. If the value is not inn this range, the call is ignored.
-     *
-     * @param zoom
-     *         new zoom level
+     * @return true if the MapView is initialized.
      */
-    public void setZoom(double zoom) {
-        double rounded = Math.round(zoom);
-        if (rounded < MIN_ZOOM || rounded > MAX_ZOOM) {
-            return;
+    public boolean getInitialized() {
+        return initialized.get();
+    }
+
+    /**
+     * sets the value of the actual zoom property in the OL map.
+     */
+    private void setZoomInMap() {
+        if (getInitialized()) {
+            int zoomInt = (int) getZoom();
+            logger.debug("setting zoom in OpenLayers map: {}", zoomInt);
+            webEngine.executeScript("setZoom(" + zoomInt + ',' + animationDuration.get() + ')');
         }
-        this.zoom.set(rounded);
+    }
+
+    /**
+     * @return the current zoom value.
+     */
+    public double getZoom() {
+        return zoom.get();
     }
 
     /**
@@ -245,8 +243,8 @@ public final class MapView extends Region {
 
     /**
      * sets the animation duration in ms. If a value greater than 1 is set, then panning or zooming the map by setting
-     * the center or zoom property will be animated in the given time. Setting this to zero does not switch off the
-     * zoom animation shown when clicking the controlas in the map.
+     * the center or zoom property will be animated in the given time. Setting this to zero does not switch off the zoom
+     * animation shown when clicking the controlas in the map.
      *
      * @param animationDuration
      */
@@ -264,6 +262,21 @@ public final class MapView extends Region {
         this.center.set(center);
     }
 
+    /**
+     * sets the zoom level. the zoom value is rounded to the next whole number using Math#round() and then checked to be
+     * in the range be #MIN_ZOOM and #MAX_ZOOM. If the value is not inn this range, the call is ignored.
+     *
+     * @param zoom
+     *         new zoom level
+     */
+    public void setZoom(double zoom) {
+        double rounded = Math.round(zoom);
+        if (rounded < MIN_ZOOM || rounded > MAX_ZOOM) {
+            return;
+        }
+        this.zoom.set(rounded);
+    }
+
     public SimpleDoubleProperty zoomProperty() {
         return zoom;
     }
@@ -274,9 +287,16 @@ public final class MapView extends Region {
      * JavaScript interface object. Methods of an object of this class are called from JS code in the web page.
      */
     public class JSConnector {
-
 // -------------------------- OTHER METHODS --------------------------
 
+        /**
+         * called when the user has moved the map. the coordinates are EPSG:4326 (WGS) values.
+         *
+         * @param lat
+         *         new latitude value
+         * @param lon
+         *         new longitude value
+         */
         public void centerMovedTo(String lat, String lon) {
             if (null == lat || null == lon) {
                 return;
@@ -284,30 +304,28 @@ public final class MapView extends Region {
             try {
                 logger.debug("JS reports new center value {}/{}", lat, lon);
                 Coordinate newCenter = new Coordinate(Double.valueOf(lat), Double.valueOf(lon));
-                // OL sets the center to slightly different values than what was passed in #setCenterInMap(), this is
-                // caused by pixel/rounding calculation. Here we only change the center property when the difference
-                // is greater that in the 8th digit after the decimal point
-                if(!newCenter.isNear(getCenter(), 8)) {
-                    setCenter(newCenter);
-                }
+                lastCoordinateFromMap.set(newCenter);
+                setCenter(newCenter);
             } catch (NumberFormatException e) {
                 logger.warn("illegal coordinate strings {}/{}", lat, lon);
             }
+        }
+
+        public void debug(String msg) {
+            logger.debug("JS: {}", msg);
         }
 
         public void zoomChanged(String zoom) {
             if (null != zoom) {
                 try {
                     logger.debug("JS reports zoom value {}", zoom);
-                    setZoom(Double.valueOf(zoom));
+                    Double newZoom = Double.valueOf(zoom);
+                    lastZoomFromMap.set(newZoom);
+                    setZoom(newZoom);
                 } catch (NumberFormatException e) {
                     logger.warn("illegal zoom string {}", zoom);
                 }
             }
-        }
-
-        public void debug(String msg) {
-            logger.debug("JS: {}", msg);
         }
     }
 }

@@ -25,8 +25,8 @@ this project is built using mvn. The library jar is created by running `mvn pack
 
 ## running the showcase
 
-the project contains a showcase example. The source is found in the test sources. It is compiled and executed with
-the following command (no need to build the library first):
+the project contains a showcase example. The source is found in the test sources (src/test/java). It is compiled and
+executed with the following command (no need to build the library first):
 
 `mvn test exec:java -Dexec.mainClass="com.sothawo.mapjfx.Showcase" -Dexec.classpathScope=test`
 
