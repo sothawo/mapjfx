@@ -1,9 +1,7 @@
 # mapjfx
 
-## about
-
-mapjfx uses OpenLayers to provide a JavaFX8 Pane with a map. More Information about the project 
-can be found at [the sothawo website](http://www.sothawo.com/projects/mapjfx/)
+mapjfx provides a JavaFX8 region containing a map. it uses [OpenLayers](http://openalyers.org) as the map technology.
+More Information about the project can be found at [the sothawo website](http://www.sothawo.com/projects/mapjfx/).
 
 ## license
 
@@ -31,3 +29,9 @@ the project contains a showcase example. The source is found in the test sources
 the following command (no need to build the library first):
 
 `mvn test exec:java -Dexec.mainClass="com.sothawo.mapjfx.Showcase" -Dexec.classpathScope=test`
+
+## version history
+
+### 1.0.0-SNAPSHOT
+
+current development version
