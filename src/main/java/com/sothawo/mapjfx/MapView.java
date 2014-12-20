@@ -210,13 +210,6 @@ public final class MapView extends Region {
     }
 
     /**
-     * @return true if the MapView is initialized.
-     */
-    public boolean getInitialized() {
-        return initialized.get();
-    }
-
-    /**
      * sets the value of the actual zoom property in the OL map.
      */
     private void setZoomInMap() {
@@ -225,6 +218,13 @@ public final class MapView extends Region {
             logger.debug("setting zoom in OpenLayers map: {}", zoomInt);
             webEngine.executeScript("setZoom(" + zoomInt + ',' + animationDuration.get() + ')');
         }
+    }
+
+    /**
+     * @return true if the MapView is initialized.
+     */
+    public boolean getInitialized() {
+        return initialized.get();
     }
 
     /**
@@ -247,6 +247,7 @@ public final class MapView extends Region {
      * animation shown when clicking the controlas in the map.
      *
      * @param animationDuration
+     *         animation duration in ms
      */
     public void setAnimationDuration(double animationDuration) {
         this.animationDuration.set(animationDuration);
