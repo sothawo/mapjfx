@@ -32,6 +32,17 @@ executed with the following command (no need to build the library first):
 
 ## version history
 
-### 1.0.0-SNAPSHOT
+### 1.0.1-SNAPSHOT
 
 current development version
+
+### 1.0.0
+
+#### new features:
+
+* display a map in a JavaFX8 region
+* center of map is provided as JavaFX property
+* zoom of map is provided as JavaFX property
+* optional animation of center and zoom changes when the properties are changed
+
+
