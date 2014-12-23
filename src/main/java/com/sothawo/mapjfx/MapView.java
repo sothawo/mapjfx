@@ -22,7 +22,10 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Worker;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.Region;
+import javafx.scene.paint.Paint;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import netscape.javascript.JSObject;
@@ -101,6 +104,10 @@ public final class MapView extends Region {
         initProperties(centerCoordinate);
         // we don't initialize the WebView here, as this would prevent the MapView from being created in SceneBuilder
         // . This is all done in the initialize method.
+
+        // set a silver background to make the MapView distinguishable in SceneBuilder, this will later be hidden by
+        // the WebView
+        setBackground(new Background(new BackgroundFill(Paint.valueOf("#ccc"), null, null)));
     }
 
     /**
