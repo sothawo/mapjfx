@@ -18,7 +18,7 @@ package com.sothawo.mapjfx;
 /**
  * Coordinates with longitude and latitude values. Immutable objects.
  *
- * @author P.J.Meisch (pj.meisch@jaroso.de)
+ * @author P.J.Meisch (pj.meisch@sothawo.com)
  */
 public final class Coordinate {
 // ------------------------------ FIELDS ------------------------------
@@ -31,7 +31,7 @@ public final class Coordinate {
 // --------------------------- CONSTRUCTORS ---------------------------
 
     /**
-     * creates a coordinate with a label label
+     * creates a coordinate.
      *
      * parameter order lat/lon according to EPSG:4326 spec.
      *
@@ -99,7 +99,7 @@ public final class Coordinate {
      * @param coordinate
      *         the coordinate to check
      * @param precision
-     *         the number of digits after the decimal point that must be equal. if less than 1, a normal #equals
+     *         the number of digits after the decimal point that must be equal. if less than 1, a normal equals()
      *         comparison is made
      * @return true of both comparisons yield true
      */

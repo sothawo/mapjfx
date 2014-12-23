@@ -33,51 +33,53 @@ import java.net.URL;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * Map component. To use the MapView, construct it and add it to your scene. Then the #initializedProperty should be
- * observed as well as bindings/observations to other properties should be established. Then the #initialize() Method
- * must be called. When the MapView is initialized and ready to be used, the #initializedProperty is set to true.
+ * Map component. To use the MapView, construct it and add it to your scene. Then the  {@link #initialized} property
+ * should be observed as well as bindings/observations to other properties should be established. <br><br>
  *
- * No map is displayed until #setCenter(Coordinate) is called.
+ * After that, the {@link #initialize()} Method must be called. When the MapView is initialized and ready to be used,
+ * the {@link #initialized} property is set to true.<br><br>
+ *
+ * No map is displayed until {@link #setCenter(Coordinate)} is called.<br>
  *
  * @author P.J. Meisch (pj.meisch@sothawo.com).
  */
 public final class MapView extends Region {
 // ------------------------------ FIELDS ------------------------------
 
-    /** minimal zoom level, OL defines this as 0 */
+    /** minimal zoom level, OL defines this as 0. */
     public static final int MIN_ZOOM = 0;
-    /** maximal zoom level, OL defines this as 28 */
+    /** maximal zoom level, OL defines this as 28. */
     public static final int MAX_ZOOM = 28;
-    /** initial zoom value for the map */
+    /** initial zoom value for the map. */
     public static final int INITIAL_ZOOM = 15;
 
     private static final Logger logger = LoggerFactory.getLogger(MapView.class);
 
-    /** URL of the html code for the WebView */
+    /** URL of the html code for the WebView. */
     private static final String MAPVIEW_HTML = "/mapview.html";
 
-    /** the WebEngine of the WebView containing the OpenLayers Map */
+    /** the WebEngine of the WebView containing the OpenLayers Map. */
     private final WebEngine webEngine;
 
-    /** readonly property that informs if this MapView is fully initialized */
+    /** readonly property that informs if this MapView is fully initialized. */
     private final ReadOnlyBooleanWrapper initialized = new ReadOnlyBooleanWrapper(false);
 
     /** property containing the map's center. */
     private SimpleObjectProperty<Coordinate> center;
 
     /**
-     * property containing the map's zoom. This is a Double so that the property might be bound to a slider, internally
-     * a rounded value is used
+     * property containing the map's zoom; This is a Double so that the property might be bound to a slider, internally
+     * a rounded value is used.
      */
     private SimpleDoubleProperty zoom;
 
     /** property containing the map's animation duration in ms. */
     private SimpleDoubleProperty animationDuration;
 
-    /** used to store the last coordinate that was reported by the map to prevent setting it again in the map */
+    /** used to store the last coordinate that was reported by the map to prevent setting it again in the map. */
     private AtomicReference<Coordinate> lastCoordinateFromMap = new AtomicReference<>();
 
-    /** used to store the last zoom value that was reported by the map to prevent setting it again in the map */
+    /** used to store the last zoom value that was reported by the map to prevent setting it again in the map. */
     private AtomicReference<Double> lastZoomFromMap = new AtomicReference<>();
 
 // --------------------------- CONSTRUCTORS ---------------------------
@@ -264,8 +266,9 @@ public final class MapView extends Region {
     }
 
     /**
-     * sets the zoom level. the zoom value is rounded to the next whole number using Math#round() and then checked to be
-     * in the range be #MIN_ZOOM and #MAX_ZOOM. If the value is not inn this range, the call is ignored.
+     * sets the zoom level. the zoom value is rounded to the next whole number using {@link Math#round(double)} and then
+     * checked to be in the range between {@link #MIN_ZOOM} and {@link #MAX_ZOOM }. If the value is not in this range,
+     * the call is ignored.
      *
      * @param zoom
      *         new zoom level
