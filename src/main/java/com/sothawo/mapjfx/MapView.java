@@ -26,11 +26,10 @@ import javafx.scene.layout.Region;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import netscape.javascript.JSObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.net.URL;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Logger;
 
 /**
  * Map component. To use the MapView, construct it and add it to your scene. Then the  {@link #initialized} property
@@ -53,13 +52,14 @@ public final class MapView extends Region {
     /** initial zoom value for the map. */
     public static final int INITIAL_ZOOM = 15;
 
-    private static final Logger logger = LoggerFactory.getLogger(MapView.class);
+    /** Logger for the class */
+    private static final Logger logger = Logger.getLogger(MapView.class.getCanonicalName());
 
     /** URL of the html code for the WebView. */
     private static final String MAPVIEW_HTML = "/mapview.html";
 
     /** the WebEngine of the WebView containing the OpenLayers Map. */
-    private final WebEngine webEngine;
+    private WebEngine webEngine;
 
     /** readonly property that informs if this MapView is fully initialized. */
     private final ReadOnlyBooleanWrapper initialized = new ReadOnlyBooleanWrapper(false);
@@ -99,12 +99,8 @@ public final class MapView extends Region {
      */
     public MapView(Coordinate centerCoordinate) {
         initProperties(centerCoordinate);
-        // instantiate the WebView, resize it with this region by letting it observe the changes and add it as child
-        WebView webView = new WebView();
-        webEngine = webView.getEngine();
-        webView.prefWidthProperty().bind(widthProperty());
-        webView.prefHeightProperty().bind(heightProperty());
-        getChildren().add(webView);
+        // we don't initialize the WebView here, as this would prevent the MapView from being created in SceneBuilder
+        // . This is all done in the initialize method.
     }
 
     /**
@@ -121,7 +117,7 @@ public final class MapView extends Region {
                                 Coordinate newValue) {
                 // check if this is the same value that was just reported from the map using object equality
                 if (newValue != lastCoordinateFromMap.get()) {
-                    logger.debug("center changed from {} to {}", oldValue, newValue);
+                    logger.finer(() -> "center changed from " + oldValue + " to " + newValue);
                     setCenterInMap();
                 }
             }
@@ -133,7 +129,7 @@ public final class MapView extends Region {
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
                 // check if this is the same value that was just reported from the map using object equality
                 if (newValue != lastZoomFromMap.get()) {
-                    logger.debug("zoom changed from {} to {}", oldValue, newValue);
+                    logger.finer(() -> "zoom changed from " + oldValue + " to " + newValue);
                     setZoomInMap();
                 }
             }
@@ -148,7 +144,7 @@ public final class MapView extends Region {
     private void setCenterInMap() {
         Coordinate actCenter = getCenter();
         if (getInitialized() && null != actCenter) {
-            logger.debug("setting center in OpenLayers map: {}", actCenter);
+            logger.finer(() -> "setting center in OpenLayers map: " + actCenter);
             webEngine.executeScript("setCenter(" + actCenter.getLatitude() + ',' + actCenter.getLongitude() + ',' +
                     animationDuration.get() + ')');
         }
@@ -174,7 +170,7 @@ public final class MapView extends Region {
     private void setZoomInMap() {
         if (getInitialized()) {
             int zoomInt = (int) getZoom();
-            logger.debug("setting zoom in OpenLayers map: {}", zoomInt);
+            logger.finer(() -> "setting zoom in OpenLayers map: " + zoomInt);
             webEngine.executeScript("setZoom(" + zoomInt + ',' + animationDuration.get() + ')');
         }
     }
@@ -208,16 +204,23 @@ public final class MapView extends Region {
      * made for communication between this object and the Javascript elements on the web page.
      */
     public void initialize() {
-        logger.debug("initializing...");
+        logger.finer("initializing...");
+        // instantiate the WebView, resize it with this region by letting it observe the changes and add it as child
+        WebView webView = new WebView();
+        webEngine = webView.getEngine();
+        webView.prefWidthProperty().bind(widthProperty());
+        webView.prefHeightProperty().bind(heightProperty());
+        getChildren().add(webView);
+
         URL mapviewUrl = getClass().getResource(MAPVIEW_HTML);
         if (null == mapviewUrl) {
-            logger.error("resource not found: {}", MAPVIEW_HTML);
+            logger.severe(() -> "resource not found: " + MAPVIEW_HTML);
         } else {
             webEngine.getLoadWorker().stateProperty().addListener(new ChangeListener<Worker.State>() {
                 @Override
                 public void changed(ObservableValue<? extends Worker.State> observable, Worker.State oldValue,
                                     Worker.State newValue) {
-                    logger.debug("WebEngine loader state  {} -> {}", oldValue, newValue);
+                    logger.finer(() -> "WebEngine loader state " + oldValue + " -> " + newValue);
                     if (Worker.State.SUCCEEDED == newValue) {
                         // set an interface object named 'app' in the web engine
                         ((JSObject) webEngine.executeScript("window")).setMember("app", new JSConnector());
@@ -225,9 +228,9 @@ public final class MapView extends Region {
                         initialized.set(true);
                         setCenterInMap();
                         setZoomInMap();
-                        logger.debug("initialized.");
+                        logger.finer("initialized.");
                     } else if (Worker.State.FAILED == newValue) {
-                        logger.error("error loading {}", MAPVIEW_HTML);
+                        logger.severe(() -> "error loading " + MAPVIEW_HTML);
                     }
                 }
             });
@@ -306,12 +309,12 @@ public final class MapView extends Region {
                 return;
             }
             try {
-                logger.debug("JS reports new center value {}/{}", lat, lon);
+                logger.finer(() -> "JS reports new center value " + lat + "/" + lon);
                 Coordinate newCenter = new Coordinate(Double.valueOf(lat), Double.valueOf(lon));
                 lastCoordinateFromMap.set(newCenter);
                 setCenter(newCenter);
             } catch (NumberFormatException e) {
-                logger.warn("illegal coordinate strings {}/{}", lat, lon);
+                logger.warning(() -> "illegal coordinate strings " + lat + "/" + lon);
             }
         }
 
@@ -322,7 +325,7 @@ public final class MapView extends Region {
          *         the message to log
          */
         public void debug(String msg) {
-            logger.debug("JS: {}", msg);
+            logger.finer(() -> "JS: " + msg);
         }
 
         /**
@@ -334,12 +337,12 @@ public final class MapView extends Region {
         public void zoomChanged(String zoom) {
             if (null != zoom) {
                 try {
-                    logger.debug("JS reports zoom value {}", zoom);
+                    logger.finer(() -> "JS reports zoom value " + zoom);
                     Double newZoom = Double.valueOf(zoom);
                     lastZoomFromMap.set(newZoom);
                     setZoom(newZoom);
                 } catch (NumberFormatException e) {
-                    logger.warn("illegal zoom string {}", zoom);
+                    logger.warning(() -> "illegal zoom string " + zoom);
                 }
             }
         }

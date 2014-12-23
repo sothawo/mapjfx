@@ -28,8 +28,11 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.stage.Stage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
 /**
  * Showcase application.
@@ -39,7 +42,7 @@ import org.slf4j.LoggerFactory;
 public class Showcase extends Application {
 // ------------------------------ FIELDS ------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(Showcase.class);
+    private static final Logger logger = Logger.getLogger(Showcase.class.getCanonicalName());
 
     /** some coordinates from around town */
     private static final Coordinate coordKarlsruheCastle = new Coordinate(49.013517, 8.404435);
@@ -90,7 +93,7 @@ public class Showcase extends Application {
         primaryStage.setScene(scene);
         primaryStage.show();
 
-        logger.debug("application started.");
+        logger.finer(() -> "application started.");
     }
 
     /**
@@ -176,6 +179,15 @@ public class Showcase extends Application {
 // --------------------------- main() method ---------------------------
 
     public static void main(String[] args) {
+        // init the logging from the classpath logging.properties
+        InputStream inputStream = Showcase.class.getResourceAsStream("/logging.properties");
+        if (null != inputStream) {
+            try {
+                LogManager.getLogManager().readConfiguration(inputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
         launch(args);
     }
 }
