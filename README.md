@@ -32,9 +32,17 @@ executed with the following command (no need to build the library first):
 
 ## version history
 
-### 1.0.1-SNAPSHOT
+### 1.0.3-SNAPSHOT
 
 current development version
+
+### 1.0.2
+
+* readme correction
+
+### 1.0.1
+
+* javadoc corrections
 
 ### 1.0.0
 
