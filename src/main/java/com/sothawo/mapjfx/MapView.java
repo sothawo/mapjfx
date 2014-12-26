@@ -15,10 +15,7 @@
 */
 package com.sothawo.mapjfx;
 
-import javafx.beans.property.ReadOnlyBooleanProperty;
-import javafx.beans.property.ReadOnlyBooleanWrapper;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.*;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Worker;
@@ -79,7 +76,7 @@ public final class MapView extends Region {
     private SimpleDoubleProperty zoom;
 
     /** property containing the map's animation duration in ms. */
-    private SimpleDoubleProperty animationDuration;
+    private SimpleIntegerProperty animationDuration;
 
     /** used to store the last coordinate that was reported by the map to prevent setting it again in the map. */
     private AtomicReference<Coordinate> lastCoordinateFromMap = new AtomicReference<>();
@@ -131,7 +128,7 @@ public final class MapView extends Region {
             }
         });
 
-        animationDuration = new SimpleDoubleProperty(0);
+        animationDuration = new SimpleIntegerProperty(0);
     }
 
     /**
@@ -180,7 +177,7 @@ public final class MapView extends Region {
 
 // -------------------------- OTHER METHODS --------------------------
 
-    public SimpleDoubleProperty animationDurationProperty() {
+    public SimpleIntegerProperty animationDurationProperty() {
         return animationDuration;
     }
 
@@ -191,7 +188,7 @@ public final class MapView extends Region {
     /**
      * @return the current animation duration.
      */
-    public double getAnimationDuration() {
+    public int getAnimationDuration() {
         return animationDuration.get();
     }
 
@@ -250,7 +247,7 @@ public final class MapView extends Region {
      * @param animationDuration
      *         animation duration in ms
      */
-    public void setAnimationDuration(double animationDuration) {
+    public void setAnimationDuration(int animationDuration) {
         this.animationDuration.set(animationDuration);
     }
 

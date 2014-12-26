@@ -36,6 +36,8 @@ executed with the following command (no need to build the library first):
 
 current development version
 
+* animationDuration type changed to int
+
 ### 1.1.0
 
 * removed unnecessary code
