@@ -42,15 +42,31 @@ import java.util.logging.Logger;
 public class Showcase extends Application {
 // ------------------------------ FIELDS ------------------------------
 
-    private static final Logger logger = Logger.getLogger(Showcase.class.getCanonicalName());
+    private static final Logger logger;
 
     /** some coordinates from around town */
     private static final Coordinate coordKarlsruheCastle = new Coordinate(49.013517, 8.404435);
     private static final Coordinate coordKarlsruheHarbour = new Coordinate(49.015511, 8.323497);
     private static final Coordinate coordKarlsruheStation = new Coordinate(48.993284, 8.402186);
+    private static final int DEFAULT_ZOOM = 14;
 
     /** the MapView */
     private MapView mapView;
+
+// -------------------------- STATIC METHODS --------------------------
+
+    static {
+        // init the logging from the classpath logging.properties
+        InputStream inputStream = Showcase.class.getResourceAsStream("/logging.properties");
+        if (null != inputStream) {
+            try {
+                LogManager.getLogManager().readConfiguration(inputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        logger = Logger.getLogger(Showcase.class.getCanonicalName());
+    }
 
 // -------------------------- OTHER METHODS --------------------------
 
@@ -61,7 +77,7 @@ public class Showcase extends Application {
 
         // MapView in the center with an initial coordinate (optional)
         // the MapView is created first as the other elements reference it
-        mapView = new MapView(coordKarlsruheHarbour);
+        mapView = new MapView();
         // animate pan and zoom with 500ms
         mapView.setAnimationDuration(500);
         borderPane.setCenter(mapView);
@@ -78,6 +94,8 @@ public class Showcase extends Application {
             @Override
             public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
                 if (newValue) {
+                    mapView.setCenter(coordKarlsruheHarbour);
+                    mapView.setZoom(DEFAULT_ZOOM);
                     topPane.setDisable(false);
                 }
             }
@@ -122,8 +140,8 @@ public class Showcase extends Application {
         hbox.getChildren().add(btn);
 
         btn = new Button();
-        btn.setText("zoom 16");
-        btn.setOnAction(event -> mapView.setZoom(16));
+        btn.setText("zoom 14");
+        btn.setOnAction(event -> mapView.setZoom(DEFAULT_ZOOM));
         hbox.getChildren().add(btn);
 
         Slider slider = new Slider(MapView.MIN_ZOOM, MapView.MAX_ZOOM, MapView.INITIAL_ZOOM);
@@ -176,18 +194,10 @@ public class Showcase extends Application {
         });
         return hbox;
     }
+
 // --------------------------- main() method ---------------------------
 
     public static void main(String[] args) {
-        // init the logging from the classpath logging.properties
-        InputStream inputStream = Showcase.class.getResourceAsStream("/logging.properties");
-        if (null != inputStream) {
-            try {
-                LogManager.getLogManager().readConfiguration(inputStream);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
         launch(args);
     }
 }

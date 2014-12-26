@@ -41,7 +41,9 @@ import java.util.logging.Logger;
  * After that, the {@link #initialize()} Method must be called. When the MapView is initialized and ready to be used,
  * the {@link #initialized} property is set to true.<br><br>
  *
- * No map is displayed until {@link #setCenter(Coordinate)} is called.<br>
+ * No map is displayed until {@link #setCenter(Coordinate)} is called.<br><br>
+ *
+ * The MapView does it's logging using java logging with level FINER.
  *
  * @author P.J. Meisch (pj.meisch@sothawo.com).
  */
