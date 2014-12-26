@@ -55,7 +55,7 @@ public final class MapView extends Region {
     /** maximal zoom level, OL defines this as 28. */
     public static final int MAX_ZOOM = 28;
     /** initial zoom value for the map. */
-    public static final int INITIAL_ZOOM = 15;
+    public static final int INITIAL_ZOOM = 14;
 
     /** Logger for the class */
     private static final Logger logger = Logger.getLogger(MapView.class.getCanonicalName());
@@ -93,20 +93,10 @@ public final class MapView extends Region {
      * create a MapView with no initial center coordinate.
      */
     public MapView() {
-        this(null);
-    }
-
-    /**
-     * create a MapView with the given initial center coordinate.
-     *
-     * @param centerCoordinate
-     *         initial center coordinate
-     */
-    public MapView(Coordinate centerCoordinate) {
-        initProperties(centerCoordinate);
-        // we don't initialize the WebView here, as this would prevent the MapView from being created in SceneBuilder
-        // . This is all done in the initialize method.
-
+        initProperties();
+        // we don't initialize the WebView here, as this would prevent the MapView from being created in SceneBuilder.
+        // This is all done in the initialize method.
+        
         // set a silver background to make the MapView distinguishable in SceneBuilder, this will later be hidden by
         // the WebView
         setBackground(new Background(new BackgroundFill(Paint.valueOf("#ccc"), null, null)));
@@ -114,12 +104,9 @@ public final class MapView extends Region {
 
     /**
      * initializes the JavaFX properties.
-     *
-     * @param centerCoordinate
-     *         optional initial coordinate for the center property
      */
-    private final void initProperties(Coordinate centerCoordinate) {
-        center = new SimpleObjectProperty<>(centerCoordinate);
+    private final void initProperties() {
+        center = new SimpleObjectProperty<>();
         center.addListener(new ChangeListener<Coordinate>() {
             @Override
             public void changed(ObservableValue<? extends Coordinate> observable, Coordinate oldValue,

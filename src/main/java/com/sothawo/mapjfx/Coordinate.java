@@ -89,34 +89,4 @@ public final class Coordinate {
                 ", longitude=" + longitude +
                 ']';
     }
-
-// -------------------------- OTHER METHODS --------------------------
-
-    /**
-     * checks if a second coordinate is near this coordinate. For this check, the longitude values are compared and the
-     * latitude values with use of precision digits after them decimal point.
-     *
-     * @param coordinate
-     *         the coordinate to check
-     * @param precision
-     *         the number of digits after the decimal point that must be equal. if less than 1, a normal equals()
-     *         comparison is made
-     * @return true of both comparisons yield true
-     */
-    public boolean isNear(Coordinate coordinate, int precision) {
-        if (precision < 1) {
-            return equals(coordinate);
-        }
-        double epsilon = Math.pow(10, -(precision + 1));
-        double delta = Math.abs(latitude - coordinate.getLatitude());
-
-        if (delta > epsilon) {
-            return false;
-        }
-        delta = Math.abs(longitude - coordinate.getLongitude());
-        if (delta > epsilon) {
-            return false;
-        }
-        return true;
-    }
 }

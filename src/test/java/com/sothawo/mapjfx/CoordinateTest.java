@@ -38,24 +38,4 @@ public class CoordinateTest {
         new Coordinate(12.345, null);
     }
 
-    @Test
-    public void nearPrecision5() throws Exception {
-        Coordinate coordinate1 = new Coordinate(1.23456789012, 67.890123456789);
-        Coordinate coordinate2 = new Coordinate(1.23456689012, 67.890123456789);
-        assertTrue(coordinate1.isNear(coordinate2, 5));
-
-        coordinate1 = new Coordinate(1.23456789012, 67.890123456789);
-        coordinate2 = new Coordinate(1.23456789012, 67.890124456789);
-        assertTrue(coordinate1.isNear(coordinate2, 5));
-    }
-    @Test
-    public void notNearPrecision6() throws Exception {
-        Coordinate coordinate1 = new Coordinate(1.23456789012, 67.890123456789);
-        Coordinate coordinate2 = new Coordinate(1.23456689012, 67.890123456789);
-        assertFalse(coordinate1.isNear(coordinate2, 6));
-
-        coordinate1 = new Coordinate(1.23456789012, 67.890123456789);
-        coordinate2 = new Coordinate(1.23456789012, 67.890124456789);
-        assertFalse(coordinate1.isNear(coordinate2, 6));
-    }
 }
