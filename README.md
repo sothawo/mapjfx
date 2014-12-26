@@ -32,9 +32,11 @@ executed with the following command (no need to build the library first):
 
 ## version history
 
-### 1.1.1-SNAPSHOT
+### 1.1.2-SNAPSHOT
 
 current development version
+
+### 1.1.1
 
 * animationDuration type changed to int
 
