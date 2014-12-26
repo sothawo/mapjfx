@@ -32,9 +32,12 @@ executed with the following command (no need to build the library first):
 
 ## version history
 
-### 1.1.0-SNAPSHOT
+### 1.1.1-SNAPSHOT
 
 current development version
+
+### 1.1.0
+
 * removed unnecessary code
 * reworked MapView constructor to enable SceneBuilder compatibility
 * removed slf4j-api dependency and switched to java logging to enable SceneBuilder compatibility

@@ -96,7 +96,7 @@ public final class MapView extends Region {
         initProperties();
         // we don't initialize the WebView here, as this would prevent the MapView from being created in SceneBuilder.
         // This is all done in the initialize method.
-        
+
         // set a silver background to make the MapView distinguishable in SceneBuilder, this will later be hidden by
         // the WebView
         setBackground(new Background(new BackgroundFill(Paint.valueOf("#ccc"), null, null)));
