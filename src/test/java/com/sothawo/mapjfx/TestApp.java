@@ -35,11 +35,11 @@ import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 /**
- * Showcase application.
+ * Test application.
  *
  * @author P.J. Meisch (pj.meisch@sothawo.com).
  */
-public class Showcase extends Application {
+public class TestApp extends Application {
 // ------------------------------ FIELDS ------------------------------
 
     private static final Logger logger;
@@ -57,7 +57,7 @@ public class Showcase extends Application {
 
     static {
         // init the logging from the classpath logging.properties
-        InputStream inputStream = Showcase.class.getResourceAsStream("/logging.properties");
+        InputStream inputStream = TestApp.class.getResourceAsStream("/logging.properties");
         if (null != inputStream) {
             try {
                 LogManager.getLogManager().readConfiguration(inputStream);
@@ -65,7 +65,7 @@ public class Showcase extends Application {
                 e.printStackTrace();
             }
         }
-        logger = Logger.getLogger(Showcase.class.getCanonicalName());
+        logger = Logger.getLogger(TestApp.class.getCanonicalName());
     }
 
 // -------------------------- OTHER METHODS --------------------------

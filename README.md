@@ -23,18 +23,22 @@ More Information about the project can be found at [the sothawo website](http://
 
 this project is built using mvn. The library jar is created by running `mvn package`
 
-## running the showcase
+## running the test application
 
-the project contains a showcase example. The source is found in the test sources (src/test/java). It is compiled and
+the project contains a test application. The source is found in the test sources (src/test/java). It is compiled and
 executed with the following command (no need to build the library first):
 
-`mvn test exec:java -Dexec.mainClass="com.sothawo.mapjfx.Showcase" -Dexec.classpathScope=test`
+`mvn test exec:java -Dexec.mainClass="com.sothawo.mapjfx.TestApp" -Dexec.classpathScope=test`
+
+The test application does not contain all the features, to have that, check
+ [mapjfx-demo](http://www.sothawo.com/projects/mapjfx-demo/)
 
 ## version history
 
-### 1.1.2-SNAPSHOT
+### 1.2.0-SNAPSHOT
 
 current development version
+* added MapType enum and property
 
 ### 1.1.1
 
