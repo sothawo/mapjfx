@@ -23,10 +23,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Priority;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -120,9 +117,12 @@ public class TestApp extends Application {
      * @return Pane
      */
     private Pane createTopPane() {
+        VBox vbox = new VBox();
+
         HBox hbox = new HBox();
         hbox.setPadding(new Insets(5, 5, 5, 5));
         hbox.setSpacing(5);
+        vbox.getChildren().add(hbox);
 
         Button btn = new Button();
         btn.setText("Karlsruhe castle");
@@ -139,11 +139,6 @@ public class TestApp extends Application {
         btn.setOnAction(event -> mapView.setCenter(coordKarlsruheStation));
         hbox.getChildren().add(btn);
 
-        btn = new Button();
-        btn.setText("zoom 14");
-        btn.setOnAction(event -> mapView.setZoom(DEFAULT_ZOOM));
-        hbox.getChildren().add(btn);
-
         Slider slider = new Slider(MapView.MIN_ZOOM, MapView.MAX_ZOOM, MapView.INITIAL_ZOOM);
         slider.setBlockIncrement(1);
         slider.setShowTickMarks(true);
@@ -156,8 +151,34 @@ public class TestApp extends Application {
         HBox.setHgrow(slider, Priority.ALWAYS);
         hbox.getChildren().add(slider);
 
-        hbox.setDisable(true);
-        return hbox;
+        hbox = new HBox();
+        hbox.setPadding(new Insets(5, 5, 5, 5));
+        hbox.setSpacing(5);
+        vbox.getChildren().add(hbox);
+
+        btn = new Button();
+        btn.setText("OpenStreetMap");
+        btn.setOnAction(event -> mapView.setMapType(MapType.OSM));
+        hbox.getChildren().add(btn);
+
+        btn = new Button();
+        btn.setText("MapQuest");
+        btn.setOnAction(event -> mapView.setMapType(MapType.MAPQUEST_OSM));
+        hbox.getChildren().add(btn);
+
+        btn = new Button();
+        btn.setText("Stamen");
+        btn.setOnAction(event -> mapView.setMapType(MapType.STAMEN));
+        hbox.getChildren().add(btn);
+
+        btn = new Button();
+        btn.setText("Stamen labels");
+        btn.setOnAction(event -> mapView.setMapType(MapType.STAMEN_LABELS));
+        hbox.getChildren().add(btn);
+
+        vbox.setDisable(true);
+
+        return vbox;
     }
 
     /**

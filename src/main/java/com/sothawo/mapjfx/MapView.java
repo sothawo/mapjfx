@@ -134,6 +134,13 @@ public final class MapView extends Region {
         animationDuration = new SimpleIntegerProperty(0);
 
         mapType = new SimpleObjectProperty<>(MapType.OSM);
+        mapType.addListener(new ChangeListener<MapType>() {
+            @Override
+            public void changed(ObservableValue<? extends MapType> observable, MapType oldValue, MapType newValue) {
+                logger.finer(() -> "map type changed from " + oldValue + " to " + newValue);
+                setMapTypeInMap();
+            }
+        });
     }
 
     /**
@@ -178,6 +185,16 @@ public final class MapView extends Region {
      */
     public double getZoom() {
         return zoom.get();
+    }
+
+    /**
+     * sets the value of the mapType property in the OL map.
+     */
+    private void setMapTypeInMap() {
+        if (getInitialized()) {
+            logger.finer(() -> "setting map type in OpenLayers map: " + getMapType());
+            webEngine.executeScript("setMapType('" + getMapType().toString() + "')");
+        }
     }
 
 // -------------------------- OTHER METHODS --------------------------
