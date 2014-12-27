@@ -84,6 +84,9 @@ public final class MapView extends Region {
     /** used to store the last zoom value that was reported by the map to prevent setting it again in the map. */
     private AtomicReference<Double> lastZoomFromMap = new AtomicReference<>();
 
+    /** property containing the actual map style, defaults to {@link com.sothawo.mapjfx.MapType#OSM} */
+    private SimpleObjectProperty<MapType> mapType;
+
 // --------------------------- CONSTRUCTORS ---------------------------
 
     /**
@@ -129,6 +132,8 @@ public final class MapView extends Region {
         });
 
         animationDuration = new SimpleIntegerProperty(0);
+
+        mapType = new SimpleObjectProperty<>(MapType.OSM);
     }
 
     /**
@@ -193,6 +198,13 @@ public final class MapView extends Region {
     }
 
     /**
+     * @return the curtrent MapType.
+     */
+    public MapType getMapType() {
+        return mapType.get();
+    }
+
+    /**
      * initializes the MapView. The internal HTML file is loaded into the contained WebView and the necessary setup is
      * made for communication between this object and the Javascript elements on the web page.
      */
@@ -240,6 +252,13 @@ public final class MapView extends Region {
     }
 
     /**
+     * @return the mapType property.
+     */
+    public SimpleObjectProperty<MapType> mapTypeProperty() {
+        return mapType;
+    }
+
+    /**
      * sets the animation duration in ms. If a value greater than 1 is set, then panning or zooming the map by setting
      * the center or zoom property will be animated in the given time. Setting this to zero does not switch off the zoom
      * animation shown when clicking the controlas in the map.
@@ -259,6 +278,16 @@ public final class MapView extends Region {
      */
     public void setCenter(Coordinate center) {
         this.center.set(center);
+    }
+
+    /**
+     * sets the current MapType.
+     *
+     * @param mapType
+     *         the new MapType
+     */
+    public void setMapType(MapType mapType) {
+        this.mapType.set(mapType);
     }
 
     /**

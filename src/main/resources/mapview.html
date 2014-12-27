@@ -27,25 +27,55 @@ Copyright 2014 Peter-Josef Meisch (pj.meisch@sothawo.com)
 <body>
 <div id="map"></div>
 <script type="text/javascript">
+    var layersOSM = new ol.layer.Group({
+	  	layers: [
+            new ol.layer.Tile({
+            	source: new ol.source.OSM()
+          })
+	  	]
+      });
+
+    var layersMQ = new ol.layer.Group({
+	  	layers: [
+            new ol.layer.Tile({
+            	source: new ol.source.MapQuest({layer: 'osm'})
+          })
+	  	]
+      });
+
+    var layersStamen = new ol.layer.Group({
+	  	layers: [
+          new ol.layer.Tile({
+            source: new ol.source.Stamen({layer: 'watercolor'})
+          })
+	  	]
+      });
+
+    var layersStamenLabels = new ol.layer.Group({
+	  	layers: [
+          new ol.layer.Tile({
+            source: new ol.source.Stamen({layer: 'watercolor'})
+          }),
+                    new ol.layer.Tile({
+            source: new ol.source.Stamen({layer: 'terrain-labels'})
+          })
+	  	]
+      });
+
     var map = new ol.Map({
         target: 'map',
-        layers: [
-          new ol.layer.Tile({
-            source: new ol.source.OSM()
-        //            source: new ol.source.MapQuest({layer: 'osm'})
-          })
-        ],
+        layers: layersOSM,
         view: new ol.View({
           zoom: 1
         })
     });
+
     var view = map.getView();
     view.on('change:center', function(evt) {
         center = ol.proj.transform(evt.target.get('center'), 'EPSG:3857', 'EPSG:4326');
         // lat/lon reversion
         app.centerMovedTo(center[1], center[0]);
     });
-
     view.on('change:resolution', function(evt) {
         app.zoomChanged(view.getZoom());
     });
@@ -77,6 +107,7 @@ Copyright 2014 Peter-Josef Meisch (pj.meisch@sothawo.com)
         view.setZoom(zoom);
         }
     }
+
 </script>
 </body>
 </html>
