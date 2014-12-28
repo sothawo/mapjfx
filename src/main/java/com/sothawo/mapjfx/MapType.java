@@ -16,8 +16,7 @@
 package com.sothawo.mapjfx;
 
 /**
- * Enumeration defining the different map types. Using the stamen source somethimes seeme to need long to load the
- * tiles.
+ * Enumeration defining the different map types.
  *
  * @author P.J. Meisch (pj.meisch@sothawo.com).
  */
@@ -26,8 +25,4 @@ public enum MapType {
     OSM,
     /** MapQuest with OSM Layer */
     MAPQUEST_OSM,
-    /** Stamen watercolor */
-    STAMEN_WATERCOLOR,
-    /** Stamen watercolor with labels */
-    STAMEN_WATERCOLOR_LABELS
 }

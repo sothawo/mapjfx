@@ -43,25 +43,6 @@ Copyright 2014 Peter-Josef Meisch (pj.meisch@sothawo.com)
 	  	]
       });
 
-    var layersStamen = new ol.layer.Group({
-	  	layers: [
-          new ol.layer.Tile({
-            source: new ol.source.Stamen({layer: 'watercolor'})
-          })
-	  	]
-      });
-
-    var layersStamenLabels = new ol.layer.Group({
-	  	layers: [
-          new ol.layer.Tile({
-            source: new ol.source.Stamen({layer: 'watercolor'})
-          }),
-                    new ol.layer.Tile({
-            source: new ol.source.Stamen({layer: 'terrain-labels'})
-          })
-	  	]
-      });
-
     var map = new ol.Map({
         target: 'map',
         layers: layersOSM,
@@ -113,10 +94,6 @@ Copyright 2014 Peter-Josef Meisch (pj.meisch@sothawo.com)
             map.setLayerGroup(layersOSM);
         } else if (newType == 'MAPQUEST_OSM') {
             map.setLayerGroup(layersMQ);
-        } else if (newType == 'STAMEN_WATERCOLOR') {
-            map.setLayerGroup(layersStamen);
-        } else if (newType == 'STAMEN_WATERCOLOR_LABELS') {
-            map.setLayerGroup(layersStamenLabels);
         }
     }
 
