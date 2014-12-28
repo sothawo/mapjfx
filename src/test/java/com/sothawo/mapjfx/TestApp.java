@@ -168,12 +168,12 @@ public class TestApp extends Application {
 
         btn = new Button();
         btn.setText("Stamen");
-        btn.setOnAction(event -> mapView.setMapType(MapType.STAMEN));
+        btn.setOnAction(event -> mapView.setMapType(MapType.STAMEN_WATERCOLOR));
         hbox.getChildren().add(btn);
 
         btn = new Button();
         btn.setText("Stamen labels");
-        btn.setOnAction(event -> mapView.setMapType(MapType.STAMEN_LABELS));
+        btn.setOnAction(event -> mapView.setMapType(MapType.STAMEN_WATERCOLOR_LABELS));
         hbox.getChildren().add(btn);
 
         vbox.setDisable(true);
