@@ -25,8 +25,8 @@ this project is built using mvn. The library jar is created by running `mvn pack
 
 ## running the test application
 
-the project contains a test application. The source is found in the test sources (src/test/java). It is compiled and
-executed with the following command (no need to build the library first):
+the project contains a test application which is mostly used during development. The source is found in the test
+sources (src/test/java). It is compiled and executed with the following command (no need to build the library first):
 
 `mvn test exec:java -Dexec.mainClass="com.sothawo.mapjfx.TestApp" -Dexec.classpathScope=test`
 
@@ -35,9 +35,15 @@ The test application does not contain all the features, to have that, check
 
 ## version history
 
-### 1.2.0-SNAPSHOT
+### 1.2.1-SNAPSHOT
 
 current development version
+
+### 1.2.0
+
+* set the map's extent, so that a collection of coordinates in visible
+* API modifications for fluent interface
+* possibility to switch between map types
 * added MapType enum and property
 
 ### 1.1.1
