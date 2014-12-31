@@ -40,7 +40,9 @@ import java.util.logging.Logger;
  *
  * No map is displayed until {@link #setCenter(Coordinate)} is called.<br><br>
  *
- * The MapView does it's logging using java logging with level FINER.
+ * The MapView does it's logging using java logging with level FINER.<br><br>
+ *
+ * All the setters return the MapView itself to enable fluent programming.
  *
  * @author P.J. Meisch (pj.meisch@sothawo.com).
  */
@@ -163,13 +165,6 @@ public final class MapView extends Region {
     }
 
     /**
-     * @return true if the MapView is initialized.
-     */
-    public boolean getInitialized() {
-        return initialized.get();
-    }
-
-    /**
      * sets the value of the actual zoom property in the OL map.
      */
     private void setZoomInMap() {
@@ -197,6 +192,13 @@ public final class MapView extends Region {
         }
     }
 
+    /**
+     * @return the curtrent MapType.
+     */
+    public MapType getMapType() {
+        return mapType.get();
+    }
+
 // -------------------------- OTHER METHODS --------------------------
 
     public SimpleIntegerProperty animationDurationProperty() {
@@ -212,13 +214,6 @@ public final class MapView extends Region {
      */
     public int getAnimationDuration() {
         return animationDuration.get();
-    }
-
-    /**
-     * @return the curtrent MapType.
-     */
-    public MapType getMapType() {
-        return mapType.get();
     }
 
     /**
@@ -282,9 +277,11 @@ public final class MapView extends Region {
      *
      * @param animationDuration
      *         animation duration in ms
+     * @return this object
      */
-    public void setAnimationDuration(int animationDuration) {
+    public MapView setAnimationDuration(int animationDuration) {
         this.animationDuration.set(animationDuration);
+        return this;
     }
 
     /**
@@ -292,9 +289,36 @@ public final class MapView extends Region {
      *
      * @param center
      *         new center
+     * @return this object
      */
-    public void setCenter(Coordinate center) {
+    public MapView setCenter(Coordinate center) {
         this.center.set(center);
+        return this;
+    }
+
+    /**
+     * sets the center and zoom of the map so that the given extent is visible.
+     *
+     * @param extent
+     *         extent to show, if null, nothing is changed
+     * @return this object
+     */
+    public MapView setExtent(Extent extent) {
+        if (getInitialized() && null != extent) {
+            logger.finer(() -> "setting extent in OpenLayers map: " + extent);
+            webEngine.executeScript(
+                    "setExtent(" + extent.getMin().getLatitude() + ',' + extent.getMin().getLongitude() + ',' +
+                            extent.getMax().getLatitude() + ',' + extent.getMax().getLongitude() + ',' +
+                            animationDuration.get() + ')');
+        }
+        return this;
+    }
+
+    /**
+     * @return true if the MapView is initialized.
+     */
+    public boolean getInitialized() {
+        return initialized.get();
     }
 
     /**
@@ -302,9 +326,11 @@ public final class MapView extends Region {
      *
      * @param mapType
      *         the new MapType
+     * @return this object
      */
-    public void setMapType(MapType mapType) {
+    public MapView setMapType(MapType mapType) {
         this.mapType.set(mapType);
+        return this;
     }
 
     /**
@@ -314,13 +340,15 @@ public final class MapView extends Region {
      *
      * @param zoom
      *         new zoom level
+     * @return this object
      */
-    public void setZoom(double zoom) {
+    public MapView setZoom(double zoom) {
         double rounded = Math.round(zoom);
         if (rounded < MIN_ZOOM || rounded > MAX_ZOOM) {
-            return;
+            return this;
         }
         this.zoom.set(rounded);
+        return this;
     }
 
     public SimpleDoubleProperty zoomProperty() {

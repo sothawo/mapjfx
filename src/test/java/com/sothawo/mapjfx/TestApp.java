@@ -139,6 +139,13 @@ public class TestApp extends Application {
         btn.setOnAction(event -> mapView.setCenter(coordKarlsruheStation));
         hbox.getChildren().add(btn);
 
+        btn = new Button();
+        btn.setText("all");
+        btn.setOnAction(event -> mapView.setExtent(Extent.forCoordinates(new Coordinate[]{coordKarlsruheHarbour,
+                                                                                          coordKarlsruheCastle,
+                                                                                          coordKarlsruheStation})));
+        hbox.getChildren().add(btn);
+
         Slider slider = new Slider(MapView.MIN_ZOOM, MapView.MAX_ZOOM, MapView.INITIAL_ZOOM);
         slider.setBlockIncrement(1);
         slider.setShowTickMarks(true);
