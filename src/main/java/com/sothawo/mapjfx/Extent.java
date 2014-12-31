@@ -29,7 +29,7 @@ public final class Extent {
      * @throws java.lang.IllegalArgumentException
      *         when less than 2 coordinates or null are passed in
      */
-    public static Extent forCoordinates(Coordinate[] coordinates) {
+    public static Extent forCoordinates(Coordinate... coordinates) {
         if (null == coordinates) {
             throw new IllegalArgumentException();
         }

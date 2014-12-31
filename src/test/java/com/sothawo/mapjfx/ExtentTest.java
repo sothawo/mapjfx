@@ -32,6 +32,18 @@ public class ExtentTest {
         // max longitude
         assertEquals(coordKarlsruheCastle.getLongitude(), extent.getMax().getLongitude());
     }
+    @Test
+    public void createWithArrayEllipsis() throws Exception {
+        Extent extent = Extent.forCoordinates(coordKarlsruheCastle, coordKarlsruheHarbour, coordKarlsruheStation);
+        // min latitude
+        assertEquals(coordKarlsruheStation.getLatitude(), extent.getMin().getLatitude());
+        // min longitude
+        assertEquals(coordKarlsruheHarbour.getLongitude(), extent.getMin().getLongitude());
+        // max latitude
+        assertEquals(coordKarlsruheHarbour.getLatitude(), extent.getMax().getLatitude());
+        // max longitude
+        assertEquals(coordKarlsruheCastle.getLongitude(), extent.getMax().getLongitude());
+    }
 
     @Test(expected = IllegalArgumentException.class)
     public void createWithArrayWithOneElement() throws Exception {
