@@ -86,6 +86,12 @@ public class TestApp extends Application {
         // at the bottom some infos
         borderPane.setBottom(createBottomPane());
 
+        // listen to CoordinateEvent MAP_CLICKED
+        mapView.addEventHandler(CoordinateEvent.MAP_CLICKED, event -> {
+            logger.info("MAP_CLICKED event at " + event.getCoordinate());
+            event.consume();
+        });
+
         // add listener for mapView initialization state
         mapView.initializedProperty().addListener(new ChangeListener<Boolean>() {
             @Override

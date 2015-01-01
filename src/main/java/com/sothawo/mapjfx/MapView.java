@@ -386,6 +386,28 @@ public final class MapView extends Region {
         }
 
         /**
+         * called when the user has single-clicked in the map. the coordinates are EPSG:4326 (WGS) values.
+         *
+         * @param lat
+         *         new latitude value
+         * @param lon
+         *         new longitude value
+         */
+        public void singleClickAt(String lat, String lon) {
+            if (null == lat || null == lon) {
+                return;
+            }
+            try {
+                logger.finer(() -> "JS reports single click at " + lat + "/" + lon);
+                // fire a coordinate event to whom it may be of importance
+                fireEvent(new CoordinateEvent(CoordinateEvent.MAP_CLICKED,
+                        new Coordinate(Double.valueOf(lat), Double.valueOf(lon))));
+            } catch (NumberFormatException e) {
+                logger.warning(() -> "illegal coordinate strings " + lat + "/" + lon);
+            }
+        }
+
+        /**
          * called from the JS in the web page to output a message to the applicatin's log.
          *
          * @param msg

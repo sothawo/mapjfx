@@ -51,6 +51,12 @@ Copyright 2014 Peter-Josef Meisch (pj.meisch@sothawo.com)
         })
     });
 
+    map.on('singleclick', function(evt){
+      var coordinate = ol.proj.transform(evt.coordinate, 'EPSG:3857', 'EPSG:4326');
+        // lat/lon reversion
+        app.singleClickAt(coordinate[1], coordinate[0]);
+    });
+
     var view = map.getView();
     view.on('change:center', function(evt) {
         center = ol.proj.transform(evt.target.get('center'), 'EPSG:3857', 'EPSG:4326');
@@ -113,6 +119,7 @@ Copyright 2014 Peter-Josef Meisch (pj.meisch@sothawo.com)
         }
         view.fitExtent(extent, map.getSize());
     }
+
 
 </script>
 </body>

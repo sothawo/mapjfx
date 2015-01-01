@@ -41,7 +41,7 @@ current development version
 
 ### 1.2.0
 
-* set the map's extent, so that a collection of coordinates in visible
+* set the map's extent, so that a collection of coordinates is visible
 * API modifications for fluent interface
 * possibility to switch between map types
 * added MapType enum and property
