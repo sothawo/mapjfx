@@ -47,6 +47,13 @@ public class TestApp extends Application {
     private static final Coordinate coordKarlsruheStation = new Coordinate(48.993284, 8.402186);
     private static final int DEFAULT_ZOOM = 14;
 
+    private static final Marker marker;
+
+    static {
+        marker = new Marker(TestApp.class.getResource("/pin_blue.png"), -2, -32);
+        marker.setPosition(coordKarlsruheCastle);
+    }
+
     /** the MapView */
     private MapView mapView;
 
@@ -90,6 +97,7 @@ public class TestApp extends Application {
         mapView.addEventHandler(CoordinateEvent.MAP_CLICKED, event -> {
             logger.info("MAP_CLICKED event at " + event.getCoordinate());
             event.consume();
+            marker.setPosition(event.getCoordinate());
         });
 
         // add listener for mapView initialization state
@@ -147,9 +155,9 @@ public class TestApp extends Application {
 
         btn = new Button();
         btn.setText("all");
-        btn.setOnAction(event -> mapView.setExtent(Extent.forCoordinates(new Coordinate[]{coordKarlsruheHarbour,
-                                                                                          coordKarlsruheCastle,
-                                                                                          coordKarlsruheStation})));
+        btn.setOnAction(event -> mapView.setExtent(Extent.forCoordinates(coordKarlsruheHarbour,
+                coordKarlsruheCastle,
+                coordKarlsruheStation)));
         hbox.getChildren().add(btn);
 
         Slider slider = new Slider(MapView.MIN_ZOOM, MapView.MAX_ZOOM, MapView.INITIAL_ZOOM);
@@ -177,6 +185,16 @@ public class TestApp extends Application {
         btn = new Button();
         btn.setText("MapQuest");
         btn.setOnAction(event -> mapView.setMapType(MapType.MAPQUEST_OSM));
+        hbox.getChildren().add(btn);
+
+        btn = new Button();
+        btn.setText("add Marker");
+        btn.setOnAction(event -> mapView.addMarker(marker));
+        hbox.getChildren().add(btn);
+
+        btn = new Button();
+        btn.setText("remove Marker");
+        btn.setOnAction(event -> mapView.removeMarker(marker));
         hbox.getChildren().add(btn);
 
         vbox.setDisable(true);

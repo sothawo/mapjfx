@@ -28,6 +28,8 @@ import javafx.scene.web.WebView;
 import netscape.javascript.JSObject;
 
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 
@@ -88,6 +90,9 @@ public final class MapView extends Region {
 
     /** property containing the actual map style, defaults to {@link com.sothawo.mapjfx.MapType#OSM} */
     private SimpleObjectProperty<MapType> mapType;
+
+    /** markers in the map together with the listeners for coordinate changes */
+    private final Map<Marker, ChangeListener<Coordinate>> markers = new HashMap<>();
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
@@ -165,6 +170,13 @@ public final class MapView extends Region {
     }
 
     /**
+     * @return true if the MapView is initialized.
+     */
+    public boolean getInitialized() {
+        return initialized.get();
+    }
+
+    /**
      * sets the value of the actual zoom property in the OL map.
      */
     private void setZoomInMap() {
@@ -200,6 +212,58 @@ public final class MapView extends Region {
     }
 
 // -------------------------- OTHER METHODS --------------------------
+
+    /**
+     * adds a marker to the map. If the marker does not contain a position, it is not added and false is returned. If it
+     * was already added, nothing is changed and false is returned.
+     *
+     * @param marker
+     *         the marker
+     * @return true if added
+     * @throws java.lang.IllegalArgumentException
+     *         if marker is null
+     */
+    public boolean addMarker(Marker marker) {
+        if (null == marker) {
+            throw new IllegalArgumentException();
+        }
+        if (null == marker.getPosition() || null != markers.get(marker)) {
+            return false;
+        }
+        // sho the marker in the map
+        putMarkerInMap(marker);
+        // create a change listener and store it along the marker
+        ChangeListener<Coordinate> coordinateChangeListener = (observable, oldValue, newValue) -> {
+            moveMarkerInMap(marker);
+        };
+        markers.put(marker, coordinateChangeListener);
+        // observe the markers position
+        marker.positionProperty().addListener(coordinateChangeListener);
+        logger.finer(() -> "added marker " + marker);
+
+        return true;
+    }
+
+    /**
+     * shows the new marker in the map
+     *
+     * @param marker
+     *         marker to show
+     */
+    private void putMarkerInMap(Marker marker) {
+        // TODO: implement
+        logger.finer(() -> "putMarkerInMap " + marker);
+    }
+
+    /**
+     * adjustst the markers position in the map.
+     *
+     * @param marker
+     */
+    private void moveMarkerInMap(Marker marker) {
+        // TODO: implement
+        logger.finer(() -> "moveMarkerInMap " + marker);
+    }
 
     public SimpleIntegerProperty animationDurationProperty() {
         return animationDuration;
@@ -272,6 +336,26 @@ public final class MapView extends Region {
     }
 
     /**
+     * removes the given marker from th map and deregister the change listener. Ig the marker was not in the map,
+     * nothing happens
+     *
+     * @param marker
+     *         marker to remove
+     * @throws java.lang.IllegalArgumentException
+     *         if marker is null
+     */
+    public void removeMarker(Marker marker) {
+        if (null == marker) {
+            throw new IllegalArgumentException();
+        }
+        if (markers.containsKey(marker)) {
+            marker.positionProperty().removeListener(markers.get(marker));
+            markers.remove(marker);
+            logger.finer(() -> "removed marker " + marker);
+        }
+    }
+
+    /**
      * sets the animation duration in ms. If a value greater than 1 is set, then panning or zooming the map by setting
      * the center or zoom property will be animated in the given time. Setting this to zero does not switch off the zoom
      * animation shown when clicking the controlas in the map.
@@ -313,13 +397,6 @@ public final class MapView extends Region {
                             animationDuration.get() + ')');
         }
         return this;
-    }
-
-    /**
-     * @return true if the MapView is initialized.
-     */
-    public boolean getInitialized() {
-        return initialized.get();
     }
 
     /**
@@ -387,6 +464,16 @@ public final class MapView extends Region {
         }
 
         /**
+         * called from the JS in the web page to output a message to the applicatin's log.
+         *
+         * @param msg
+         *         the message to log
+         */
+        public void debug(String msg) {
+            logger.finer(() -> "JS: " + msg);
+        }
+
+        /**
          * called when the user has single-clicked in the map. the coordinates are EPSG:4326 (WGS) values.
          *
          * @param lat
@@ -406,16 +493,6 @@ public final class MapView extends Region {
             } catch (NumberFormatException e) {
                 logger.warning(() -> "illegal coordinate strings " + lat + "/" + lon);
             }
-        }
-
-        /**
-         * called from the JS in the web page to output a message to the applicatin's log.
-         *
-         * @param msg
-         *         the message to log
-         */
-        public void debug(String msg) {
-            logger.finer(() -> "JS: " + msg);
         }
 
         /**
