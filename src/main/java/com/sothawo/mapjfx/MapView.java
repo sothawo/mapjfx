@@ -252,6 +252,7 @@ public final class MapView extends Region {
                 }
             });
             // start loading the html containing the OL code
+            logger.finer(() -> "loading from " + mapviewUrl.toExternalForm());
             webEngine.load(mapviewUrl.toExternalForm());
         }
     }
