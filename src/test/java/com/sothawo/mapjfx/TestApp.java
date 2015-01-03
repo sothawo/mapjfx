@@ -50,7 +50,7 @@ public class TestApp extends Application {
     private static final Marker marker;
 
     static {
-        marker = new Marker(TestApp.class.getResource("/pin_blue.png"), -2, -32);
+        marker = new Marker(TestApp.class.getResource("/blue_map_marker.png"), -32, -64);
         marker.setPosition(coordKarlsruheCastle);
     }
 
@@ -76,7 +76,7 @@ public class TestApp extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        logger.info("starting showcase...");
+        logger.info("starting devtest program...");
         BorderPane borderPane = new BorderPane();
 
         // MapView in the center with an initial coordinate (optional)
@@ -118,7 +118,7 @@ public class TestApp extends Application {
         // show the whole thing
         Scene scene = new Scene(borderPane, 800, 600);
 
-        primaryStage.setTitle("sothawo mapjfx showcase");
+        primaryStage.setTitle("sothawo mapjfx devtest program");
         primaryStage.setScene(scene);
         primaryStage.show();
 

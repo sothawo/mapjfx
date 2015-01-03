@@ -24,7 +24,7 @@ import static org.junit.Assert.*;
 
 public class MarkerTest {
 
-    private static final String TEST_IMG = "/pin_blue.png";
+    private static final String TEST_IMG = "/blue_map_marker.png";
     URL imageURL;
 
     @Before

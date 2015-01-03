@@ -35,9 +35,11 @@ The test application does not contain all the features, to have that, check
 
 ## version history
 
-### 1.2.1-SNAPSHOT
+### 1.3.0-SNAPSHOT
 
 current development version
+* added marker support
+* added singleclick feedback as JavaFX event with map coordinate
 
 ### 1.2.0
 
