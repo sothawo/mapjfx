@@ -1,5 +1,5 @@
 /*
- Copyright 2014 Peter-Josef Meisch (pj.meisch@sothawo.com)
+ Copyright 2015 Peter-Josef Meisch (pj.meisch@sothawo.com)
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 */
 package com.sothawo.mapjfx;
 
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
 import java.net.URL;
@@ -26,14 +27,16 @@ import java.util.concurrent.atomic.AtomicLong;
  * WebView. The image is rendered with it's top left point at the coordinate. This can be adjusted by setting the pixel
  * offset values, x positive to the right, y positive down.<br><br>
  *
- * The image URL and offset values can only be set at construction time, the coordinate is a JavaFX property.<br><br>
+ * The image URL and offset values can only be set at construction time, the coordinate is a JavaFX property. The Marker
+ * has a visibilty property whch must be set to true to make the marker visible. With this property it is possible to
+ * hide the marker without completely removing it from the map.<br><br>
  *
  * A marker has a unique (within class existence in the VM) id of the form "marker-NNN" where NNN is a consecutive
  * number assigned on creation.
  *
  * @author P.J. Meisch (pj.meisch@sothawo.com).
  */
-public class Marker {
+public final class Marker {
 // ------------------------------ FIELDS ------------------------------
 
     private final static AtomicLong nextId = new AtomicLong(1);
@@ -47,6 +50,8 @@ public class Marker {
     private final int offsetY;
     /** the coordinate */
     private SimpleObjectProperty<Coordinate> position = new SimpleObjectProperty<>();
+    /** vivible property */
+    private SimpleBooleanProperty visible = new SimpleBooleanProperty(false);
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
@@ -128,20 +133,49 @@ public class Marker {
                 ", offsetX=" + offsetX +
                 ", offsetY=" + offsetY +
                 ", position=" + getPosition() +
+                ", visible=" + getVisible() +
                 '}';
     }
-
-// -------------------------- OTHER METHODS --------------------------
 
     public Coordinate getPosition() {
         return position.get();
     }
 
+    public boolean getVisible() {
+        return visible.get();
+    }
+
+// -------------------------- OTHER METHODS --------------------------
+
     public SimpleObjectProperty<Coordinate> positionProperty() {
         return position;
     }
 
-    public void setPosition(Coordinate position) {
+    /**
+     * sets the marker's new position
+     *
+     * @param position
+     *         new position
+     * @return this object
+     */
+    public Marker setPosition(Coordinate position) {
         this.position.set(position);
+        return this;
+    }
+
+    /**
+     * sets the visibilty of the marker
+     *
+     * @param visible
+     *         visibilty
+     * @return this object
+     */
+    public Marker setVisible(boolean visible) {
+        this.visible.set(visible);
+        return this;
+    }
+
+    public SimpleBooleanProperty visibleProperty() {
+        return visible;
     }
 }

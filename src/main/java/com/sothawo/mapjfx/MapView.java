@@ -1,5 +1,5 @@
 /*
- Copyright 2014 Peter-Josef Meisch (pj.meisch@sothawo.com)
+ Copyright 2015 Peter-Josef Meisch (pj.meisch@sothawo.com)
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -92,8 +92,8 @@ public final class MapView extends Region {
     /** property containing the actual map style, defaults to {@link com.sothawo.mapjfx.MapType#OSM} */
     private SimpleObjectProperty<MapType> mapType;
 
-    /** markers in the map together with the listeners for coordinate changes */
-    private final Map<Marker, ChangeListener<Coordinate>> markers = new HashMap<>();
+    /** markers in the map together with the listeners f */
+    private final Map<Marker, MarkerChangeListeners> markers = new HashMap<>();
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
@@ -220,8 +220,7 @@ public final class MapView extends Region {
 // -------------------------- OTHER METHODS --------------------------
 
     /**
-     * adds a marker to the map. If the marker does not contain a position, it is not added and false is returned. If it
-     * was already added, nothing is changed and false is returned.
+     * adds a marker to the map. If it was already added, nothing is changed and false is returned.
      *
      * @param marker
      *         the marker
@@ -233,21 +232,51 @@ public final class MapView extends Region {
         if (null == marker) {
             throw new IllegalArgumentException();
         }
-        if (null == marker.getPosition() || null != markers.get(marker)) {
+        if (null != markers.get(marker)) {
             return false;
         }
-        // sho the marker in the map
-        addMarkerInMap(marker);
-        // create a change listener and store it along the marker
+        // create a change listener for the coordinate and store it along with the marker
         ChangeListener<Coordinate> coordinateChangeListener = (observable, oldValue, newValue) -> {
-            moveMarkerInMap(marker);
+            if (null == oldValue) {
+                // if no position was available in the first call, we need to add now
+                addMarkerInMap(marker);
+            } else {
+                moveMarkerInMap(marker);
+            }
         };
-        markers.put(marker, coordinateChangeListener);
-        // observe the markers position
+        // the same for the visibility
+        ChangeListener<Boolean> visibileChangeListener = (observable, oldValue, newValue) -> {
+            setMarkerVisibleInMap(marker);
+        };
+        markers.put(marker, new MarkerChangeListeners(coordinateChangeListener, visibileChangeListener));
+
+        // observe the markers position and visibility
         marker.positionProperty().addListener(coordinateChangeListener);
+        marker.visibleProperty().addListener(visibileChangeListener);
+
+        // add the marker in the map and show it if needed
+        if (marker.getVisible() && null != marker.getPosition()) {
+            addMarkerInMap(marker);
+        }
         logger.finer(() -> "added marker " + marker);
 
         return true;
+    }
+
+    /**
+     * sets the visibilty of a marker in the map.
+     *
+     * @param marker
+     *         the marker to show or hide
+     */
+    private void setMarkerVisibleInMap(Marker marker) {
+        if (getInitialized()) {
+            if (marker.getVisible()) {
+                addMarkerInMap(marker);
+            } else {
+                removeMarkerInMap(marker);
+            }
+        }
     }
 
     /**
@@ -257,17 +286,18 @@ public final class MapView extends Region {
      *         marker to show
      */
     private void addMarkerInMap(Marker marker) {
-        if (getInitialized()) {
-            String script = String.format(Locale.US, "addMarker('%s','%s',%f,%f,%d,%d)", marker.getId(), marker
-                    .getImageURL().toExternalForm(), marker.getPosition().getLatitude(), marker.getPosition()
-                    .getLongitude(), marker.getOffsetX(), marker.getOffsetY());
+        if (getInitialized() && null != marker.getPosition()) {
+            String script = String.format(Locale.US, "addMarker('%s','%s',%f,%f,%d,%d)", marker.getId(),
+                    marker.getImageURL().toExternalForm(), marker.getPosition().getLatitude(), marker.getPosition()
+                            .getLongitude(), marker.getOffsetX(),
+                    marker.getOffsetY());
             logger.finer(() -> "add marker in OpenLayers map " + script);
             webEngine.executeScript(script);
         }
     }
 
     /**
-     * adjustst the markers position in the map.
+     * adjusts the markers position in the map.
      *
      * @param marker
      */
@@ -351,7 +381,7 @@ public final class MapView extends Region {
     }
 
     /**
-     * removes the given marker from th map and deregister the change listener. Ig the marker was not in the map,
+     * removes the given marker from th map and deregisters the change listeners. If the marker was not in the map,
      * nothing happens
      *
      * @param marker
@@ -364,9 +394,11 @@ public final class MapView extends Region {
             throw new IllegalArgumentException();
         }
         if (markers.containsKey(marker)) {
-            marker.positionProperty().removeListener(markers.get(marker));
+            marker.positionProperty().removeListener(markers.get(marker).getCoordinateChangeListener());
+            marker.visibleProperty().removeListener(markers.get(marker).getVisibileChangeListener());
             markers.remove(marker);
             removeMarkerInMap(marker);
+            marker.setVisible(false);
             logger.finer(() -> "removed marker " + marker);
         }
     }

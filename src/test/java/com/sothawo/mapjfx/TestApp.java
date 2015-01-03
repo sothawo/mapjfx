@@ -51,7 +51,7 @@ public class TestApp extends Application {
 
     static {
         marker = new Marker(TestApp.class.getResource("/blue_map_marker.png"), -32, -64);
-        marker.setPosition(coordKarlsruheCastle);
+        marker.setPosition(coordKarlsruheCastle).setVisible(true);
     }
 
     /** the MapView */
@@ -97,7 +97,9 @@ public class TestApp extends Application {
         mapView.addEventHandler(CoordinateEvent.MAP_CLICKED, event -> {
             logger.info("MAP_CLICKED event at " + event.getCoordinate());
             event.consume();
-            marker.setPosition(event.getCoordinate());
+            if (marker.getVisible()) {
+                marker.setPosition(event.getCoordinate());
+            }
         });
 
         // add listener for mapView initialization state
@@ -188,12 +190,17 @@ public class TestApp extends Application {
         hbox.getChildren().add(btn);
 
         btn = new Button();
-        btn.setText("add Marker");
+        btn.setText("add marker");
         btn.setOnAction(event -> mapView.addMarker(marker));
         hbox.getChildren().add(btn);
 
         btn = new Button();
-        btn.setText("remove Marker");
+        btn.setText("toggle marker visibility");
+        btn.setOnAction(event -> marker.setVisible(!marker.getVisible()));
+        hbox.getChildren().add(btn);
+
+        btn = new Button();
+        btn.setText("remove marker");
         btn.setOnAction(event -> mapView.removeMarker(marker));
         hbox.getChildren().add(btn);
 

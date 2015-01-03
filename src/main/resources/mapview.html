@@ -136,31 +136,34 @@ Copyright 2014 Peter-Josef Meisch (pj.meisch@sothawo.com)
             }
 
             function addMarker(name, url, latitude, longitude, offsetX, offsetY) {
-                var markers = document.getElementById('markers');
-                var img = document.createElement('img');
-                img.setAttribute('id', name);
-                img.setAttribute('alt', name);
+                var img = document.getElementById(name);
+                if(!img) {
+                    var markers = document.getElementById('markers');
+                    img = document.createElement('img');
+                    img.setAttribute('id', name);
+                    img.setAttribute('alt', name);
 
-                // create an image that does the rest when finished loading
-                var newImg = new Image;
-                newImg.onload = function() {
-                    img.src = this.src;
+                    // create an image that does the rest when finished loading
+                    var newImg = new Image;
+                    newImg.onload = function() {
+                        app.debug('image loaded from ' + url);
+                        img.src = this.src;
 
-                    markers.appendChild(img);
+                        markers.appendChild(img);
 
-                    var overlay = new ol.Overlay({
-                        offset: [offsetX, offsetY],
-                        position: ol.proj.transform([longitude,latitude], 'EPSG:4326', 'EPSG:3857'),
-                        element: img
-                    });
-                    markerOverlays[name] = overlay;
-                    map.addOverlay(overlay);
-                };
-                newImg.onerror = function() {
-                    app.debug('image load error');
-                };
-                newImg.src = url;
-
+                        var overlay = new ol.Overlay({
+                            offset: [offsetX, offsetY],
+                            position: ol.proj.transform([longitude,latitude], 'EPSG:4326', 'EPSG:3857'),
+                            element: img
+                        });
+                        markerOverlays[name] = overlay;
+                        map.addOverlay(overlay);
+                    };
+                    newImg.onerror = function() {
+                        app.debug('image load error');
+                    };
+                    newImg.src = url;
+                }
             }
 
             function removeMarker(name) {
