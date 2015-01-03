@@ -15,112 +15,120 @@ Copyright 2014 Peter-Josef Meisch (pj.meisch@sothawo.com)
    limitations under the License.
 -->
 <html lang="en">
-<head>
-    <link rel="stylesheet" href="ol/ol.css" type="text/css">
-    <style>
-        html, body { height: 100%; width: 100%; margin: 0; }
-        #map { height: 100%; width: 100%; background: #ccc; }
-    </style>
-    <script src="ol/ol.js" type="text/javascript"></script>
-    <title>sothawo MapView</title>
-</head>
-<body>
-<div id="map"></div>
-<script type="text/javascript">
-    var layersOSM = new ol.layer.Group({
-	  	layers: [
-            new ol.layer.Tile({
-            	source: new ol.source.OSM()
-          })
-	  	]
-      });
+    <head>
+        <meta charset="UTF-8">
+        <title>sothawo MapView</title>
+        <link rel="stylesheet" href="ol/ol.css" type="text/css">
+        <style>
+            html, body { height: 100%; width: 100%; margin: 0; font-family: Helvetica;}
+            #map { height: 100%; width: 100%; background: #ccc; }
+        </style>
+        <script src="ol/ol.js" type="text/javascript"></script>
+    </head>
+    <body>
+        <div id="map"/>
+        <div id="markers"/>
+        <script type="text/javascript">
+            var layersOSM = new ol.layer.Group({
+                layers: [
+                    new ol.layer.Tile({
+                        source: new ol.source.OSM()
+                  })
+                ]
+              });
 
-    var layersMQ = new ol.layer.Group({
-	  	layers: [
-            new ol.layer.Tile({
-            	source: new ol.source.MapQuest({layer: 'osm'})
-          })
-	  	]
-      });
+            var layersMQ = new ol.layer.Group({
+                layers: [
+                    new ol.layer.Tile({
+                        source: new ol.source.MapQuest({layer: 'osm'})
+                  })
+                ]
+              });
 
-    var map = new ol.Map({
-        target: 'map',
-        layers: layersOSM,
-        view: new ol.View({
-          zoom: 1
-        })
-    });
-
-    map.on('singleclick', function(evt){
-      var coordinate = ol.proj.transform(evt.coordinate, 'EPSG:3857', 'EPSG:4326');
-        // lat/lon reversion
-        app.singleClickAt(coordinate[1], coordinate[0]);
-    });
-
-    var view = map.getView();
-    view.on('change:center', function(evt) {
-        center = ol.proj.transform(evt.target.get('center'), 'EPSG:3857', 'EPSG:4326');
-        // lat/lon reversion
-        app.centerMovedTo(center[1], center[0]);
-    });
-    view.on('change:resolution', function(evt) {
-        app.zoomChanged(view.getZoom());
-    });
-
-    function setCenter(lat, lon, animationDuration) {
-        // transform uses x/y coordinates, thats lon/lat
-        var newCenter = ol.proj.transform([lon, lat], 'EPSG:4326', 'EPSG:3857')
-        var oldCenter = view.getCenter();
-        if(oldCenter && animationDuration > 1) {
-            var anim = ol.animation.pan({
-                duration: animationDuration,
-                source: oldCenter
+            var map = new ol.Map({
+                controls: [
+                    new ol.control.Zoom({
+                        zoomInLabel: '+',
+                        // en-dash instead of standard \u2212 minus, this renders as '2' since ol 3.1.1
+                        zoomOutLabel: '\u2013'
+                    }),
+                    new ol.control.Attribution
+                ],
+                target: 'map',
+                layers: layersOSM,
+                view: new ol.View({
+                    zoom: 1
+                })
             });
-            map.beforeRender(anim);
-        }
-        view.setCenter(newCenter);
-    }
 
-    function setZoom(zoom, animationDuration) {
-        if(zoom != view.getZoom()) {
-            var res = view.getResolution();
-            if(res && animationDuration > 1) {
-                var anim = ol.animation.zoom({
-                    resolution: res,
-                    duration: animationDuration
-                });
-                map.beforeRender(anim);
+            map.on('singleclick', function(evt){
+              var coordinate = ol.proj.transform(evt.coordinate, 'EPSG:3857', 'EPSG:4326');
+                // lat/lon reversion
+                app.singleClickAt(coordinate[1], coordinate[0]);
+            });
+
+            var view = map.getView();
+            view.on('change:center', function(evt) {
+                center = ol.proj.transform(evt.target.get('center'), 'EPSG:3857', 'EPSG:4326');
+                // lat/lon reversion
+                app.centerMovedTo(center[1], center[0]);
+            });
+            view.on('change:resolution', function(evt) {
+                app.zoomChanged(view.getZoom());
+            });
+
+            function setCenter(lat, lon, animationDuration) {
+                // transform uses x/y coordinates, thats lon/lat
+                var newCenter = ol.proj.transform([lon, lat], 'EPSG:4326', 'EPSG:3857')
+                var oldCenter = view.getCenter();
+                if(oldCenter && animationDuration > 1) {
+                    var anim = ol.animation.pan({
+                        duration: animationDuration,
+                        source: oldCenter
+                    });
+                    map.beforeRender(anim);
+                }
+                view.setCenter(newCenter);
             }
-        view.setZoom(zoom);
-        }
-    }
 
-    function setMapType(newType) {
-        if(newType == 'OSM') {
-            map.setLayerGroup(layersOSM);
-        } else if (newType == 'MAPQUEST_OSM') {
-            map.setLayerGroup(layersMQ);
-        }
-    }
+            function setZoom(zoom, animationDuration) {
+                if(zoom != view.getZoom()) {
+                    var res = view.getResolution();
+                    if(res && animationDuration > 1) {
+                        var anim = ol.animation.zoom({
+                            resolution: res,
+                            duration: animationDuration
+                        });
+                        map.beforeRender(anim);
+                    }
+                view.setZoom(zoom);
+                }
+            }
 
-    function setExtent(minLat, minLon, maxLat, maxLon, animationDuration) {
-        // lat/lon reversion
-        var extent = ol.proj.transformExtent([minLon, minLat, maxLon, maxLat], 'EPSG:4326', 'EPSG:3857');
-        if(animationDuration > 1) {
-            var animPan = ol.animation.pan({
-                duration: animationDuration,
-                source: view.getCenter()
-            });
-            var animZoom = ol.animation.zoom({
-                resolution: view.getResolution(),
-                duration: animationDuration
-            });
-            map.beforeRender(animPan, animZoom);
-        }
-        view.fitExtent(extent, map.getSize());
-    }
+            function setMapType(newType) {
+                if(newType == 'OSM') {
+                    map.setLayerGroup(layersOSM);
+                } else if (newType == 'MAPQUEST_OSM') {
+                    map.setLayerGroup(layersMQ);
+                }
+            }
 
-
-</script>
-</body>
+            function setExtent(minLat, minLon, maxLat, maxLon, animationDuration) {
+                // lat/lon reversion
+                var extent = ol.proj.transformExtent([minLon, minLat, maxLon, maxLat], 'EPSG:4326', 'EPSG:3857');
+                if(animationDuration > 1) {
+                    var animPan = ol.animation.pan({
+                        duration: animationDuration,
+                        source: view.getCenter()
+                    });
+                    var animZoom = ol.animation.zoom({
+                        resolution: view.getResolution(),
+                        duration: animationDuration
+                    });
+                    map.beforeRender(animPan, animZoom);
+                }
+                view.fitExtent(extent, map.getSize());
+            }
+        </script>
+    </body>
 </html>
