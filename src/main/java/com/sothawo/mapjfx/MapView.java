@@ -29,6 +29,7 @@ import netscape.javascript.JSObject;
 
 import java.net.URL;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
@@ -156,9 +157,12 @@ public final class MapView extends Region {
     private void setCenterInMap() {
         Coordinate actCenter = getCenter();
         if (getInitialized() && null != actCenter) {
-            logger.finer(() -> "setting center in OpenLayers map: " + actCenter);
-            webEngine.executeScript("setCenter(" + actCenter.getLatitude() + ',' + actCenter.getLongitude() + ',' +
-                    animationDuration.get() + ')');
+            // make sure that . is used as decimal separatorn, not ,
+            String script = String.format(Locale.US, "setCenter(%f,%f,%d)", actCenter.getLatitude(), actCenter
+                            .getLongitude(),
+                    animationDuration.get());
+            logger.finer(() -> "setting center in OpenLayers map: " + script);
+            webEngine.executeScript(script);
         }
     }
 
@@ -182,8 +186,9 @@ public final class MapView extends Region {
     private void setZoomInMap() {
         if (getInitialized()) {
             int zoomInt = (int) getZoom();
-            logger.finer(() -> "setting zoom in OpenLayers map: " + zoomInt);
-            webEngine.executeScript("setZoom(" + zoomInt + ',' + animationDuration.get() + ')');
+            String script = String.format(Locale.US, "setZoom(%d,%d)", zoomInt, animationDuration.get());
+            logger.finer(() -> "setting zoom in OpenLayers map: " + script);
+            webEngine.executeScript(script);
         }
     }
 
@@ -199,8 +204,9 @@ public final class MapView extends Region {
      */
     private void setMapTypeInMap() {
         if (getInitialized()) {
-            logger.finer(() -> "setting map type in OpenLayers map: " + getMapType());
-            webEngine.executeScript("setMapType('" + getMapType().toString() + "')");
+            String script = "setMapType('" + getMapType().toString() + "')";
+            logger.finer(() -> "setting map type in OpenLayers map: " + script);
+            webEngine.executeScript(script);
         }
     }
 
@@ -231,7 +237,7 @@ public final class MapView extends Region {
             return false;
         }
         // sho the marker in the map
-        putMarkerInMap(marker);
+        addMarkerInMap(marker);
         // create a change listener and store it along the marker
         ChangeListener<Coordinate> coordinateChangeListener = (observable, oldValue, newValue) -> {
             moveMarkerInMap(marker);
@@ -250,9 +256,14 @@ public final class MapView extends Region {
      * @param marker
      *         marker to show
      */
-    private void putMarkerInMap(Marker marker) {
-        // TODO: implement
-        logger.finer(() -> "putMarkerInMap " + marker);
+    private void addMarkerInMap(Marker marker) {
+        if (getInitialized()) {
+            String script = String.format(Locale.US, "addMarker('%s','%s',%f,%f,%d,%d)", marker.getId(), marker
+                    .getImageURL().toExternalForm(), marker.getPosition().getLatitude(), marker.getPosition()
+                    .getLongitude(), marker.getOffsetX(), marker.getOffsetY());
+            logger.finer(() -> "add marker in OpenLayers map " + script);
+            webEngine.executeScript(script);
+        }
     }
 
     /**
@@ -261,8 +272,12 @@ public final class MapView extends Region {
      * @param marker
      */
     private void moveMarkerInMap(Marker marker) {
-        // TODO: implement
-        logger.finer(() -> "moveMarkerInMap " + marker);
+        if (getInitialized()) {
+            String script = String.format(Locale.US, "moveMarker('%s',%f,%f)", marker.getId(),
+                    marker.getPosition().getLatitude(), marker.getPosition().getLongitude());
+            logger.finer(() -> "move marker in OpenLayers map " + script);
+            webEngine.executeScript(script);
+        }
     }
 
     public SimpleIntegerProperty animationDurationProperty() {
@@ -351,7 +366,22 @@ public final class MapView extends Region {
         if (markers.containsKey(marker)) {
             marker.positionProperty().removeListener(markers.get(marker));
             markers.remove(marker);
+            removeMarkerInMap(marker);
             logger.finer(() -> "removed marker " + marker);
+        }
+    }
+
+    /**
+     * removes the given marker from the OL map
+     *
+     * @param marker
+     *         the marker to remove
+     */
+    private void removeMarkerInMap(Marker marker) {
+        if (getInitialized()) {
+            String script = String.format(Locale.US, "removeMarker('%s')", marker.getId());
+            logger.finer(() -> "remove marker in OpenLayers map " + script);
+            webEngine.executeScript(script);
         }
     }
 
@@ -390,11 +420,11 @@ public final class MapView extends Region {
      */
     public MapView setExtent(Extent extent) {
         if (getInitialized() && null != extent) {
-            logger.finer(() -> "setting extent in OpenLayers map: " + extent);
-            webEngine.executeScript(
-                    "setExtent(" + extent.getMin().getLatitude() + ',' + extent.getMin().getLongitude() + ',' +
-                            extent.getMax().getLatitude() + ',' + extent.getMax().getLongitude() + ',' +
-                            animationDuration.get() + ')');
+            String script = String.format(Locale.US, "setExtent(%f,%f,%f,%f,%d)", extent.getMin().getLatitude(),
+                    extent.getMin().getLongitude(), extent.getMax().getLatitude(), extent.getMax().getLongitude(),
+                    animationDuration.get());
+            logger.finer(() -> "setting extent in OpenLayers map: " + script);
+            webEngine.executeScript(script);
         }
         return this;
     }
