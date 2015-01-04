@@ -27,11 +27,15 @@ import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import netscape.javascript.JSObject;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.net.URLConnection;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -64,9 +68,13 @@ public final class MapView extends Region {
 
     /** URL of the html code for the WebView. */
     private static final String MAPVIEW_HTML = "/mapview.html";
+    private static final String URL_PROTOCOL_FILE = "file";
 
     /** the WebEngine of the WebView containing the OpenLayers Map. */
     private WebEngine webEngine;
+
+    /** flag, wether the mapview's html was loaded from a local file url */
+    private boolean mapViewLoadedFromLocalFile = false;
 
     /** readonly property that informs if this MapView is fully initialized. */
     private final ReadOnlyBooleanWrapper initialized = new ReadOnlyBooleanWrapper(false);
@@ -84,16 +92,19 @@ public final class MapView extends Region {
     private SimpleIntegerProperty animationDuration;
 
     /** used to store the last coordinate that was reported by the map to prevent setting it again in the map. */
-    private AtomicReference<Coordinate> lastCoordinateFromMap = new AtomicReference<>();
+    private final AtomicReference<Coordinate> lastCoordinateFromMap = new AtomicReference<>();
 
     /** used to store the last zoom value that was reported by the map to prevent setting it again in the map. */
-    private AtomicReference<Double> lastZoomFromMap = new AtomicReference<>();
+    private final AtomicReference<Double> lastZoomFromMap = new AtomicReference<>();
 
     /** property containing the actual map style, defaults to {@link com.sothawo.mapjfx.MapType#OSM} */
     private SimpleObjectProperty<MapType> mapType;
 
     /** markers in the map together with the listeners f */
     private final Map<Marker, MarkerChangeListeners> markers = new HashMap<>();
+
+    /** cache for loading images in base64 strings */
+    private final ConcurrentHashMap<URL, String> imgCache = new ConcurrentHashMap<>();
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
@@ -113,7 +124,7 @@ public final class MapView extends Region {
     /**
      * initializes the JavaFX properties.
      */
-    private final void initProperties() {
+    private void initProperties() {
         center = new SimpleObjectProperty<>();
         center.addListener(new ChangeListener<Coordinate>() {
             @Override
@@ -132,6 +143,7 @@ public final class MapView extends Region {
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
                 // check if this is the same value that was just reported from the map using object equality
+                //noinspection NumberEquality
                 if (newValue != lastZoomFromMap.get()) {
                     logger.finer(() -> "zoom changed from " + oldValue + " to " + newValue);
                     setZoomInMap();
@@ -210,13 +222,6 @@ public final class MapView extends Region {
         }
     }
 
-    /**
-     * @return the curtrent MapType.
-     */
-    public MapType getMapType() {
-        return mapType.get();
-    }
-
 // -------------------------- OTHER METHODS --------------------------
 
     /**
@@ -238,16 +243,15 @@ public final class MapView extends Region {
         // create a change listener for the coordinate and store it along with the marker
         ChangeListener<Coordinate> coordinateChangeListener = (observable, oldValue, newValue) -> {
             if (null == oldValue) {
-                // if no position was available in the first call, we need to add now
+                // if no position was available in the first call to addMarker, we need to add it to the map now
                 addMarkerInMap(marker);
             } else {
                 moveMarkerInMap(marker);
             }
         };
         // the same for the visibility
-        ChangeListener<Boolean> visibileChangeListener = (observable, oldValue, newValue) -> {
-            setMarkerVisibleInMap(marker);
-        };
+        ChangeListener<Boolean> visibileChangeListener =
+                (observable, oldValue, newValue) -> setMarkerVisibleInMap(marker);
         markers.put(marker, new MarkerChangeListeners(coordinateChangeListener, visibileChangeListener));
 
         // observe the markers position and visibility
@@ -261,6 +265,21 @@ public final class MapView extends Region {
         logger.finer(() -> "added marker " + marker);
 
         return true;
+    }
+
+    /**
+     * adjusts the markers position in the map.
+     *
+     * @param marker
+     *         the marker to move
+     */
+    private void moveMarkerInMap(Marker marker) {
+        if (getInitialized()) {
+            String script = String.format(Locale.US, "moveMarker('%s',%f,%f)", marker.getId(),
+                    marker.getPosition().getLatitude(), marker.getPosition().getLongitude());
+            logger.finer(() -> "move marker in OpenLayers map " + script);
+            webEngine.executeScript(script);
+        }
     }
 
     /**
@@ -280,6 +299,20 @@ public final class MapView extends Region {
     }
 
     /**
+     * removes the given marker from the OL map
+     *
+     * @param marker
+     *         the marker to remove
+     */
+    private void removeMarkerInMap(Marker marker) {
+        if (getInitialized()) {
+            String script = String.format(Locale.US, "removeMarker('%s')", marker.getId());
+            logger.finer(() -> "remove marker in OpenLayers map " + script);
+            webEngine.executeScript(script);
+        }
+    }
+
+    /**
      * shows the new marker in the map
      *
      * @param marker
@@ -287,27 +320,60 @@ public final class MapView extends Region {
      */
     private void addMarkerInMap(Marker marker) {
         if (getInitialized() && null != marker.getPosition()) {
-            String script = String.format(Locale.US, "addMarker('%s','%s',%f,%f,%d,%d)", marker.getId(),
-                    marker.getImageURL().toExternalForm(), marker.getPosition().getLatitude(), marker.getPosition()
-                            .getLongitude(), marker.getOffsetX(),
-                    marker.getOffsetY());
-            logger.finer(() -> "add marker in OpenLayers map " + script);
-            webEngine.executeScript(script);
+            String url = marker.getImageURL().toExternalForm();
+            // check if the image must be loaded here and sent encoded via JS
+            if (!mapViewLoadedFromLocalFile && URL_PROTOCOL_FILE.equals(marker.getImageURL().getProtocol())) {
+                // can't give the orignal URL to the WebEngine because of CORS restriction, get a base64 encoding of
+                // the img
+                url = createDataUrl(marker.getImageURL());
+            }
+            if(null != url){
+                String script = String.format(Locale.US, "addMarkerWithURL('%s','%s',%f,%f,%d,%d)", marker.getId(),
+                        url, marker.getPosition().getLatitude(), marker.getPosition().getLongitude(),
+                        marker.getOffsetX(),
+                        marker.getOffsetY());
+                logger.finer(() -> "add marker in OpenLayers map " + script);
+                webEngine.executeScript(script);
+            }
         }
     }
 
     /**
-     * adjusts the markers position in the map.
+     * loads an image and converts it's data to a base64 encoded data url.
      *
-     * @param marker
+     * @param imageURL
+     *         where to load the image from, may not be null
+     * @return the encoded image as data url
      */
-    private void moveMarkerInMap(Marker marker) {
-        if (getInitialized()) {
-            String script = String.format(Locale.US, "moveMarker('%s',%f,%f)", marker.getId(),
-                    marker.getPosition().getLatitude(), marker.getPosition().getLongitude());
-            logger.finer(() -> "move marker in OpenLayers map " + script);
-            webEngine.executeScript(script);
-        }
+    private String createDataUrl(final URL imageURL) {
+        return imgCache.computeIfAbsent(imageURL, url -> {
+            String dataUrl = null;
+            try (InputStream isGuess = url.openStream();
+                 InputStream isConvert = url.openStream();
+                 ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+
+                String contentType = URLConnection.guessContentTypeFromStream(isGuess);
+                if (null != contentType) {
+                    byte[] chunk = new byte[4096];
+                    int bytesRead;
+                    while ((bytesRead = isConvert.read(chunk)) > 0) {
+                        os.write(chunk, 0, bytesRead);
+                    }
+                    os.flush();
+                    dataUrl = "data:" + contentType + ";base64," + Base64.getEncoder().encodeToString(os
+                            .toByteArray());
+                } else {
+                    logger.warning(() -> "could not get content type from " + imageURL.toExternalForm());
+                }
+
+            } catch (IOException e) {
+                logger.log(Level.SEVERE, "error loading image", e);
+            }
+            if (null == dataUrl) {
+                logger.warning(() -> "could not create data url from " + imageURL.toExternalForm());
+            }
+            return dataUrl;
+        });
     }
 
     public SimpleIntegerProperty animationDurationProperty() {
@@ -323,6 +389,13 @@ public final class MapView extends Region {
      */
     public int getAnimationDuration() {
         return animationDuration.get();
+    }
+
+    /**
+     * @return the curtrent MapType.
+     */
+    public MapType getMapType() {
+        return mapType.get();
     }
 
     /**
@@ -342,6 +415,7 @@ public final class MapView extends Region {
         if (null == mapviewUrl) {
             logger.severe(() -> "resource not found: " + MAPVIEW_HTML);
         } else {
+            mapViewLoadedFromLocalFile = URL_PROTOCOL_FILE.equals(mapviewUrl.getProtocol());
             webEngine.getLoadWorker().stateProperty().addListener(new ChangeListener<Worker.State>() {
                 @Override
                 public void changed(ObservableValue<? extends Worker.State> observable, Worker.State oldValue,
@@ -400,20 +474,6 @@ public final class MapView extends Region {
             removeMarkerInMap(marker);
             marker.setVisible(false);
             logger.finer(() -> "removed marker " + marker);
-        }
-    }
-
-    /**
-     * removes the given marker from the OL map
-     *
-     * @param marker
-     *         the marker to remove
-     */
-    private void removeMarkerInMap(Marker marker) {
-        if (getInitialized()) {
-            String script = String.format(Locale.US, "removeMarker('%s')", marker.getId());
-            logger.finer(() -> "remove marker in OpenLayers map " + script);
-            webEngine.executeScript(script);
         }
     }
 
@@ -516,12 +576,12 @@ public final class MapView extends Region {
                 return;
             }
             try {
-                logger.finer(() -> "JS reports new center value " + lat + "/" + lon);
+                logger.finer(() -> "JS reports new center value " + lat + '/' + lon);
                 Coordinate newCenter = new Coordinate(Double.valueOf(lat), Double.valueOf(lon));
                 lastCoordinateFromMap.set(newCenter);
                 setCenter(newCenter);
             } catch (NumberFormatException e) {
-                logger.warning(() -> "illegal coordinate strings " + lat + "/" + lon);
+                logger.warning(() -> "illegal coordinate strings " + lat + '/' + lon);
             }
         }
 
@@ -548,12 +608,12 @@ public final class MapView extends Region {
                 return;
             }
             try {
-                logger.finer(() -> "JS reports single click at " + lat + "/" + lon);
+                logger.finer(() -> "JS reports single click at " + lat + '/' + lon);
                 // fire a coordinate event to whom it may be of importance
                 fireEvent(new CoordinateEvent(CoordinateEvent.MAP_CLICKED,
                         new Coordinate(Double.valueOf(lat), Double.valueOf(lon))));
             } catch (NumberFormatException e) {
-                logger.warning(() -> "illegal coordinate strings " + lat + "/" + lon);
+                logger.warning(() -> "illegal coordinate strings " + lat + '/' + lon);
             }
         }
 
