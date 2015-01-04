@@ -18,13 +18,13 @@ Copyright 2014 Peter-Josef Meisch (pj.meisch@sothawo.com)
     <head>
         <meta charset="UTF-8">
         <title>sothawo MapView</title>
-        <link rel="stylesheet" href="ol/ol.css" type="text/css">
+        <link rel="stylesheet" href="ol/3.0.0/ol.css" type="text/css">
         <style>
             html, body { height: 100%; width: 100%; margin: 0;}
             #map { height: 100%; width: 100%; background: #ccc; }
             #markers { display: none; }
         </style>
-        <script src="ol/ol.js" type="text/javascript"></script>
+        <script src="ol/3.0.0/ol.js" type="text/javascript"></script>
     </head>
     <body>
         <div id="map"></div>
@@ -51,6 +51,7 @@ Copyright 2014 Peter-Josef Meisch (pj.meisch@sothawo.com)
             var markerOverlays = {};
 
             var map = new ol.Map({
+                /*
                 controls: [
                     new ol.control.Zoom({
                         zoomInLabel: '+',
@@ -59,6 +60,7 @@ Copyright 2014 Peter-Josef Meisch (pj.meisch@sothawo.com)
                     }),
                     new ol.control.Attribution
                 ],
+                */
                 target: 'map',
                 layers: layersOSM,
                 view: new ol.View({
