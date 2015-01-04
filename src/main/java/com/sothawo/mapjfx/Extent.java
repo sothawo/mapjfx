@@ -1,5 +1,5 @@
 /*
- Copyright 2014 Peter-Josef Meisch (pj.meisch@sothawo.com)
+ Copyright 2015 Peter-Josef Meisch (pj.meisch@sothawo.com)
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -106,10 +106,8 @@ public final class Extent {
 
         Extent extent = (Extent) o;
 
-        if (!max.equals(extent.max)) return false;
-        if (!min.equals(extent.min)) return false;
+        return max.equals(extent.max) && min.equals(extent.min);
 
-        return true;
     }
 
     @Override

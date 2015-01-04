@@ -1,5 +1,5 @@
 /*
- Copyright 2014 Peter-Josef Meisch (pj.meisch@sothawo.com)
+ Copyright 2015 Peter-Josef Meisch (pj.meisch@sothawo.com)
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import static org.junit.Assert.*;
 
 public class MarkerTest {
 
-    private static final String TEST_IMG = "/blue_map_marker.png";
+    private static final String TEST_IMG = "/markers/blue_map_marker.png";
     URL imageURL;
 
     @Before

@@ -22,6 +22,7 @@ import java.util.Collection;
 
 import static org.junit.Assert.assertEquals;
 
+@SuppressWarnings("RedundantArrayCreation")
 public class ExtentTest {
 // ------------------------------ FIELDS ------------------------------
 
@@ -97,7 +98,7 @@ public class ExtentTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void createWithEmptyCollection() throws Exception {
-        Extent.forCoordinates(new ArrayList<Coordinate>());
+        Extent.forCoordinates(new ArrayList<>());
     }
 
     @Test(expected = IllegalArgumentException.class)

@@ -1,6 +1,8 @@
 # mapjfx
 
-mapjfx provides a JavaFX8 region containing a map. it uses [OpenLayers](http://openlayers.org) as the map technology.
+mapjfx provides a JavaFX8 region containing a map, allowing to zoom, pan, and use markers.
+
+It uses [OpenLayers](http://openlayers.org) as the map technology.
 More Information about the project can be found at [the sothawo website](http://www.sothawo.com/projects/mapjfx/).
 
 ## license

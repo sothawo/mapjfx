@@ -1,5 +1,5 @@
 /*
- Copyright 2014 Peter-Josef Meisch (pj.meisch@sothawo.com)
+ Copyright 2015 Peter-Josef Meisch (pj.meisch@sothawo.com)
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,10 +28,10 @@ public class CoordinateEvent extends Event {
 // ------------------------------ FIELDS ------------------------------
 
     /** base event type */
-    public static EventType<CoordinateEvent> ANY = new EventType<>("ANY");
+    public static final EventType<CoordinateEvent> ANY = new EventType<>("ANY");
 
     /** coordinate clicked in map */
-    public static EventType<CoordinateEvent> MAP_CLICKED = new EventType<>(ANY, "MAP_CLICKED");
+    public static final EventType<CoordinateEvent> MAP_CLICKED = new EventType<>(ANY, "MAP_CLICKED");
 
     /** the coordinate where the event happened */
     private final Coordinate coordinate;

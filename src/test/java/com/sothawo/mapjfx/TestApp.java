@@ -1,5 +1,5 @@
 /*
- Copyright 2014 Peter-Josef Meisch (pj.meisch@sothawo.com)
+ Copyright 2015 Peter-Josef Meisch (pj.meisch@sothawo.com)
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -47,12 +47,8 @@ public class TestApp extends Application {
     private static final Coordinate coordKarlsruheStation = new Coordinate(48.993284, 8.402186);
     private static final int DEFAULT_ZOOM = 14;
 
-    private static final Marker marker;
-
-    static {
-        marker = new Marker(TestApp.class.getResource("/blue_map_marker.png"), -32, -64);
-        marker.setPosition(coordKarlsruheCastle).setVisible(true);
-    }
+    private static final Marker marker =
+            Marker.createProvided(Marker.Provided.BLUE).setPosition(coordKarlsruheCastle).setVisible(true);
 
     /** the MapView */
     private MapView mapView;

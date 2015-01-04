@@ -1,5 +1,5 @@
 /*
- Copyright 2014 Peter-Josef Meisch (pj.meisch@sothawo.com)
+ Copyright 2015 Peter-Josef Meisch (pj.meisch@sothawo.com)
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -69,10 +69,8 @@ public final class Coordinate {
 
         Coordinate that = (Coordinate) o;
 
-        if (!latitude.equals(that.latitude)) return false;
-        if (!longitude.equals(that.longitude)) return false;
+        return latitude.equals(that.latitude) && longitude.equals(that.longitude);
 
-        return true;
     }
 
     @Override

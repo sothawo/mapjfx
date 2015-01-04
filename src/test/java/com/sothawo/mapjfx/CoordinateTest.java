@@ -1,5 +1,5 @@
 /*
- Copyright 2014 Peter-Josef Meisch (pj.meisch@sothawo.com)
+ Copyright 2015 Peter-Josef Meisch (pj.meisch@sothawo.com)
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,8 +18,6 @@ package com.sothawo.mapjfx;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 public class CoordinateTest {
 // -------------------------- OTHER METHODS --------------------------
@@ -27,7 +25,7 @@ public class CoordinateTest {
     @Test
     public void equals() throws Exception {
         Coordinate coordinate1 = new Coordinate(12.345, 67.89);
-        Coordinate coordinate2 = new Coordinate(Double.valueOf(12.345), Double.valueOf(67.89));
+        Coordinate coordinate2 = new Coordinate(12.345, 67.89);
         assertEquals(coordinate1, coordinate2);
     }
 

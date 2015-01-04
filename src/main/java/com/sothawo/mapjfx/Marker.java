@@ -53,12 +53,29 @@ public final class Marker {
     /** vivible property */
     private SimpleBooleanProperty visible = new SimpleBooleanProperty(false);
 
+// -------------------------- STATIC METHODS --------------------------
+
+    /**
+     * return a provided Marker with the given color.
+     *
+     * @param provided
+     *         desired color
+     * @return Marker
+     */
+    public static Marker createProvided(Provided provided) {
+        if (null == provided) {
+            throw new IllegalArgumentException();
+        }
+        return new Marker(Marker.class.getResource("/markers/" + provided.getFilename()), provided.getOffsetX(),
+                provided.getOffsetY());
+    }
+
 // --------------------------- CONSTRUCTORS ---------------------------
 
     /**
      * constructs an object with the given URL and offset values set to 0.
      *
-     * @param imageURL
+     * @param imageURL the image URL
      */
     public Marker(URL imageURL) {
         this(imageURL, 0, 0);
@@ -115,9 +132,7 @@ public final class Marker {
 
         Marker marker = (Marker) o;
 
-        if (!id.equals(marker.id)) return false;
-
-        return true;
+        return id.equals(marker.id);
     }
 
     @Override
@@ -177,5 +192,50 @@ public final class Marker {
 
     public SimpleBooleanProperty visibleProperty() {
         return visible;
+    }
+
+// -------------------------- ENUMERATIONS --------------------------
+
+    /**
+     * provided Markers. contains the filename and the offsets as well.
+     */
+    public static enum Provided {
+        BLUE("blue_map_marker.png", -32, -64),
+        GREEN("green_map_marker.png", -32, -64),
+        ORANGE("orange_map_marker.png", -32, -64),
+        RED("red_map_marker.png", -32, -64);
+
+// ------------------------------ FIELDS ------------------------------
+
+
+        /** the filename of the marker image */
+        private final String filename;
+        /** offset x */
+        private final int offsetX;
+        /** offset y */
+        private final int offsetY;
+
+// --------------------------- CONSTRUCTORS ---------------------------
+
+        Provided(String filename, int offsetX, int offsetY) {
+            this.filename = filename;
+            this.offsetX = offsetX;
+
+            this.offsetY = offsetY;
+        }
+
+// --------------------- GETTER / SETTER METHODS ---------------------
+
+        public String getFilename() {
+            return filename;
+        }
+
+        public int getOffsetX() {
+            return offsetX;
+        }
+
+        public int getOffsetY() {
+            return offsetY;
+        }
     }
 }
