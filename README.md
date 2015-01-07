@@ -41,6 +41,8 @@ The test application does not contain all the features, to have that, check
 
 current development version
 
+* removed WebView context menu from MapView
+
 ### 1.3.0
 
 * added marker support

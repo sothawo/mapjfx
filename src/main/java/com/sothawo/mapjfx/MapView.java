@@ -409,6 +409,8 @@ public final class MapView extends Region {
         webEngine = webView.getEngine();
         webView.prefWidthProperty().bind(widthProperty());
         webView.prefHeightProperty().bind(heightProperty());
+        // no context menu
+        webView.setContextMenuEnabled(false);
         getChildren().add(webView);
 
         URL mapviewUrl = getClass().getResource(MAPVIEW_HTML);
