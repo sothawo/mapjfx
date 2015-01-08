@@ -37,10 +37,13 @@ The test application does not contain all the features, to have that, check
 
 ## version history
 
-### 1.3.1-SNAPSHOT
+### 1.3.2-SNAPSHOT
 
 current development version
 
+### 1.3.1
+
+* open the links from the OpenLayers attributions in the default browser
 * removed WebView context menu from MapView
 
 ### 1.3.0

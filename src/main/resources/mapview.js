@@ -59,6 +59,23 @@ map.on('singleclick', function(evt){
     app.singleClickAt(coordinate[1], coordinate[0]);
 });
 
+var anchorsPatched = false;
+map.on('postrender', function(evt) {
+  if(!anchorsPatched) {
+  var anchors = document.getElementById('map').getElementsByTagName('a');
+        for(var i = 0; i < anchors.length; ++i) {
+            var anchor = anchors[i];
+            href = anchor.href;
+            // only patch if not already a javascript link
+            if(href && href.lastIndexOf('javascript', 0) !== 0) {
+              app.debug('patching anchor for ' + href);
+              anchor.href='javascript:app.showLink("' + href +'");';
+              anchorsPatched =true;
+            }
+        }
+ }
+});
+
 /*******************************************************************************************************************
   view and handlers
  */
@@ -104,6 +121,8 @@ function setZoom(zoom, animationDuration) {
 }
 
 function setMapType(newType) {
+// rest the patched flag; the new layer can have different attributions
+    anchorsPatched = false;
     if(newType == 'OSM') {
         map.setLayerGroup(layersOSM);
     } else if (newType == 'MAPQUEST_OSM') {

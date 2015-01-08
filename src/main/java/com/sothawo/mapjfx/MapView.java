@@ -27,9 +27,12 @@ import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import netscape.javascript.JSObject;
 
+import java.awt.*;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.*;
@@ -634,6 +637,22 @@ public final class MapView extends Region {
                     setZoom(newZoom);
                 } catch (NumberFormatException e) {
                     logger.warning(() -> "illegal zoom string " + zoom);
+                }
+            }
+        }
+
+        /**
+         * called when an a href in the map is clicked and shows the URL in the default browser.
+         * @param href the url to show
+         */
+        public void showLink(String href) {
+            if (!Desktop.isDesktopSupported()) {
+                logger.warning(() -> "no desktop support for displaying " + href);
+            } else {
+                try {
+                    Desktop.getDesktop().browse(new URI(href));
+                } catch (IOException | URISyntaxException e) {
+                    logger.log(Level.WARNING, "can't display " + href, e);
                 }
             }
         }
