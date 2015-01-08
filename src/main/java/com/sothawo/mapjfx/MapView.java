@@ -325,7 +325,7 @@ public final class MapView extends Region {
             if (!mapViewLoadedFromLocalFile && URL_PROTOCOL_FILE.equals(marker.getImageURL().getProtocol())) {
                 // can't give the orignal URL to the WebEngine because of CORS restriction, get a base64 encoding of
                 // the img
-                url = createDataUrl(marker.getImageURL());
+                url = createDataURI(marker.getImageURL());
             }
             if(null != url){
                 String script = String.format(Locale.US, "addMarkerWithURL('%s','%s',%f,%f,%d,%d)", marker.getId(),
@@ -345,7 +345,7 @@ public final class MapView extends Region {
      *         where to load the image from, may not be null
      * @return the encoded image as data url
      */
-    private String createDataUrl(final URL imageURL) {
+    private String createDataURI(final URL imageURL) {
         return imgCache.computeIfAbsent(imageURL, url -> {
             String dataUrl = null;
             try (InputStream isGuess = url.openStream();
