@@ -154,6 +154,10 @@ function addMarkerWithURL(name, url, latitude, longitude, offsetX, offsetY) {
         img = document.createElement('img');
         img.setAttribute('id', name);
         img.setAttribute('alt', name);
+        img.setAttribute('draggable', 'false');
+        img.ondragstart = function() {
+            return false;
+        }
 
         // create an image that does the rest when finished loading
         var newImg = new Image;
