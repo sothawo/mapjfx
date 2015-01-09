@@ -61,8 +61,8 @@ map.on('singleclick', function(evt){
 
 var anchorsPatched = false;
 map.on('postrender', function(evt) {
-  if(!anchorsPatched) {
-  var anchors = document.getElementById('map').getElementsByTagName('a');
+    if(!anchorsPatched) {
+        var anchors = document.getElementById('map').getElementsByTagName('a');
         for(var i = 0; i < anchors.length; ++i) {
             var anchor = anchors[i];
             href = anchor.href;
@@ -73,7 +73,7 @@ map.on('postrender', function(evt) {
               anchorsPatched =true;
             }
         }
- }
+    }
 });
 
 /*******************************************************************************************************************

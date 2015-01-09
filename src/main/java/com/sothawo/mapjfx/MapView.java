@@ -35,7 +35,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.*;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
@@ -330,7 +333,7 @@ public final class MapView extends Region {
                 // the img
                 url = createDataURI(marker.getImageURL());
             }
-            if(null != url){
+            if (null != url) {
                 String script = String.format(Locale.US, "addMarkerWithURL('%s','%s',%f,%f,%d,%d)", marker.getId(),
                         url, marker.getPosition().getLatitude(), marker.getPosition().getLongitude(),
                         marker.getOffsetX(),
@@ -354,7 +357,6 @@ public final class MapView extends Region {
             try (InputStream isGuess = url.openStream();
                  InputStream isConvert = url.openStream();
                  ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-
                 String contentType = URLConnection.guessContentTypeFromStream(isGuess);
                 if (null != contentType) {
                     byte[] chunk = new byte[4096];
@@ -368,7 +370,6 @@ public final class MapView extends Region {
                 } else {
                     logger.warning(() -> "could not get content type from " + imageURL.toExternalForm());
                 }
-
             } catch (IOException e) {
                 logger.log(Level.SEVERE, "error loading image", e);
             }
@@ -415,6 +416,8 @@ public final class MapView extends Region {
         // no context menu
         webView.setContextMenuEnabled(false);
         getChildren().add(webView);
+        // log versions after webEngine is available
+        logVersions();
 
         URL mapviewUrl = getClass().getResource(MAPVIEW_HTML);
         if (null == mapviewUrl) {
@@ -443,6 +446,16 @@ public final class MapView extends Region {
             logger.finer(() -> "loading from " + mapviewUrl.toExternalForm());
             webEngine.load(mapviewUrl.toExternalForm());
         }
+    }
+
+    /**
+     * log Java, JavaFX , OS and WebKit version.
+     */
+    private void logVersions() {
+        logger.finer(() -> "Java Version:   " + System.getProperty("java.runtime.version"));
+        logger.finer(() -> "JavaFX Version: " + System.getProperty("javafx.runtime.version"));
+        logger.finer(() -> "OS:             " + System.getProperty("os.name") + ", " + System.getProperty("os.arch"));
+        logger.finer(() -> "User Agent:     " + webEngine.getUserAgent());
     }
 
     /**
@@ -601,6 +614,24 @@ public final class MapView extends Region {
         }
 
         /**
+         * called when an a href in the map is clicked and shows the URL in the default browser.
+         *
+         * @param href
+         *         the url to show
+         */
+        public void showLink(String href) {
+            if (!Desktop.isDesktopSupported()) {
+                logger.warning(() -> "no desktop support for displaying " + href);
+            } else {
+                try {
+                    Desktop.getDesktop().browse(new URI(href));
+                } catch (IOException | URISyntaxException e) {
+                    logger.log(Level.WARNING, "can't display " + href, e);
+                }
+            }
+        }
+
+        /**
          * called when the user has single-clicked in the map. the coordinates are EPSG:4326 (WGS) values.
          *
          * @param lat
@@ -637,22 +668,6 @@ public final class MapView extends Region {
                     setZoom(newZoom);
                 } catch (NumberFormatException e) {
                     logger.warning(() -> "illegal zoom string " + zoom);
-                }
-            }
-        }
-
-        /**
-         * called when an a href in the map is clicked and shows the URL in the default browser.
-         * @param href the url to show
-         */
-        public void showLink(String href) {
-            if (!Desktop.isDesktopSupported()) {
-                logger.warning(() -> "no desktop support for displaying " + href);
-            } else {
-                try {
-                    Desktop.getDesktop().browse(new URI(href));
-                } catch (IOException | URISyntaxException e) {
-                    logger.log(Level.WARNING, "can't display " + href, e);
                 }
             }
         }
