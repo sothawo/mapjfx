@@ -40,6 +40,7 @@ The test application does not contain all the features, to have that, check
 ### 1.3.2-SNAPSHOT
 
 current development version
+* marker images cannot be dragged anymore
 
 ### 1.3.1
 

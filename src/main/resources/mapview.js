@@ -36,16 +36,13 @@ var markerOverlays = {};
   map and handlers
  */
 var map = new ol.Map({
-    /*
     controls: [
         new ol.control.Zoom({
             zoomInLabel: '+',
             // en-dash instead of standard \u2212 minus, this renders as '2' since ol 3.1.1
             zoomOutLabel: '\u2013'
-        }),
-        new ol.control.Attribution
+        })
     ],
-    */
     target: 'map',
     layers: layersOSM,
     view: new ol.View({
