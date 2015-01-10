@@ -28,17 +28,13 @@ import javafx.scene.web.WebView;
 import netscape.javascript.JSObject;
 
 import java.awt.*;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
@@ -74,13 +70,9 @@ public final class MapView extends Region {
 
     /** URL of the html code for the WebView. */
     private static final String MAPVIEW_HTML = "/mapview.html";
-    private static final String URL_PROTOCOL_FILE = "file";
 
     /** the WebEngine of the WebView containing the OpenLayers Map. */
     private WebEngine webEngine;
-
-    /** flag, wether the mapview's html was loaded from a local file url */
-    private boolean mapViewLoadedFromLocalFile = false;
 
     /** readonly property that informs if this MapView is fully initialized. */
     private final ReadOnlyBooleanWrapper initialized = new ReadOnlyBooleanWrapper(false);
@@ -327,12 +319,16 @@ public final class MapView extends Region {
     private void addMarkerInMap(Marker marker) {
         if (getInitialized() && null != marker.getPosition()) {
             String url = marker.getImageURL().toExternalForm();
+            /*
+            OBSOLETE since loading the page from memory string
             // check if the image must be loaded here and sent encoded via JS
             if (!mapViewLoadedFromLocalFile && URL_PROTOCOL_FILE.equals(marker.getImageURL().getProtocol())) {
                 // can't give the orignal URL to the WebEngine because of CORS restriction, get a base64 encoding of
                 // the img
+                logger.finer(() -> "need to create data uri for " + marker.getImageURL().toExternalForm());
                 url = createDataURI(marker.getImageURL());
             }
+            */
             if (null != url) {
                 String script = String.format(Locale.US, "addMarkerWithURL('%s','%s',%f,%f,%d,%d)", marker.getId(),
                         url, marker.getPosition().getLatitude(), marker.getPosition().getLongitude(),
@@ -347,10 +343,13 @@ public final class MapView extends Region {
     /**
      * loads an image and converts it's data to a base64 encoded data url.
      *
+     * NOT NEEDED AT THE MOMENT
+     *
      * @param imageURL
      *         where to load the image from, may not be null
      * @return the encoded image as data url
      */
+    @SuppressWarnings("UnusedDeclaration")
     private String createDataURI(final URL imageURL) {
         return imgCache.computeIfAbsent(imageURL, url -> {
             String dataUrl = null;
@@ -419,33 +418,29 @@ public final class MapView extends Region {
         // log versions after webEngine is available
         logVersions();
 
-        URL mapviewUrl = getClass().getResource(MAPVIEW_HTML);
-        if (null == mapviewUrl) {
-            logger.severe(() -> "resource not found: " + MAPVIEW_HTML);
-        } else {
-            mapViewLoadedFromLocalFile = URL_PROTOCOL_FILE.equals(mapviewUrl.getProtocol());
-            webEngine.getLoadWorker().stateProperty().addListener(new ChangeListener<Worker.State>() {
-                @Override
-                public void changed(ObservableValue<? extends Worker.State> observable, Worker.State oldValue,
-                                    Worker.State newValue) {
-                    logger.finer(() -> "WebEngine loader state " + oldValue + " -> " + newValue);
-                    if (Worker.State.SUCCEEDED == newValue) {
-                        // set an interface object named 'app' in the web engine
-                        ((JSObject) webEngine.executeScript("window")).setMember("app", new JSConnector());
+        // we could load the html via the URL, but then we run into problems loading local images or track files when
+        // the mapView is embededded in a jar and loaded via jar: URI. If we load the page with loadContent, these
+        // restrictions do not apply.
+        loadMapViewHtml().ifPresent((html) -> {
+            // watch for load changes
+            webEngine.getLoadWorker().stateProperty().addListener((observable, oldValue, newValue) -> {
+                        logger.finer(() -> "WebEngine loader state " + oldValue + " -> " + newValue);
+                        if (Worker.State.SUCCEEDED == newValue) {
+                            // set an interface object named 'app' in the web engine
+                            ((JSObject) webEngine.executeScript("window")).setMember("app", new JSConnector());
 
-                        initialized.set(true);
-                        setCenterInMap();
-                        setZoomInMap();
-                        logger.finer("initialized.");
-                    } else if (Worker.State.FAILED == newValue) {
-                        logger.severe(() -> "error loading " + MAPVIEW_HTML);
+                            initialized.set(true);
+                            setCenterInMap();
+                            setZoomInMap();
+                            logger.finer("initialized.");
+                        } else if (Worker.State.FAILED == newValue) {
+                            logger.severe(() -> "error loading " + MAPVIEW_HTML);
+                        }
                     }
-                }
-            });
-            // start loading the html containing the OL code
-            logger.finer(() -> "loading from " + mapviewUrl.toExternalForm());
-            webEngine.load(mapviewUrl.toExternalForm());
-        }
+            );
+            // do the load
+            webEngine.loadContent(html);
+        });
     }
 
     /**
@@ -463,6 +458,42 @@ public final class MapView extends Region {
      */
     public ReadOnlyBooleanProperty initializedProperty() {
         return initialized.getReadOnlyProperty();
+    }
+
+    /**
+     * loads the mapview.html file from the classpath into a string. The file is utf-8 encoded. The URL of the
+     * mapview.html file is injected as &lt;base&gt; element after the &lt;head&gt; opening tag, so that css and js
+     * files can be found by the WebView.
+     *
+     * @return the loaded string in an Optional
+     */
+    private Optional<String> loadMapViewHtml() {
+        String mapViewHtml = null;
+        URL mapviewURL = getClass().getResource(MAPVIEW_HTML);
+        if (null == mapviewURL) {
+            logger.severe(() -> "resource not found: " + MAPVIEW_HTML);
+        } else {
+            logger.finer(() -> "loading from " + mapviewURL.toExternalForm());
+            try (
+                    BufferedReader bufferedReader = new BufferedReader(
+                            new InputStreamReader(mapviewURL.openStream(), StandardCharsets.UTF_8))
+            ) {
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while (null != (line = bufferedReader.readLine())) {
+                    line = line.trim();
+                    if ("<head>".equals(line)) {
+                        sb.append(line);
+                        line = "<base href=\"" + mapviewURL.toExternalForm() + "\">";
+                    }
+                    sb.append(line);
+                }
+                mapViewHtml = sb.toString();
+            } catch (IOException e) {
+                logger.log(Level.SEVERE, "loading " + mapviewURL.toExternalForm(), e);
+            }
+        }
+        return Optional.ofNullable(mapViewHtml);
     }
 
     /**

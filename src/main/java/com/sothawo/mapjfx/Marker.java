@@ -49,9 +49,9 @@ public final class Marker {
     /** the vertical offset */
     private final int offsetY;
     /** the coordinate */
-    private SimpleObjectProperty<Coordinate> position = new SimpleObjectProperty<>();
+    private final SimpleObjectProperty<Coordinate> position = new SimpleObjectProperty<>();
     /** vivible property */
-    private SimpleBooleanProperty visible = new SimpleBooleanProperty(false);
+    private final SimpleBooleanProperty visible = new SimpleBooleanProperty(false);
 
 // -------------------------- STATIC METHODS --------------------------
 

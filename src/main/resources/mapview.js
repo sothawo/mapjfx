@@ -91,7 +91,7 @@ view.on('change:resolution', function(evt) {
  */
 function setCenter(lat, lon, animationDuration) {
     // transform uses x/y coordinates, thats lon/lat
-    var newCenter = ol.proj.transform([lon, lat], 'EPSG:4326', 'EPSG:3857')
+    var newCenter = ol.proj.transform([lon, lat], 'EPSG:4326', 'EPSG:3857');
     var oldCenter = view.getCenter();
     if(oldCenter && animationDuration > 1) {
         var anim = ol.animation.pan({
