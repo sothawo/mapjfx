@@ -20,6 +20,9 @@ function cFromWGS84(c) {return ol.proj.transform(c, 'EPSG:4326', 'EPSG:3857')}
 function eToWGS84(e) {return ol.proj.transformExtent(e, 'EPSG:3857', 'EPSG:4326')}
 function eFromWGS84(e) {return ol.proj.transformExtent(e, 'EPSG:4326', 'EPSG:3857')}
 
+/*******************************************************************************************************************
+ predefined map layers
+ */
 var layersOSM = new ol.layer.Group({
     layers: [
         new ol.layer.Tile({
@@ -36,6 +39,9 @@ var layersMQ = new ol.layer.Group({
     ]
   });
 
+/*******************************************************************************************************************
+  global variables
+ */
 // to store the marker names with the overlays to be able to remove them
 var markerOverlays = {};
 
@@ -60,7 +66,8 @@ var map = new ol.Map({
 map.on('singleclick', function(evt){
   var coordinate = cToWGS84(evt.coordinate);
     // lat/lon reversion
-    app.singleClickAt(coordinate[1], coordinate[0]);
+    javaConnector.singleClickAt(coordinate);
+    javaConnector.singleClickAt(coordinate[1], coordinate[0]);
 });
 
 var anchorsPatched = false;
@@ -72,8 +79,8 @@ map.on('postrender', function(evt) {
             href = anchor.href;
             // only patch if not already a javascript link
             if(href && href.lastIndexOf('javascript', 0) !== 0) {
-              app.debug('patching anchor for ' + href);
-              anchor.href='javascript:app.showLink("' + href +'");';
+              javaConnector.debug('patching anchor for ' + href);
+              anchor.href='javascript:javaConnector.showLink("' + href +'");';
               anchorsPatched =true;
             }
         }
@@ -87,42 +94,69 @@ var view = map.getView();
 view.on('change:center', function(evt) {
     center = cToWGS84(evt.target.get('center'));
     // lat/lon reversion
-    app.centerMovedTo(center[1], center[0]);
+    javaConnector.centerMovedTo(center[1], center[0]);
 });
 view.on('change:resolution', function(evt) {
-    app.zoomChanged(view.getZoom());
+    javaConnector.zoomChanged(view.getZoom());
 });
+
+/*******************************************************************************************************************
+  Connector object for the java application with the functions to be called
+ */
+
+var jsConnector = {
+    setCenter: function(lat, lon, animationDuration) {
+        // transform uses x/y coordinates, thats lon/lat
+        var newCenter = cFromWGS84([lon, lat]);
+        var oldCenter = view.getCenter();
+        if(oldCenter && animationDuration > 1) {
+            var anim = ol.animation.pan({
+                duration: animationDuration,
+                source: oldCenter
+            });
+            map.beforeRender(anim);
+        }
+        view.setCenter(newCenter);
+    },
+    setZoom: function(zoom, animationDuration) {
+        if(zoom != view.getZoom()) {
+            var res = view.getResolution();
+            if(res && animationDuration > 1) {
+                var anim = ol.animation.zoom({
+                    resolution: res,
+                    duration: animationDuration
+                });
+                map.beforeRender(anim);
+            }
+            view.setZoom(zoom);
+        }
+    },
+    setExtent: function(minLat, minLon, maxLat, maxLon, animationDuration) {
+        // lat/lon reversion
+        var extent = eFromWGS84([minLon, minLat, maxLon, maxLat]);
+        if(animationDuration > 1) {
+            var animPan = ol.animation.pan({
+                duration: animationDuration,
+                source: view.getCenter()
+            });
+            var animZoom = ol.animation.zoom({
+                resolution: view.getResolution(),
+                duration: animationDuration
+            });
+            map.beforeRender(animPan, animZoom);
+        }
+        view.fitExtent(extent, map.getSize());
+    }
+
+};
+function getJsConnector() {
+    return jsConnector;
+}
 
 /*******************************************************************************************************************
   functions
  */
-function setCenter(lat, lon, animationDuration) {
-    // transform uses x/y coordinates, thats lon/lat
-    var newCenter = cFromWGS84([lon, lat]);
-    var oldCenter = view.getCenter();
-    if(oldCenter && animationDuration > 1) {
-        var anim = ol.animation.pan({
-            duration: animationDuration,
-            source: oldCenter
-        });
-        map.beforeRender(anim);
-    }
-    view.setCenter(newCenter);
-}
 
-function setZoom(zoom, animationDuration) {
-    if(zoom != view.getZoom()) {
-        var res = view.getResolution();
-        if(res && animationDuration > 1) {
-            var anim = ol.animation.zoom({
-                resolution: res,
-                duration: animationDuration
-            });
-            map.beforeRender(anim);
-        }
-    view.setZoom(zoom);
-    }
-}
 
 function setMapType(newType) {
 // rest the patched flag; the new layer can have different attributions
@@ -134,22 +168,6 @@ function setMapType(newType) {
     }
 }
 
-function setExtent(minLat, minLon, maxLat, maxLon, animationDuration) {
-    // lat/lon reversion
-    var extent = eFromWGS84([minLon, minLat, maxLon, maxLat]);
-    if(animationDuration > 1) {
-        var animPan = ol.animation.pan({
-            duration: animationDuration,
-            source: view.getCenter()
-        });
-        var animZoom = ol.animation.zoom({
-            resolution: view.getResolution(),
-            duration: animationDuration
-        });
-        map.beforeRender(animPan, animZoom);
-    }
-    view.fitExtent(extent, map.getSize());
-}
 
 function addMarkerWithURL(name, url, latitude, longitude, offsetX, offsetY) {
     var img = document.getElementById(name);
@@ -166,7 +184,7 @@ function addMarkerWithURL(name, url, latitude, longitude, offsetX, offsetY) {
         // create an image that does the rest when finished loading
         var newImg = new Image;
         newImg.onload = function() {
-            app.debug('image loaded from ' + url);
+            javaConnector.debug('image loaded from ' + url);
             img.src = this.src;
 
             markers.appendChild(img);
@@ -180,7 +198,7 @@ function addMarkerWithURL(name, url, latitude, longitude, offsetX, offsetY) {
             map.addOverlay(overlay);
         };
         newImg.onerror = function() {
-            app.debug('image load error');
+            javaConnector.debug('image load error');
         };
         newImg.src = url;
     }
@@ -203,6 +221,4 @@ function moveMarker(name,latitude,longitude) {
     if(overlay) {
         overlay.setPosition(cFromWGS84([longitude,latitude]));
     }
-
-
 }

@@ -104,6 +104,9 @@ public final class MapView extends Region {
     /** cache for loading images in base64 strings */
     private final ConcurrentHashMap<URL, String> imgCache = new ConcurrentHashMap<>();
 
+    /** Connector object that is created in the web page and initialized when the page is fully loaded */
+    private JSObject javascriptConnector;
+
 // --------------------------- CONSTRUCTORS ---------------------------
 
     /**
@@ -167,12 +170,11 @@ public final class MapView extends Region {
     private void setCenterInMap() {
         Coordinate actCenter = getCenter();
         if (getInitialized() && null != actCenter) {
-            // make sure that . is used as decimal separatorn, not ,
-            String script = String.format(Locale.US, "setCenter(%f,%f,%d)", actCenter.getLatitude(), actCenter
-                            .getLongitude(),
-                    animationDuration.get());
-            logger.finer(() -> "setting center in OpenLayers map: " + script);
-            webEngine.executeScript(script);
+            logger.finer(
+                    () -> "setting center in OpenLayers map: " + actCenter + ", animation: " + animationDuration.get());
+            // using Double objects instead of primitives works here
+            javascriptConnector
+                    .call("setCenter", actCenter.getLatitude(), actCenter.getLongitude(), animationDuration.get());
         }
     }
 
@@ -196,9 +198,9 @@ public final class MapView extends Region {
     private void setZoomInMap() {
         if (getInitialized()) {
             int zoomInt = (int) getZoom();
-            String script = String.format(Locale.US, "setZoom(%d, %d)", zoomInt, animationDuration.get());
-            logger.finer(() -> "setting zoom in OpenLayers map: " + script);
-            webEngine.executeScript(script);
+            logger.finer(
+                    () -> "setting zoom in OpenLayers map: " + zoomInt + ", animation: " + animationDuration.get());
+            javascriptConnector.call("setZoom", zoomInt, animationDuration.get());
         }
     }
 
@@ -427,8 +429,13 @@ public final class MapView extends Region {
             webEngine.getLoadWorker().stateProperty().addListener((observable, oldValue, newValue) -> {
                         logger.finer(() -> "WebEngine loader state " + oldValue + " -> " + newValue);
                         if (Worker.State.SUCCEEDED == newValue) {
-                            // set an interface object named 'app' in the web engine
-                            ((JSObject) webEngine.executeScript("window")).setMember("app", new JSConnector());
+                            // set an interface object named 'javaConnector' in the web engine
+                            JSObject window = (JSObject) webEngine.executeScript("window");
+                            window.setMember("javaConnector", new JavaConnector());
+
+                            // get the Javascript connector object
+                            javascriptConnector = (JSObject) webEngine.executeScript("getJsConnector()");
+                            javascriptConnector.call("hello", "master");
 
                             initialized.set(true);
                             setCenterInMap();
@@ -451,8 +458,8 @@ public final class MapView extends Region {
     private void logVersions() {
         logger.finer(() -> "Java Version:   " + System.getProperty("java.runtime.version"));
         logger.finer(() -> "JavaFX Version: " + System.getProperty("javafx.runtime.version"));
-        logger.finer(() -> "OS:             " + System.getProperty("os.name") + ", " + System.getProperty("os.arch")
-                + ", " + System.getProperty("os.version"));
+        logger.finer(() -> "OS:             " + System.getProperty("os.name") + ", " + System.getProperty("os.version")
+                + ", " + System.getProperty("os.arch"));
         logger.finer(() -> "User Agent:     " + webEngine.getUserAgent());
     }
 
@@ -564,11 +571,10 @@ public final class MapView extends Region {
      */
     public MapView setExtent(Extent extent) {
         if (getInitialized() && null != extent) {
-            String script = String.format(Locale.US, "setExtent(%f,%f,%f,%f,%d)", extent.getMin().getLatitude(),
-                    extent.getMin().getLongitude(), extent.getMax().getLatitude(), extent.getMax().getLongitude(),
-                    animationDuration.get());
-            logger.finer(() -> "setting extent in OpenLayers map: " + script);
-            webEngine.executeScript(script);
+            logger.finer(
+                    () -> "setting extent in OpenLayers map: " + extent + ", animation: " + animationDuration.get());
+            javascriptConnector.call("setExtent", extent.getMin().getLatitude(), extent.getMin().getLongitude(),
+                    extent.getMax().getLatitude(), extent.getMax().getLongitude(), animationDuration.get());
         }
         return this;
     }
@@ -610,11 +616,11 @@ public final class MapView extends Region {
 // -------------------------- INNER CLASSES --------------------------
 
     /**
-     * JavaScript interface object. Methods of an object of this class are called from JS code in the web page.
+     * Connector object. Methods of an object of this class are called from JS code in the web page.
      */
-    public class JSConnector {
+    public class JavaConnector {
         // -------------------------- OTHER METHODS --------------------------
-        private final Logger logger = Logger.getLogger(JSConnector.class.getCanonicalName());
+        private final Logger logger = Logger.getLogger(JavaConnector.class.getCanonicalName());
 
         /**
          * called when the user has moved the map. the coordinates are EPSG:4326 (WGS) values. The arguments are double
@@ -626,14 +632,14 @@ public final class MapView extends Region {
          *         new longitude value
          */
         public void centerMovedTo(double lat, double lon) {
-            logger.finer(() -> "JS reports center value " + lat + '/' + lon);
             Coordinate newCenter = new Coordinate(lat, lon);
+            logger.finer(() -> "JS reports center value " + newCenter);
             lastCoordinateFromMap.set(newCenter);
             setCenter(newCenter);
         }
 
         /**
-         * called from the JS in the web page to output a message to the applicatin's log.
+         * called from the JS in the web page to output a message to the application's log.
          *
          * @param msg
          *         the message to log
@@ -649,6 +655,7 @@ public final class MapView extends Region {
          *         the url to show
          */
         public void showLink(String href) {
+            logger.finer(() -> "JS aks to brows to " + href);
             if (!Desktop.isDesktopSupported()) {
                 logger.warning(() -> "no desktop support for displaying " + href);
             } else {
@@ -669,9 +676,10 @@ public final class MapView extends Region {
          *         new longitude value
          */
         public void singleClickAt(double lat, double lon) {
-                logger.finer(() -> "JS reports single click at " + lat + '/' + lon);
-                // fire a coordinate event to whom it may be of importance
-                fireEvent(new CoordinateEvent(CoordinateEvent.MAP_CLICKED, new Coordinate(lat, lon)));
+            Coordinate coordinate = new Coordinate(lat, lon);
+            logger.finer(() -> "JS reports single click at " + coordinate);
+            // fire a coordinate event to whom it may be of importance
+            fireEvent(new CoordinateEvent(CoordinateEvent.MAP_CLICKED, coordinate));
         }
 
         /**
@@ -681,7 +689,7 @@ public final class MapView extends Region {
          *         new zoom value
          */
         public void zoomChanged(double newZoom) {
-            logger.finer(() -> "JS reports zoom value " + zoom);
+            logger.finer(() -> "JS reports zoom value " + newZoom);
             lastZoomFromMap.set(newZoom);
             setZoom(newZoom);
         }
