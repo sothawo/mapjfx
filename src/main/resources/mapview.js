@@ -203,4 +203,6 @@ function moveMarker(name,latitude,longitude) {
     if(overlay) {
         overlay.setPosition(cFromWGS84([longitude,latitude]));
     }
+
+
 }

@@ -196,7 +196,7 @@ public final class MapView extends Region {
     private void setZoomInMap() {
         if (getInitialized()) {
             int zoomInt = (int) getZoom();
-            String script = String.format(Locale.US, "setZoom(%d,%d)", zoomInt, animationDuration.get());
+            String script = String.format(Locale.US, "setZoom(%d, %d)", zoomInt, animationDuration.get());
             logger.finer(() -> "setting zoom in OpenLayers map: " + script);
             webEngine.executeScript(script);
         }
@@ -617,25 +617,19 @@ public final class MapView extends Region {
         private final Logger logger = Logger.getLogger(JSConnector.class.getCanonicalName());
 
         /**
-         * called when the user has moved the map. the coordinates are EPSG:4326 (WGS) values.
+         * called when the user has moved the map. the coordinates are EPSG:4326 (WGS) values. The arguments are double
+         * primitives and no Double objects.
          *
          * @param lat
          *         new latitude value
          * @param lon
          *         new longitude value
          */
-        public void centerMovedTo(String lat, String lon) {
-            if (null == lat || null == lon) {
-                return;
-            }
-            try {
-                logger.finer(() -> "JS reports new center value " + lat + '/' + lon);
-                Coordinate newCenter = new Coordinate(Double.valueOf(lat), Double.valueOf(lon));
-                lastCoordinateFromMap.set(newCenter);
-                setCenter(newCenter);
-            } catch (NumberFormatException e) {
-                logger.warning(() -> "illegal coordinate strings " + lat + '/' + lon);
-            }
+        public void centerMovedTo(double lat, double lon) {
+            logger.finer(() -> "JS reports center value " + lat + '/' + lon);
+            Coordinate newCenter = new Coordinate(lat, lon);
+            lastCoordinateFromMap.set(newCenter);
+            setCenter(newCenter);
         }
 
         /**
@@ -674,18 +668,10 @@ public final class MapView extends Region {
          * @param lon
          *         new longitude value
          */
-        public void singleClickAt(String lat, String lon) {
-            if (null == lat || null == lon) {
-                return;
-            }
-            try {
+        public void singleClickAt(double lat, double lon) {
                 logger.finer(() -> "JS reports single click at " + lat + '/' + lon);
                 // fire a coordinate event to whom it may be of importance
-                fireEvent(new CoordinateEvent(CoordinateEvent.MAP_CLICKED,
-                        new Coordinate(Double.valueOf(lat), Double.valueOf(lon))));
-            } catch (NumberFormatException e) {
-                logger.warning(() -> "illegal coordinate strings " + lat + '/' + lon);
-            }
+                fireEvent(new CoordinateEvent(CoordinateEvent.MAP_CLICKED, new Coordinate(lat, lon)));
         }
 
         /**
@@ -694,17 +680,10 @@ public final class MapView extends Region {
          * @param zoom
          *         new zoom value
          */
-        public void zoomChanged(String zoom) {
-            if (null != zoom) {
-                try {
-                    logger.finer(() -> "JS reports zoom value " + zoom);
-                    Double newZoom = Double.valueOf(zoom);
-                    lastZoomFromMap.set(newZoom);
-                    setZoom(newZoom);
-                } catch (NumberFormatException e) {
-                    logger.warning(() -> "illegal zoom string " + zoom);
-                }
-            }
+        public void zoomChanged(double newZoom) {
+            logger.finer(() -> "JS reports zoom value " + zoom);
+            lastZoomFromMap.set(newZoom);
+            setZoom(newZoom);
         }
     }
 }
