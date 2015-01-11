@@ -54,7 +54,8 @@ var map = new ol.Map({
             zoomInLabel: '+',
             // en-dash instead of standard \u2212 minus, this renders as '2' since ol 3.1.1
             zoomOutLabel: '\u2013'
-        })
+        }),
+        new ol.control.Attribution
     ],
     target: 'map',
     layers: layersOSM,
@@ -66,7 +67,6 @@ var map = new ol.Map({
 map.on('singleclick', function(evt){
   var coordinate = cToWGS84(evt.coordinate);
     // lat/lon reversion
-    javaConnector.singleClickAt(coordinate);
     javaConnector.singleClickAt(coordinate[1], coordinate[0]);
 });
 

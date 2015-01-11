@@ -655,7 +655,7 @@ public final class MapView extends Region {
          *         the url to show
          */
         public void showLink(String href) {
-            logger.finer(() -> "JS aks to brows to " + href);
+            logger.finer(() -> "JS aks to browse to " + href);
             if (!Desktop.isDesktopSupported()) {
                 logger.warning(() -> "no desktop support for displaying " + href);
             } else {
