@@ -70,7 +70,6 @@ public final class Coordinate {
         Coordinate that = (Coordinate) o;
 
         return latitude.equals(that.latitude) && longitude.equals(that.longitude);
-
     }
 
     @Override

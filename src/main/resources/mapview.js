@@ -13,6 +13,13 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
+
+// coordinate and extent transformation
+function cToWGS84(c) {return ol.proj.transform(c, 'EPSG:3857', 'EPSG:4326')}
+function cFromWGS84(c) {return ol.proj.transform(c, 'EPSG:4326', 'EPSG:3857')}
+function eToWGS84(e) {return ol.proj.transformExtent(e, 'EPSG:3857', 'EPSG:4326')}
+function eFromWGS84(e) {return ol.proj.transformExtent(e, 'EPSG:4326', 'EPSG:3857')}
+
 var layersOSM = new ol.layer.Group({
     layers: [
         new ol.layer.Tile({
@@ -51,7 +58,7 @@ var map = new ol.Map({
 });
 
 map.on('singleclick', function(evt){
-  var coordinate = ol.proj.transform(evt.coordinate, 'EPSG:3857', 'EPSG:4326');
+  var coordinate = cToWGS84(evt.coordinate);
     // lat/lon reversion
     app.singleClickAt(coordinate[1], coordinate[0]);
 });
@@ -78,7 +85,7 @@ map.on('postrender', function(evt) {
  */
 var view = map.getView();
 view.on('change:center', function(evt) {
-    center = ol.proj.transform(evt.target.get('center'), 'EPSG:3857', 'EPSG:4326');
+    center = cToWGS84(evt.target.get('center'));
     // lat/lon reversion
     app.centerMovedTo(center[1], center[0]);
 });
@@ -91,7 +98,7 @@ view.on('change:resolution', function(evt) {
  */
 function setCenter(lat, lon, animationDuration) {
     // transform uses x/y coordinates, thats lon/lat
-    var newCenter = ol.proj.transform([lon, lat], 'EPSG:4326', 'EPSG:3857');
+    var newCenter = cFromWGS84([lon, lat]);
     var oldCenter = view.getCenter();
     if(oldCenter && animationDuration > 1) {
         var anim = ol.animation.pan({
@@ -129,7 +136,7 @@ function setMapType(newType) {
 
 function setExtent(minLat, minLon, maxLat, maxLon, animationDuration) {
     // lat/lon reversion
-    var extent = ol.proj.transformExtent([minLon, minLat, maxLon, maxLat], 'EPSG:4326', 'EPSG:3857');
+    var extent = eFromWGS84([minLon, minLat, maxLon, maxLat]);
     if(animationDuration > 1) {
         var animPan = ol.animation.pan({
             duration: animationDuration,
@@ -166,7 +173,7 @@ function addMarkerWithURL(name, url, latitude, longitude, offsetX, offsetY) {
 
             var overlay = new ol.Overlay({
                 offset: [offsetX, offsetY],
-                position: ol.proj.transform([longitude,latitude], 'EPSG:4326', 'EPSG:3857'),
+                position: cFromWGS84([longitude,latitude]),
                 element: img
             });
             markerOverlays[name] = overlay;
@@ -194,6 +201,6 @@ function removeMarker(name) {
 function moveMarker(name,latitude,longitude) {
     var overlay = markerOverlays[name];
     if(overlay) {
-        overlay.setPosition(ol.proj.transform([longitude,latitude], 'EPSG:4326', 'EPSG:3857'));
+        overlay.setPosition(cFromWGS84([longitude,latitude]));
     }
 }

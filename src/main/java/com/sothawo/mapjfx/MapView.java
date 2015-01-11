@@ -407,21 +407,22 @@ public final class MapView extends Region {
      */
     public void initialize() {
         logger.finer("initializing...");
-        // instantiate the WebView, resize it with this region by letting it observe the changes and add it as child
-        WebView webView = new WebView();
-        webEngine = webView.getEngine();
-        webView.prefWidthProperty().bind(widthProperty());
-        webView.prefHeightProperty().bind(heightProperty());
-        // no context menu
-        webView.setContextMenuEnabled(false);
-        getChildren().add(webView);
-        // log versions after webEngine is available
-        logVersions();
-
         // we could load the html via the URL, but then we run into problems loading local images or track files when
         // the mapView is embededded in a jar and loaded via jar: URI. If we load the page with loadContent, these
         // restrictions do not apply.
         loadMapViewHtml().ifPresent((html) -> {
+            // instantiate the WebView, resize it with this region by letting it observe the changes and add it as child
+            WebView webView = new WebView();
+            logger.finer("WebView created");
+            webEngine = webView.getEngine();
+            webView.prefWidthProperty().bind(widthProperty());
+            webView.prefHeightProperty().bind(heightProperty());
+            // no context menu
+            webView.setContextMenuEnabled(false);
+            getChildren().add(webView);
+            // log versions after webEngine is available
+            logVersions();
+
             // watch for load changes
             webEngine.getLoadWorker().stateProperty().addListener((observable, oldValue, newValue) -> {
                         logger.finer(() -> "WebEngine loader state " + oldValue + " -> " + newValue);
@@ -439,6 +440,7 @@ public final class MapView extends Region {
                     }
             );
             // do the load
+            logger.finer("load html into WebEngine");
             webEngine.loadContent(html);
         });
     }
@@ -449,7 +451,8 @@ public final class MapView extends Region {
     private void logVersions() {
         logger.finer(() -> "Java Version:   " + System.getProperty("java.runtime.version"));
         logger.finer(() -> "JavaFX Version: " + System.getProperty("javafx.runtime.version"));
-        logger.finer(() -> "OS:             " + System.getProperty("os.name") + ", " + System.getProperty("os.arch"));
+        logger.finer(() -> "OS:             " + System.getProperty("os.name") + ", " + System.getProperty("os.arch")
+                + ", " + System.getProperty("os.version"));
         logger.finer(() -> "User Agent:     " + webEngine.getUserAgent());
     }
 
@@ -482,7 +485,7 @@ public final class MapView extends Region {
                 String line;
                 while (null != (line = bufferedReader.readLine())) {
                     line = line.trim();
-                    if ("<head>".equals(line)) {
+                    if ("<head>".equalsIgnoreCase(line)) {
                         sb.append(line);
                         line = "<base href=\"" + mapviewURL.toExternalForm() + "\">";
                     }
@@ -610,7 +613,8 @@ public final class MapView extends Region {
      * JavaScript interface object. Methods of an object of this class are called from JS code in the web page.
      */
     public class JSConnector {
-// -------------------------- OTHER METHODS --------------------------
+        // -------------------------- OTHER METHODS --------------------------
+        private final Logger logger = Logger.getLogger(JSConnector.class.getCanonicalName());
 
         /**
          * called when the user has moved the map. the coordinates are EPSG:4326 (WGS) values.
