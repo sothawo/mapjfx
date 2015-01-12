@@ -37,9 +37,13 @@ The test application does not contain all the features, to have that, check
 
 ## version history
 
-### 1.3.3-SNAPSHOT
+### 1.3.4-SNAPSHOT
 
 current development version
+
+### 1.3.3
+
+* fixed javadoc errors
 
 ### 1.3.2
 
