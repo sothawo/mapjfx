@@ -655,14 +655,16 @@ public final class MapView extends Region {
          *         the url to show
          */
         public void showLink(String href) {
-            logger.finer(() -> "JS aks to browse to " + href);
-            if (!Desktop.isDesktopSupported()) {
-                logger.warning(() -> "no desktop support for displaying " + href);
-            } else {
-                try {
-                    Desktop.getDesktop().browse(new URI(href));
-                } catch (IOException | URISyntaxException e) {
-                    logger.log(Level.WARNING, "can't display " + href, e);
+            if (null != href && !href.isEmpty()) {
+                logger.finer(() -> "JS aks to browse to " + href);
+                if (!Desktop.isDesktopSupported()) {
+                    logger.warning(() -> "no desktop support for displaying " + href);
+                } else {
+                    try {
+                        Desktop.getDesktop().browse(new URI(href));
+                    } catch (IOException | URISyntaxException e) {
+                        logger.log(Level.WARNING, "can't display " + href, e);
+                    }
                 }
             }
         }
