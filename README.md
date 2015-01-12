@@ -37,9 +37,14 @@ The test application does not contain all the features, to have that, check
 
 ## version history
 
-### 1.3.2-SNAPSHOT
+### 1.3.3-SNAPSHOT
 
 current development version
+
+### 1.3.2
+
+* internal code review and cleanup
+* switched to OpenLayers 3.1.1
 * marker images cannot be dragged anymore
 
 ### 1.3.1
