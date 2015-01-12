@@ -38,6 +38,7 @@ public final class Extent {
      *
      * @param coordinates
      *         the coordinates
+     * @return Extent for the coorinates
      * @throws java.lang.IllegalArgumentException
      *         when less than 2 coordinates or null are passed in
      */
@@ -53,6 +54,7 @@ public final class Extent {
      *
      * @param coordinates
      *         the coordinates
+     * @return Extent for the coorinates
      * @throws java.lang.IllegalArgumentException
      *         when less than 2 coordinates or null are passed in
      */
@@ -78,8 +80,13 @@ public final class Extent {
 
     /**
      * private constructor. For construction use the factory methods.
+     *
+     * @param min
+     *         coordinate with min lat/lon value
+     * @param max
+     *         coordinate with max lat/lon value
      */
-    public Extent(Coordinate min, Coordinate max) {
+    private Extent(Coordinate min, Coordinate max) {
         if (null == min || null == max) {
             throw new IllegalArgumentException();
         }
@@ -107,7 +114,6 @@ public final class Extent {
         Extent extent = (Extent) o;
 
         return max.equals(extent.max) && min.equals(extent.min);
-
     }
 
     @Override

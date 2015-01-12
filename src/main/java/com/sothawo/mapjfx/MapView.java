@@ -687,7 +687,7 @@ public final class MapView extends Region {
         /**
          * called when the user changed the zoom with the controls in the map.
          *
-         * @param zoom
+         * @param newZoom
          *         new zoom value
          */
         public void zoomChanged(double newZoom) {
