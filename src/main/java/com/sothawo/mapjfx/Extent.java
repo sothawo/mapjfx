@@ -107,6 +107,14 @@ public final class Extent {
 // ------------------------ CANONICAL METHODS ------------------------
 
     @Override
+    public String toString() {
+        return "Extent{" +
+                "min=" + min +
+                ", max=" + max +
+                '}';
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
