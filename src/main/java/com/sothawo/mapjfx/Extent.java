@@ -17,6 +17,7 @@ package com.sothawo.mapjfx;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Objects;
 
 /**
  * An extent defines an area by two coordinates: min latitude/min longitude and may latitude/max longitude
@@ -41,12 +42,11 @@ public final class Extent {
      * @return Extent for the coorinates
      * @throws java.lang.IllegalArgumentException
      *         when less than 2 coordinates or null are passed in
+     * @throws NullPointerException
+     *         when coordinates is null
      */
     public static Extent forCoordinates(Coordinate... coordinates) {
-        if (null == coordinates) {
-            throw new IllegalArgumentException();
-        }
-        return forCoordinates(Arrays.asList(coordinates));
+        return forCoordinates(Arrays.asList(Objects.requireNonNull(coordinates)));
     }
 
     /**
@@ -57,9 +57,12 @@ public final class Extent {
      * @return Extent for the coorinates
      * @throws java.lang.IllegalArgumentException
      *         when less than 2 coordinates or null are passed in
+     * @throws NullPointerException
+     *         when coordinates is null
      */
     public static Extent forCoordinates(Collection<Coordinate> coordinates) {
-        if (null == coordinates || coordinates.size() < 2) {
+        Objects.requireNonNull(coordinates);
+        if (coordinates.size() < 2) {
             throw new IllegalArgumentException();
         }
         double minLatitude = Double.MAX_VALUE;
@@ -85,13 +88,11 @@ public final class Extent {
      *         coordinate with min lat/lon value
      * @param max
      *         coordinate with max lat/lon value
+     *         @throws java.lang.NullPointerException if either argument is null
      */
     private Extent(Coordinate min, Coordinate max) {
-        if (null == min || null == max) {
-            throw new IllegalArgumentException();
-        }
-        this.min = min;
-        this.max = max;
+        this.min = Objects.requireNonNull(min);
+        this.max = Objects.requireNonNull(max);
     }
 
 // --------------------- GETTER / SETTER METHODS ---------------------
@@ -105,14 +106,6 @@ public final class Extent {
     }
 
 // ------------------------ CANONICAL METHODS ------------------------
-
-    @Override
-    public String toString() {
-        return "Extent{" +
-                "min=" + min +
-                ", max=" + max +
-                '}';
-    }
 
     @Override
     public boolean equals(Object o) {
@@ -129,5 +122,13 @@ public final class Extent {
         int result = min.hashCode();
         result = 31 * result + max.hashCode();
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return "Extent{" +
+                "min=" + min +
+                ", max=" + max +
+                '}';
     }
 }

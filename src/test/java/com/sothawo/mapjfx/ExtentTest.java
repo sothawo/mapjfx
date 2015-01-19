@@ -101,12 +101,12 @@ public class ExtentTest {
         Extent.forCoordinates(new ArrayList<>());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = NullPointerException.class)
     public void createWithNullArray() throws Exception {
         Extent.forCoordinates((Coordinate[]) null);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = NullPointerException.class)
     public void createWithNullCollection() throws Exception {
         Extent.forCoordinates((Collection<Coordinate>) null);
     }

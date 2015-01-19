@@ -33,7 +33,7 @@ public class MarkerTest {
         assertNotNull("Testimage not found: " + TEST_IMG, imageURL);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = NullPointerException.class)
     public void ctorWithNullURL() throws Exception {
         new Marker(null);
     }

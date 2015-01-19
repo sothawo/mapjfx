@@ -41,12 +41,12 @@ public class CoordinateTest {
         assertEquals((Double) 67.89, coordinate.getLongitude());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = NullPointerException.class)
     public void nullLatitude() throws Exception {
         new Coordinate(null, 12.345);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = NullPointerException.class)
     public void nullLongitude() throws Exception {
         new Coordinate(12.345, null);
     }

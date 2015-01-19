@@ -19,6 +19,7 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
 import java.net.URL;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -61,11 +62,11 @@ public final class Marker {
      * @param provided
      *         desired color
      * @return Marker
+     * @throws NullPointerException
+     *         when provided is null
      */
     public static Marker createProvided(Provided provided) {
-        if (null == provided) {
-            throw new IllegalArgumentException();
-        }
+        Objects.requireNonNull(provided);
         return new Marker(Marker.class.getResource("/markers/" + provided.getFilename()), provided.getOffsetX(),
                 provided.getOffsetY());
     }
@@ -75,7 +76,8 @@ public final class Marker {
     /**
      * constructs an object with the given URL and offset values set to 0.
      *
-     * @param imageURL the image URL
+     * @param imageURL
+     *         the image URL
      */
     public Marker(URL imageURL) {
         this(imageURL, 0, 0);
@@ -90,14 +92,12 @@ public final class Marker {
      *         horizontal pixel offset
      * @param offsetY
      *         vertical pixel offset
+     * @throws java.lang.NullPointerException
+     *         if imageURL is null
      */
     public Marker(URL imageURL, int offsetX, int offsetY) {
-        if (null == imageURL) {
-            throw new IllegalArgumentException();
-        }
         this.id = "marker-" + nextId.getAndIncrement();
-
-        this.imageURL = imageURL;
+        this.imageURL = Objects.requireNonNull(imageURL);
         this.offsetX = offsetX;
         this.offsetY = offsetY;
     }
@@ -206,7 +206,6 @@ public final class Marker {
         RED("red_map_marker.png", -32, -64);
 
 // ------------------------------ FIELDS ------------------------------
-
 
         /** the filename of the marker image */
         private final String filename;

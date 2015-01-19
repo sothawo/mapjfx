@@ -17,6 +17,8 @@ package com.sothawo.mapjfx;
 
 import javafx.beans.value.ChangeListener;
 
+import java.util.Objects;
+
 /**
  * Encapsulation of different ChangeListener instances.
  *
@@ -33,13 +35,16 @@ public final class MarkerChangeListeners {
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
+    /**
+     * @param coordinateChangeListener
+     * @param visibileChangeListener
+     * @throws java.lang.NullPointerException
+     *         if either argument is null
+     */
     public MarkerChangeListeners(ChangeListener<Coordinate> coordinateChangeListener,
                                  ChangeListener<Boolean> visibileChangeListener) {
-        if (null == coordinateChangeListener || null == visibileChangeListener) {
-            throw new IllegalArgumentException();
-        }
-        this.coordinateChangeListener = coordinateChangeListener;
-        this.visibileChangeListener = visibileChangeListener;
+        this.coordinateChangeListener = Objects.requireNonNull(coordinateChangeListener);
+        this.visibileChangeListener = Objects.requireNonNull(visibileChangeListener);
     }
 
 // --------------------- GETTER / SETTER METHODS ---------------------

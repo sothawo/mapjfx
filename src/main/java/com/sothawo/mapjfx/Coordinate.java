@@ -15,6 +15,8 @@
 */
 package com.sothawo.mapjfx;
 
+import java.util.Objects;
+
 /**
  * Coordinates with longitude and latitude values. Immutable objects.
  *
@@ -39,15 +41,12 @@ public final class Coordinate {
      *         latitude of the coordinate
      * @param longitude
      *         longitude of the coordinate
-     * @throws java.lang.IllegalArgumentException
+     * @throws java.lang.NullPointerException
      *         if either value is null
      */
     public Coordinate(Double latitude, Double longitude) {
-        if (null == latitude || null == longitude) {
-            throw new IllegalArgumentException();
-        }
-        this.latitude = latitude;
-        this.longitude = longitude;
+        this.latitude = Objects.requireNonNull(latitude);
+        this.longitude = Objects.requireNonNull(longitude);
     }
 
 // --------------------- GETTER / SETTER METHODS ---------------------
