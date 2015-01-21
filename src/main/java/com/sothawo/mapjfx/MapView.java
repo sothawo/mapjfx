@@ -216,9 +216,9 @@ public final class MapView extends Region {
      */
     private void setMapTypeInMap() {
         if (getInitialized()) {
-            String script = "setMapType('" + getMapType().toString() + "')";
-            logger.finer(() -> "setting map type in OpenLayers map: " + script);
-            webEngine.executeScript(script);
+            String mapTypeName = getMapType().toString();
+            logger.finer(() -> "setting map type in OpenLayers map: " + mapTypeName);
+            javascriptConnector.call("setMapType", mapTypeName);
         }
     }
 
