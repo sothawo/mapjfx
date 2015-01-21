@@ -60,7 +60,7 @@ public final class Extent {
      * @throws NullPointerException
      *         when coordinates is null
      */
-    public static Extent forCoordinates(Collection<Coordinate> coordinates) {
+    public static Extent forCoordinates(Collection<? extends Coordinate> coordinates) {
         Objects.requireNonNull(coordinates);
         if (coordinates.size() < 2) {
             throw new IllegalArgumentException();

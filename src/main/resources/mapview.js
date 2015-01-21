@@ -146,8 +146,16 @@ var jsConnector = {
             map.beforeRender(animPan, animZoom);
         }
         view.fitExtent(extent, map.getSize());
+    },
+    setMapType: function(newType){
+        // reset the patched flag; the new layer can have different attributions
+        anchorsPatched = false;
+        if(newType == 'OSM') {
+            map.setLayerGroup(layersOSM);
+        } else if (newType == 'MAPQUEST_OSM') {
+            map.setLayerGroup(layersMQ);
+        }
     }
-
 };
 function getJsConnector() {
     return jsConnector;
@@ -156,17 +164,6 @@ function getJsConnector() {
 /*******************************************************************************************************************
   functions
  */
-
-
-function setMapType(newType) {
-// rest the patched flag; the new layer can have different attributions
-    anchorsPatched = false;
-    if(newType == 'OSM') {
-        map.setLayerGroup(layersOSM);
-    } else if (newType == 'MAPQUEST_OSM') {
-        map.setLayerGroup(layersMQ);
-    }
-}
 
 
 function addMarkerWithURL(name, url, latitude, longitude, offsetX, offsetY) {
