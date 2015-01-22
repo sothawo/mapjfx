@@ -40,6 +40,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static java.util.Objects.requireNonNull;
+
 /**
  * Map component. To use the MapView, construct it and add it to your scene. Then the  {@link #initialized} property
  * should be observed as well as bindings/observations to other properties should be established. <br><br>
@@ -98,8 +100,11 @@ public final class MapView extends Region {
     /** property containing the actual map style, defaults to {@link com.sothawo.mapjfx.MapType#OSM} */
     private SimpleObjectProperty<MapType> mapType;
 
-    /** markers in the map together with the listeners f */
+    /** markers in the map together with the listeners */
     private final Map<Marker, MarkerChangeListeners> markers = new HashMap<>();
+
+    /** CoordinateLines in the map */
+    private final Set<CoordinateLine> coordinateLines = new HashSet<>();
 
     /** cache for loading images in base64 strings */
     private final ConcurrentHashMap<URL, String> imgCache = new ConcurrentHashMap<>();
@@ -165,53 +170,6 @@ public final class MapView extends Region {
     }
 
     /**
-     * sets the value of the center property in the OL map.
-     */
-    private void setCenterInMap() {
-        Coordinate actCenter = getCenter();
-        if (getInitialized() && null != actCenter) {
-            logger.finer(
-                    () -> "setting center in OpenLayers map: " + actCenter + ", animation: " + animationDuration.get());
-            // using Double objects instead of primitives works here
-            javascriptConnector
-                    .call("setCenter", actCenter.getLatitude(), actCenter.getLongitude(), animationDuration.get());
-        }
-    }
-
-    /**
-     * @return the current center of the map.
-     */
-    public Coordinate getCenter() {
-        return center.get();
-    }
-
-    /**
-     * @return true if the MapView is initialized.
-     */
-    public boolean getInitialized() {
-        return initialized.get();
-    }
-
-    /**
-     * sets the value of the actual zoom property in the OL map.
-     */
-    private void setZoomInMap() {
-        if (getInitialized()) {
-            int zoomInt = (int) getZoom();
-            logger.finer(
-                    () -> "setting zoom in OpenLayers map: " + zoomInt + ", animation: " + animationDuration.get());
-            javascriptConnector.call("setZoom", zoomInt, animationDuration.get());
-        }
-    }
-
-    /**
-     * @return the current zoom value.
-     */
-    public double getZoom() {
-        return zoom.get();
-    }
-
-    /**
      * sets the value of the mapType property in the OL map.
      */
     private void setMapTypeInMap() {
@@ -225,20 +183,40 @@ public final class MapView extends Region {
 // -------------------------- OTHER METHODS --------------------------
 
     /**
-     * adds a marker to the map. If it was already added, nothing is changed and false is returned.
+     * add a CoordinateLine to the map. If it was already added, nothing happens
+     *
+     * @param coordinateLine
+     *         the CoordinateLine to add
+     * @return this object
+     * @throws java.lang.NullPointerException
+     *         if argument is null
+     */
+    public MapView addCoordinateLine(CoordinateLine coordinateLine) {
+        if (!coordinateLines.contains(requireNonNull(coordinateLine))) {
+            logger.fine(() -> "adding coordinate line " + coordinateLine);
+            coordinateLines.add(coordinateLine);
+            JSObject jsCoordinateLine =
+                    (JSObject) javascriptConnector.call("getCoordinateLine", coordinateLine.getId());
+            coordinateLine.getCoordinateStream().forEach((coordinate) -> jsCoordinateLine
+                    .call("addCoordinate", coordinate.getLatitude(), coordinate.getLongitude()));
+            jsCoordinateLine.call("seal");
+            javascriptConnector.call("showCoordinateLine", coordinateLine.getId());
+        }
+        return this;
+    }
+
+    /**
+     * adds a marker to the map. If it was already added, nothing is changed.
      *
      * @param marker
      *         the marker
-     * @return true if added
-     * @throws java.lang.IllegalArgumentException
+     * @return this object
+     * @throws java.lang.NullPointerException
      *         if marker is null
      */
-    public boolean addMarker(Marker marker) {
-        if (null == marker) {
-            throw new IllegalArgumentException();
-        }
-        if (null != markers.get(marker)) {
-            return false;
+    public MapView addMarker(Marker marker) {
+        if (null != markers.get(requireNonNull(marker))) {
+            return this;
         }
         // create a change listener for the coordinate and store it along with the marker
         ChangeListener<Coordinate> coordinateChangeListener = (observable, oldValue, newValue) -> {
@@ -264,7 +242,7 @@ public final class MapView extends Region {
         }
         logger.finer(() -> "added marker " + marker);
 
-        return true;
+        return this;
     }
 
     /**
@@ -299,20 +277,6 @@ public final class MapView extends Region {
     }
 
     /**
-     * removes the given marker from the OL map
-     *
-     * @param marker
-     *         the marker to remove
-     */
-    private void removeMarkerInMap(Marker marker) {
-        if (getInitialized()) {
-            String script = String.format(Locale.US, "removeMarker('%s')", marker.getId());
-            logger.finer(() -> "remove marker in OpenLayers map " + script);
-            webEngine.executeScript(script);
-        }
-    }
-
-    /**
      * shows the new marker in the map
      *
      * @param marker
@@ -340,6 +304,14 @@ public final class MapView extends Region {
                 webEngine.executeScript(script);
             }
         }
+    }
+
+    public SimpleIntegerProperty animationDurationProperty() {
+        return animationDuration;
+    }
+
+    public SimpleObjectProperty<Coordinate> centerProperty() {
+        return center;
     }
 
     /**
@@ -379,14 +351,6 @@ public final class MapView extends Region {
             }
             return dataUrl;
         });
-    }
-
-    public SimpleIntegerProperty animationDurationProperty() {
-        return animationDuration;
-    }
-
-    public SimpleObjectProperty<Coordinate> centerProperty() {
-        return center;
     }
 
     /**
@@ -464,6 +428,46 @@ public final class MapView extends Region {
     }
 
     /**
+     * sets the value of the center property in the OL map.
+     */
+    private void setCenterInMap() {
+        Coordinate actCenter = getCenter();
+        if (getInitialized() && null != actCenter) {
+            logger.finer(
+                    () -> "setting center in OpenLayers map: " + actCenter + ", animation: " + animationDuration.get());
+            // using Double objects instead of primitives works here
+            javascriptConnector
+                    .call("setCenter", actCenter.getLatitude(), actCenter.getLongitude(), animationDuration.get());
+        }
+    }
+
+    /**
+     * @return the current center of the map.
+     */
+    public Coordinate getCenter() {
+        return center.get();
+    }
+
+    /**
+     * sets the value of the actual zoom property in the OL map.
+     */
+    private void setZoomInMap() {
+        if (getInitialized()) {
+            int zoomInt = (int) getZoom();
+            logger.finer(
+                    () -> "setting zoom in OpenLayers map: " + zoomInt + ", animation: " + animationDuration.get());
+            javascriptConnector.call("setZoom", zoomInt, animationDuration.get());
+        }
+    }
+
+    /**
+     * @return the current zoom value.
+     */
+    public double getZoom() {
+        return zoom.get();
+    }
+
+    /**
      * @return the readonly initialized property.
      */
     public ReadOnlyBooleanProperty initializedProperty() {
@@ -514,6 +518,25 @@ public final class MapView extends Region {
     }
 
     /**
+     * removes a CoordinateLine from the map. If it was not added, nothing happens
+     *
+     * @param coordinateLine
+     *         the CoordinateLine to add
+     * @return this object
+     * @throws java.lang.NullPointerException
+     *         if argument is null
+     */
+    public MapView removeCoordinateLine(CoordinateLine coordinateLine) {
+        if (coordinateLines.contains(requireNonNull(coordinateLine))) {
+            logger.fine(() -> "removing coordinate line " + coordinateLine);
+            coordinateLines.remove(coordinateLine);
+            javascriptConnector.call("hideCoordinateLine", coordinateLine.getId());
+            javascriptConnector.call("removeCoordinateLine", coordinateLine.getId());
+        }
+        return this;
+    }
+
+    /**
      * removes the given marker from th map and deregisters the change listeners. If the marker was not in the map,
      * nothing happens
      *
@@ -533,6 +556,20 @@ public final class MapView extends Region {
             removeMarkerInMap(marker);
             marker.setVisible(false);
             logger.finer(() -> "removed marker " + marker);
+        }
+    }
+
+    /**
+     * removes the given marker from the OL map
+     *
+     * @param marker
+     *         the marker to remove
+     */
+    private void removeMarkerInMap(Marker marker) {
+        if (getInitialized()) {
+            String script = String.format(Locale.US, "removeMarker('%s')", marker.getId());
+            logger.finer(() -> "remove marker in OpenLayers map " + script);
+            webEngine.executeScript(script);
         }
     }
 
@@ -580,6 +617,13 @@ public final class MapView extends Region {
     }
 
     /**
+     * @return true if the MapView is initialized.
+     */
+    public boolean getInitialized() {
+        return initialized.get();
+    }
+
+    /**
      * sets the current MapType.
      *
      * @param mapType
@@ -619,8 +663,11 @@ public final class MapView extends Region {
      * Connector object. Methods of an object of this class are called from JS code in the web page.
      */
     public class JavaConnector {
-        // -------------------------- OTHER METHODS --------------------------
+// ------------------------------ FIELDS ------------------------------
+
         private final Logger logger = Logger.getLogger(JavaConnector.class.getCanonicalName());
+
+// -------------------------- OTHER METHODS --------------------------
 
         /**
          * called when the user has moved the map. the coordinates are EPSG:4326 (WGS) values. The arguments are double

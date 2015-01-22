@@ -19,8 +19,9 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
 import java.net.URL;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * A marker in the map. A marker has a position where it is displayed, an image URL for the image to be displayed and
@@ -66,7 +67,7 @@ public final class Marker {
      *         when provided is null
      */
     public static Marker createProvided(Provided provided) {
-        Objects.requireNonNull(provided);
+        requireNonNull(provided);
         return new Marker(Marker.class.getResource("/markers/" + provided.getFilename()), provided.getOffsetX(),
                 provided.getOffsetY());
     }
@@ -97,7 +98,7 @@ public final class Marker {
      */
     public Marker(URL imageURL, int offsetX, int offsetY) {
         this.id = "marker-" + nextId.getAndIncrement();
-        this.imageURL = Objects.requireNonNull(imageURL);
+        this.imageURL = requireNonNull(imageURL);
         this.offsetX = offsetX;
         this.offsetY = offsetY;
     }

@@ -17,7 +17,8 @@ package com.sothawo.mapjfx;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Objects;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * An extent defines an area by two coordinates: min latitude/min longitude and may latitude/max longitude
@@ -46,7 +47,7 @@ public final class Extent {
      *         when coordinates is null
      */
     public static Extent forCoordinates(Coordinate... coordinates) {
-        return forCoordinates(Arrays.asList(Objects.requireNonNull(coordinates)));
+        return forCoordinates(Arrays.asList(requireNonNull(coordinates)));
     }
 
     /**
@@ -61,7 +62,7 @@ public final class Extent {
      *         when coordinates is null
      */
     public static Extent forCoordinates(Collection<? extends Coordinate> coordinates) {
-        Objects.requireNonNull(coordinates);
+        requireNonNull(coordinates);
         if (coordinates.size() < 2) {
             throw new IllegalArgumentException();
         }
@@ -88,11 +89,12 @@ public final class Extent {
      *         coordinate with min lat/lon value
      * @param max
      *         coordinate with max lat/lon value
-     *         @throws java.lang.NullPointerException if either argument is null
+     * @throws java.lang.NullPointerException
+     *         if either argument is null
      */
     private Extent(Coordinate min, Coordinate max) {
-        this.min = Objects.requireNonNull(min);
-        this.max = Objects.requireNonNull(max);
+        this.min = requireNonNull(min);
+        this.max = requireNonNull(max);
     }
 
 // --------------------- GETTER / SETTER METHODS ---------------------

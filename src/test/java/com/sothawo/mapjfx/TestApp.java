@@ -45,11 +45,14 @@ public class TestApp extends Application {
     private static final Coordinate coordKarlsruheCastle = new Coordinate(49.013517, 8.404435);
     private static final Coordinate coordKarlsruheHarbour = new Coordinate(49.015511, 8.323497);
     private static final Coordinate coordKarlsruheStation = new Coordinate(48.993284, 8.402186);
+
+    private static final CoordinateLine coordinateLine =
+            new CoordinateLine(coordKarlsruheCastle, coordKarlsruheHarbour, coordKarlsruheStation);
+
     private static final int DEFAULT_ZOOM = 14;
 
     private static final Marker marker =
             Marker.createProvided(Marker.Provided.BLUE).setPosition(coordKarlsruheCastle).setVisible(true);
-
     /** the MapView */
     private MapView mapView;
 
@@ -82,7 +85,7 @@ public class TestApp extends Application {
         mapView.setAnimationDuration(500);
         borderPane.setCenter(mapView);
 
-        // at the top some buttons with coordinates
+        // at the top some buttons
         Pane topPane = createTopPane();
         borderPane.setTop(topPane);
 
@@ -199,6 +202,17 @@ public class TestApp extends Application {
         btn.setText("remove marker");
         btn.setOnAction(event -> mapView.removeMarker(marker));
         hbox.getChildren().add(btn);
+
+        btn = new Button();
+        btn.setText("add Track");
+        btn.setOnAction(event -> mapView.addCoordinateLine(coordinateLine));
+        hbox.getChildren().add(btn);
+
+        btn = new Button();
+        btn.setText("remove Track");
+        btn.setOnAction(event -> mapView.removeCoordinateLine(coordinateLine));
+        hbox.getChildren().add(btn);
+
 
         vbox.setDisable(true);
 

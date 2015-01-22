@@ -15,7 +15,7 @@
 */
 package com.sothawo.mapjfx;
 
-import java.util.Objects;
+import static java.util.Objects.requireNonNull;
 
 /**
  * Coordinates with longitude and latitude values. Tha class itself is not finale, but the latitude and longitude
@@ -46,8 +46,8 @@ public class Coordinate {
      *         if either value is null
      */
     public Coordinate(Double latitude, Double longitude) {
-        this.latitude = Objects.requireNonNull(latitude);
-        this.longitude = Objects.requireNonNull(longitude);
+        this.latitude = requireNonNull(latitude);
+        this.longitude = requireNonNull(longitude);
     }
 
 // --------------------- GETTER / SETTER METHODS ---------------------

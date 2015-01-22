@@ -1,49 +1,50 @@
-/*
-   Copyright 2015 Peter-Josef Meisch (pj.meisch@sothawo.com)
-
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-*/
-
-// coordinate and extent transformation
-function cToWGS84(c) {return ol.proj.transform(c, 'EPSG:3857', 'EPSG:4326')}
-function cFromWGS84(c) {return ol.proj.transform(c, 'EPSG:4326', 'EPSG:3857')}
-function eToWGS84(e) {return ol.proj.transformExtent(e, 'EPSG:3857', 'EPSG:4326')}
-function eFromWGS84(e) {return ol.proj.transformExtent(e, 'EPSG:4326', 'EPSG:3857')}
-
 /*******************************************************************************************************************
- predefined map layers
+ * predefined map layers
  */
+
+// Source for the coordinateLine features
+var sourceFeatures = new ol.source.Vector({
+                             features: []
+                     });
+// layer for the featuress
+var layerFeatures = new ol.layer.Vector({
+    source: sourceFeatures,
+    style: new ol.style.Style({
+        stroke: new ol.style.Stroke({
+                  width: 3,
+                  color: [255, 0, 0, 1]
+                })
+    })
+});
+
+// layer groups for the different map styles
 var layersOSM = new ol.layer.Group({
     layers: [
         new ol.layer.Tile({
             source: new ol.source.OSM()
-      })
-    ]
+        }),
+        layerFeatures
+        ]
   });
 
 var layersMQ = new ol.layer.Group({
     layers: [
         new ol.layer.Tile({
             source: new ol.source.MapQuest({layer: 'osm'})
-      })
+        }),
+        layerFeatures
     ]
   });
 
 /*******************************************************************************************************************
-  global variables
+ * global variables
  */
+
 // to store the marker names with the overlays to be able to remove them
 var markerOverlays = {};
+
+// to store coordinateLine objects with a name
+var coordinateLines = {};
 
 /*******************************************************************************************************************
   map and handlers
@@ -96,15 +97,24 @@ view.on('change:center', function(evt) {
     // lat/lon reversion
     javaConnector.centerMovedTo(center[1], center[0]);
 });
+
 view.on('change:resolution', function(evt) {
     javaConnector.zoomChanged(view.getZoom());
 });
 
 /*******************************************************************************************************************
-  Connector object for the java application with the functions to be called
+ * Connector object for the java application with the functions to be called. there is only this instance, so no
+ * prototype is used
  */
 
 var jsConnector = {
+    /**
+     * sets the center of the map
+     *
+     * @param {number} latitude value in WGS84
+     * @param {number} longitude value in WGS84
+     * @param {number} animation duration in ms
+     */
     setCenter: function(lat, lon, animationDuration) {
         // transform uses x/y coordinates, thats lon/lat
         var newCenter = cFromWGS84([lon, lat]);
@@ -118,6 +128,12 @@ var jsConnector = {
         }
         view.setCenter(newCenter);
     },
+    /**
+     * sets the zoom of the map
+     *
+     * @param {number} zoom level
+     * @param {number} animation duration in ms
+     */
     setZoom: function(zoom, animationDuration) {
         if(zoom != view.getZoom()) {
             var res = view.getResolution();
@@ -131,6 +147,15 @@ var jsConnector = {
             view.setZoom(zoom);
         }
     },
+    /**
+     * sets the extent of the map
+     *
+     * @param {number} minimum latitude value in WGS84
+     * @param {number} minimum longitude value in WGS84
+     * @param {number} maximum latitude value in WGS84
+     * @param {number} maximum longitude value in WGS84
+     * @param {number} animation duration in ms
+     */
     setExtent: function(minLat, minLon, maxLat, maxLon, animationDuration) {
         // lat/lon reversion
         var extent = eFromWGS84([minLon, minLat, maxLon, maxLat]);
@@ -147,7 +172,12 @@ var jsConnector = {
         }
         view.fitExtent(extent, map.getSize());
     },
-    setMapType: function(newType){
+    /**
+     * sets the map type
+     *
+     * @param {string} the new map type
+     */
+    setMapType: function(newType) {
         // reset the patched flag; the new layer can have different attributions
         anchorsPatched = false;
         if(newType == 'OSM') {
@@ -155,8 +185,66 @@ var jsConnector = {
         } else if (newType == 'MAPQUEST_OSM') {
             map.setLayerGroup(layersMQ);
         }
-    }
-};
+    },
+
+    /**
+     * get a coordinateLine with a name; create one, if not yet available
+     *
+     * @param {string} the name of the coordinateLine
+     *
+     * @return {CoordinateLine} the object
+     */
+     getCoordinateLine: function(name) {
+        var coordinateLine = coordinateLines[name];
+        if(!coordinateLine) {
+            coordinateLine = new CoordinateLine();
+            coordinateLines[name] = coordinateLine;
+            javaConnector.debug("created CoordinateLine object named " + name);
+        }
+        return coordinateLine;
+     },
+
+
+    /**
+     * shows a coordinateLine.
+     *
+     * @param {string} the name of the coordinateLine
+     */
+     showCoordinateLine: function(name) {
+        if(coordinateLines[name]) {
+            sourceFeatures.addFeature(coordinateLines[name].getFeature());
+            javaConnector.debug("showed CoordinateLine object named " + name);
+        }
+     },
+
+    /**
+     * hides a coordinateLine.
+     *
+     * @param {string} the name of the coordinateLine
+     */
+     hideCoordinateLine: function(name) {
+        if(coordinateLines[name]) {
+            sourceFeatures.removeFeature(coordinateLines[name].getFeature());
+            javaConnector.debug("hid CoordinateLine object named " + name);
+        }
+     },
+
+    /**
+     * removes a coordinateLine.
+     *
+     * @param {string} the name of the coordinateLine
+     */
+     removeCoordinateLine: function(name) {
+        if(coordinateLines[name]) {
+            delete coordinateLines[name];
+            javaConnector.debug("deleted CoordinateLine object named " + name);
+        }
+     },
+}
+
+/**
+ * @return the on and only jsConnector object
+ */
 function getJsConnector() {
     return jsConnector;
 }
