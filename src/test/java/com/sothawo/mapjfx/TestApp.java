@@ -213,10 +213,10 @@ public class TestApp extends Application {
         btn.setOnAction(event -> mapView.removeCoordinateLine(coordinateLine));
         hbox.getChildren().add(btn);
 
-        btn = new Button();
-        btn.setText("null Track");
-        btn.setOnAction(event -> coordinateLine = null);
-        hbox.getChildren().add(btn);
+//        btn = new Button();
+//        btn.setText("null Track");
+//        btn.setOnAction(event -> coordinateLine = null);
+//        hbox.getChildren().add(btn);
 
 
         vbox.setDisable(true);

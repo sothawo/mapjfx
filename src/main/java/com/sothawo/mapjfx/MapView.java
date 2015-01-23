@@ -29,7 +29,9 @@ import javafx.scene.web.WebView;
 import netscape.javascript.JSObject;
 
 import java.awt.*;
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.net.URI;
@@ -37,12 +39,16 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
 
@@ -573,22 +579,15 @@ public final class MapView extends Region {
             logger.severe(() -> "resource not found: " + MAPVIEW_HTML);
         } else {
             logger.finer(() -> "loading from " + mapviewURL.toExternalForm());
+
             try (
-                    BufferedReader bufferedReader = new BufferedReader(
-                            new InputStreamReader(mapviewURL.openStream(), StandardCharsets.UTF_8))
+                    Stream<String> lines =
+                            Files.lines(Paths.get(mapviewURL.toURI()), StandardCharsets.UTF_8);
             ) {
-                StringBuilder sb = new StringBuilder();
-                String line;
-                while (null != (line = bufferedReader.readLine())) {
-                    line = line.trim();
-                    if ("<head>".equalsIgnoreCase(line)) {
-                        sb.append(line);
-                        line = "<base href=\"" + mapviewURL.toExternalForm() + "\">";
-                    }
-                    sb.append(line);
-                }
-                mapViewHtml = sb.toString();
-            } catch (IOException e) {
+                mapViewHtml = lines.map(String::trim).map((line) -> "<head>".equalsIgnoreCase(line) ?
+                        (line + "<base href=\"" + mapviewURL.toExternalForm() + "\">") : line).collect(
+                        Collectors.joining());
+            } catch (IOException | URISyntaxException e) {
                 logger.log(Level.SEVERE, "loading " + mapviewURL.toExternalForm(), e);
             }
         }
