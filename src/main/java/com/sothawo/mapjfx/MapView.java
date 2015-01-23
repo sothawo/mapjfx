@@ -308,18 +308,37 @@ public final class MapView extends Region {
         synchronized (coordinateLines) {
             if (!coordinateLines.containsKey(requireNonNull(coordinateLine).getId())) {
                 logger.fine(() -> "adding coordinate line " + coordinateLine);
+                String id = coordinateLine.getId();
                 // store a weak reference to be able to remove the line from the map if the caller forgets to do so
-                coordinateLines
-                        .put(coordinateLine.getId(), new WeakReference<>(coordinateLine, referenceQueueCoordinateLine));
-                JSObject jsCoordinateLine =
-                        (JSObject) javascriptConnector.call("getCoordinateLine", coordinateLine.getId());
-                coordinateLine.getCoordinateStream().forEach((coordinate) -> jsCoordinateLine
-                        .call("addCoordinate", coordinate.getLatitude(), coordinate.getLongitude()));
+                coordinateLines.put(id, new WeakReference<>(coordinateLine, referenceQueueCoordinateLine));
+                JSObject jsCoordinateLine = (JSObject) javascriptConnector.call("getCoordinateLine", id);
+
+                coordinateLine.getCoordinateStream().forEach(
+                        (coord) -> jsCoordinateLine.call("addCoordinate", coord.getLatitude(), coord.getLongitude()));
                 jsCoordinateLine.call("seal");
-                javascriptConnector.call("showCoordinateLine", coordinateLine.getId());
+
+                coordinateLine.visibleProperty()
+                        .addListener((observable, newValue, oldValue) -> setCoordinateLineVisibleInMap(coordinateLine));
+                setCoordinateLineVisibleInMap(coordinateLine);
             }
         }
         return this;
+    }
+
+    /**
+     * shows or hides the coordinateline in the mpa according to it's visible property.
+     *
+     * @param coordinateLine
+     *         the CoordinateLine object
+     */
+    private void setCoordinateLineVisibleInMap(CoordinateLine coordinateLine) {
+        if (null != coordinateLine) {
+            if (coordinateLine.getVisible()) {
+                javascriptConnector.call("showCoordinateLine", coordinateLine.getId());
+            } else {
+                javascriptConnector.call("hideCoordinateLine", coordinateLine.getId());
+            }
+        }
     }
 
     /**

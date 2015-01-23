@@ -117,7 +117,7 @@ public class TestApp extends Application {
         mapView.initialize();
 
         // show the whole thing
-        Scene scene = new Scene(borderPane, 800, 600);
+        Scene scene = new Scene(borderPane, 900, 600);
 
         primaryStage.setTitle("sothawo mapjfx devtest program");
         primaryStage.setScene(scene);
@@ -213,10 +213,10 @@ public class TestApp extends Application {
         btn.setOnAction(event -> mapView.removeCoordinateLine(coordinateLine));
         hbox.getChildren().add(btn);
 
-//        btn = new Button();
-//        btn.setText("null Track");
-//        btn.setOnAction(event -> coordinateLine = null);
-//        hbox.getChildren().add(btn);
+        btn = new Button();
+        btn.setText("toggle Track visibilty");
+        btn.setOnAction(event -> coordinateLine.setVisible(!coordinateLine.getVisible()));
+        hbox.getChildren().add(btn);
 
 
         vbox.setDisable(true);

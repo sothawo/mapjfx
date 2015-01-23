@@ -15,9 +15,10 @@
 */
 package com.sothawo.mapjfx;
 
+import javafx.beans.property.SimpleBooleanProperty;
+
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
@@ -36,9 +37,11 @@ public class CoordinateLine {
     private final static AtomicLong nextId = new AtomicLong(1);
     /** unique id for this object */
     private final String id;
-
     /** the coordinates of the line */
     private final List<Coordinate> coordinates = new ArrayList<>();
+
+    /** visible property */
+    private final SimpleBooleanProperty visible = new SimpleBooleanProperty(false);
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
@@ -69,6 +72,14 @@ public class CoordinateLine {
         this(Arrays.asList(requireNonNull(coordinates)));
     }
 
+// --------------------- GETTER / SETTER METHODS ---------------------
+
+    public String getId() {
+        return id;
+    }
+
+// ------------------------ CANONICAL METHODS ------------------------
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -85,13 +96,6 @@ public class CoordinateLine {
     public int hashCode() {
         return id.hashCode();
     }
-// --------------------- GETTER / SETTER METHODS ---------------------
-
-    public String getId() {
-        return id;
-    }
-
-// ------------------------ CANONICAL METHODS ------------------------
 
     @Override
     public String toString() {
@@ -108,5 +112,17 @@ public class CoordinateLine {
      */
     public Stream<Coordinate> getCoordinateStream() {
         return coordinates.stream();
+    }
+
+    public boolean getVisible() {
+        return visible.get();
+    }
+
+    public void setVisible(boolean visible) {
+        this.visible.set(visible);
+    }
+
+    public SimpleBooleanProperty visibleProperty() {
+        return visible;
     }
 }
