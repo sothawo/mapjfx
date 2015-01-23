@@ -15,6 +15,7 @@
 */
 package com.sothawo.mapjfx;
 
+import javafx.application.Platform;
 import javafx.beans.property.*;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -29,12 +30,15 @@ import netscape.javascript.JSObject;
 
 import java.awt.*;
 import java.io.*;
+import java.lang.ref.ReferenceQueue;
+import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
@@ -103,8 +107,10 @@ public final class MapView extends Region {
     /** markers in the map together with the listeners */
     private final Map<Marker, MarkerChangeListeners> markers = new HashMap<>();
 
-    /** CoordinateLines in the map */
-    private final Set<CoordinateLine> coordinateLines = new HashSet<>();
+    /** names of CoordinateLines in the map */
+    private final Map<String, WeakReference<CoordinateLine>> coordinateLines = new HashMap<>();
+    /** reference queue for the CoordinateLine weak references */
+    private final ReferenceQueue<CoordinateLine> referenceQueueCoordinateLine = new ReferenceQueue<>();
 
     /** cache for loading images in base64 strings */
     private final ConcurrentHashMap<URL, String> imgCache = new ConcurrentHashMap<>();
@@ -125,6 +131,8 @@ public final class MapView extends Region {
         // set a silver background to make the MapView distinguishable in SceneBuilder, this will later be hidden by
         // the WebView
         setBackground(new Background(new BackgroundFill(Paint.valueOf("#ccc"), null, null)));
+
+        startWeakRefCleaner();
     }
 
     /**
@@ -170,6 +178,53 @@ public final class MapView extends Region {
     }
 
     /**
+     * sets the value of the center property in the OL map.
+     */
+    private void setCenterInMap() {
+        Coordinate actCenter = getCenter();
+        if (getInitialized() && null != actCenter) {
+            logger.finer(
+                    () -> "setting center in OpenLayers map: " + actCenter + ", animation: " + animationDuration.get());
+            // using Double objects instead of primitives works here
+            javascriptConnector
+                    .call("setCenter", actCenter.getLatitude(), actCenter.getLongitude(), animationDuration.get());
+        }
+    }
+
+    /**
+     * @return the current center of the map.
+     */
+    public Coordinate getCenter() {
+        return center.get();
+    }
+
+    /**
+     * @return true if the MapView is initialized.
+     */
+    public boolean getInitialized() {
+        return initialized.get();
+    }
+
+    /**
+     * sets the value of the actual zoom property in the OL map.
+     */
+    private void setZoomInMap() {
+        if (getInitialized()) {
+            int zoomInt = (int) getZoom();
+            logger.finer(
+                    () -> "setting zoom in OpenLayers map: " + zoomInt + ", animation: " + animationDuration.get());
+            javascriptConnector.call("setZoom", zoomInt, animationDuration.get());
+        }
+    }
+
+    /**
+     * @return the current zoom value.
+     */
+    public double getZoom() {
+        return zoom.get();
+    }
+
+    /**
      * sets the value of the mapType property in the OL map.
      */
     private void setMapTypeInMap() {
@@ -180,10 +235,61 @@ public final class MapView extends Region {
         }
     }
 
+    /**
+     * defines and starts the thread watching the weak reference queue(s)
+     */
+    private void startWeakRefCleaner() {
+        Thread thread = new Thread(() -> {
+            while (true) {
+                try {
+                    // just wait, no need to get the - gc'ed object
+                    referenceQueueCoordinateLine.remove();
+                    // clean up the map entries)
+                    final List<String> idsToRemove = new ArrayList<>();
+                    synchronized (coordinateLines) {
+                        coordinateLines.forEach((k, v) -> {
+                            if (null == v.get()) {
+                                idsToRemove.add(k);
+                                logger.finer(() -> "need to clean upcoordinate line " + k);
+                            }
+                        });
+                    }
+                    // run on the JavaFX thread, as removeCoordinateLineWithId() calls methods from the WebView
+                    Platform.runLater(() -> idsToRemove.forEach(this::removeCoordinateLineWithId));
+                } catch (InterruptedException ignored) {
+                    // ignored
+                }
+            }
+        });
+        thread.setName("MapView-Cleaner");
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    /**
+     * removes the CoordinateLinewith the given id. if no such element is found, nothing happens
+     *
+     * @param id
+     *         id of the coordinate line, may not be null
+     */
+    private void removeCoordinateLineWithId(String id) {
+        // sync on the map as the cleaner thread accesses this as well
+        synchronized (coordinateLines) {
+            if (coordinateLines.containsKey(id)) {
+                logger.fine(() -> "removing coordinate line " + id);
+                coordinateLines.remove(id);
+                javascriptConnector.call("hideCoordinateLine", id);
+                javascriptConnector.call("removeCoordinateLine", id);
+            }
+        }
+    }
+
 // -------------------------- OTHER METHODS --------------------------
 
     /**
-     * add a CoordinateLine to the map. If it was already added, nothing happens
+     * add a CoordinateLine to the map. If it was already added, nothing happens. The MapView only stores a weak
+     * reference to the object, so the caller must keep a reference in order to prevent the line to be removed from the
+     * map.
      *
      * @param coordinateLine
      *         the CoordinateLine to add
@@ -192,15 +298,20 @@ public final class MapView extends Region {
      *         if argument is null
      */
     public MapView addCoordinateLine(CoordinateLine coordinateLine) {
-        if (!coordinateLines.contains(requireNonNull(coordinateLine))) {
-            logger.fine(() -> "adding coordinate line " + coordinateLine);
-            coordinateLines.add(coordinateLine);
-            JSObject jsCoordinateLine =
-                    (JSObject) javascriptConnector.call("getCoordinateLine", coordinateLine.getId());
-            coordinateLine.getCoordinateStream().forEach((coordinate) -> jsCoordinateLine
-                    .call("addCoordinate", coordinate.getLatitude(), coordinate.getLongitude()));
-            jsCoordinateLine.call("seal");
-            javascriptConnector.call("showCoordinateLine", coordinateLine.getId());
+        // sync on the map as the cleaner thread accesses this as well
+        synchronized (coordinateLines) {
+            if (!coordinateLines.containsKey(requireNonNull(coordinateLine).getId())) {
+                logger.fine(() -> "adding coordinate line " + coordinateLine);
+                // store a weak reference to be able to remove the line from the map if the caller forgets to do so
+                coordinateLines
+                        .put(coordinateLine.getId(), new WeakReference<>(coordinateLine, referenceQueueCoordinateLine));
+                JSObject jsCoordinateLine =
+                        (JSObject) javascriptConnector.call("getCoordinateLine", coordinateLine.getId());
+                coordinateLine.getCoordinateStream().forEach((coordinate) -> jsCoordinateLine
+                        .call("addCoordinate", coordinate.getLatitude(), coordinate.getLongitude()));
+                jsCoordinateLine.call("seal");
+                javascriptConnector.call("showCoordinateLine", coordinateLine.getId());
+            }
         }
         return this;
     }
@@ -273,6 +384,20 @@ public final class MapView extends Region {
             } else {
                 removeMarkerInMap(marker);
             }
+        }
+    }
+
+    /**
+     * removes the given marker from the OL map
+     *
+     * @param marker
+     *         the marker to remove
+     */
+    private void removeMarkerInMap(Marker marker) {
+        if (getInitialized()) {
+            String script = String.format(Locale.US, "removeMarker('%s')", marker.getId());
+            logger.finer(() -> "remove marker in OpenLayers map " + script);
+            webEngine.executeScript(script);
         }
     }
 
@@ -428,46 +553,6 @@ public final class MapView extends Region {
     }
 
     /**
-     * sets the value of the center property in the OL map.
-     */
-    private void setCenterInMap() {
-        Coordinate actCenter = getCenter();
-        if (getInitialized() && null != actCenter) {
-            logger.finer(
-                    () -> "setting center in OpenLayers map: " + actCenter + ", animation: " + animationDuration.get());
-            // using Double objects instead of primitives works here
-            javascriptConnector
-                    .call("setCenter", actCenter.getLatitude(), actCenter.getLongitude(), animationDuration.get());
-        }
-    }
-
-    /**
-     * @return the current center of the map.
-     */
-    public Coordinate getCenter() {
-        return center.get();
-    }
-
-    /**
-     * sets the value of the actual zoom property in the OL map.
-     */
-    private void setZoomInMap() {
-        if (getInitialized()) {
-            int zoomInt = (int) getZoom();
-            logger.finer(
-                    () -> "setting zoom in OpenLayers map: " + zoomInt + ", animation: " + animationDuration.get());
-            javascriptConnector.call("setZoom", zoomInt, animationDuration.get());
-        }
-    }
-
-    /**
-     * @return the current zoom value.
-     */
-    public double getZoom() {
-        return zoom.get();
-    }
-
-    /**
      * @return the readonly initialized property.
      */
     public ReadOnlyBooleanProperty initializedProperty() {
@@ -527,12 +612,7 @@ public final class MapView extends Region {
      *         if argument is null
      */
     public MapView removeCoordinateLine(CoordinateLine coordinateLine) {
-        if (coordinateLines.contains(requireNonNull(coordinateLine))) {
-            logger.fine(() -> "removing coordinate line " + coordinateLine);
-            coordinateLines.remove(coordinateLine);
-            javascriptConnector.call("hideCoordinateLine", coordinateLine.getId());
-            javascriptConnector.call("removeCoordinateLine", coordinateLine.getId());
-        }
+        removeCoordinateLineWithId(requireNonNull(coordinateLine).getId());
         return this;
     }
 
@@ -556,20 +636,6 @@ public final class MapView extends Region {
             removeMarkerInMap(marker);
             marker.setVisible(false);
             logger.finer(() -> "removed marker " + marker);
-        }
-    }
-
-    /**
-     * removes the given marker from the OL map
-     *
-     * @param marker
-     *         the marker to remove
-     */
-    private void removeMarkerInMap(Marker marker) {
-        if (getInitialized()) {
-            String script = String.format(Locale.US, "removeMarker('%s')", marker.getId());
-            logger.finer(() -> "remove marker in OpenLayers map " + script);
-            webEngine.executeScript(script);
         }
     }
 
@@ -614,13 +680,6 @@ public final class MapView extends Region {
                     extent.getMax().getLatitude(), extent.getMax().getLongitude(), animationDuration.get());
         }
         return this;
-    }
-
-    /**
-     * @return true if the MapView is initialized.
-     */
-    public boolean getInitialized() {
-        return initialized.get();
     }
 
     /**

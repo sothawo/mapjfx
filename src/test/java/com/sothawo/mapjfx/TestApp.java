@@ -46,7 +46,7 @@ public class TestApp extends Application {
     private static final Coordinate coordKarlsruheHarbour = new Coordinate(49.015511, 8.323497);
     private static final Coordinate coordKarlsruheStation = new Coordinate(48.993284, 8.402186);
 
-    private static final CoordinateLine coordinateLine =
+    private static CoordinateLine coordinateLine =
             new CoordinateLine(coordKarlsruheCastle, coordKarlsruheHarbour, coordKarlsruheStation);
 
     private static final int DEFAULT_ZOOM = 14;
@@ -211,6 +211,11 @@ public class TestApp extends Application {
         btn = new Button();
         btn.setText("remove Track");
         btn.setOnAction(event -> mapView.removeCoordinateLine(coordinateLine));
+        hbox.getChildren().add(btn);
+
+        btn = new Button();
+        btn.setText("null Track");
+        btn.setOnAction(event -> coordinateLine = null);
         hbox.getChildren().add(btn);
 
 

@@ -25,6 +25,7 @@
 function CoordinateLine() {
     this.coordinates = [];
     this.feature = null;
+    this.onMap = false;
 }
 
 /**
@@ -57,4 +58,21 @@ CoordinateLine.prototype.seal = function() {
  */
 CoordinateLine.prototype.getFeature = function() {
     return this.feature;
+};
+
+/**
+ * sets the flag wether the feature is shown on the map
+ *
+ * @param {boolean}
+ */
+CoordinateLine.prototype.setOnMap = function(flag) {
+    this.onMap = flag;
+};
+
+/**
+ * gets the flag wether the feature is visible on the map
+ * @return {boolean}
+ */
+CoordinateLine.prototype.getOnMap = function() {
+    return this.onMap;
 };

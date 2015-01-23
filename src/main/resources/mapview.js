@@ -211,9 +211,11 @@ var jsConnector = {
      * @param {string} the name of the coordinateLine
      */
      showCoordinateLine: function(name) {
-        if(coordinateLines[name]) {
-            sourceFeatures.addFeature(coordinateLines[name].getFeature());
+        var coordinateLine = coordinateLines[name];
+        if(coordinateLine && !coordinateLine.getOnMap()) {
+            sourceFeatures.addFeature(coordinateLine.getFeature());
             javaConnector.debug("showed CoordinateLine object named " + name);
+            coordinateLine.setOnMap(true);
         }
      },
 
@@ -223,9 +225,11 @@ var jsConnector = {
      * @param {string} the name of the coordinateLine
      */
      hideCoordinateLine: function(name) {
-        if(coordinateLines[name]) {
-            sourceFeatures.removeFeature(coordinateLines[name].getFeature());
+        var coordinateLine = coordinateLines[name];
+        if(coordinateLine && coordinateLine.getOnMap()) {
+            sourceFeatures.removeFeature(coordinateLine.getFeature());
             javaConnector.debug("hid CoordinateLine object named " + name);
+            coordinateLine.setOnMap(false);
         }
      },
 
@@ -236,6 +240,7 @@ var jsConnector = {
      */
      removeCoordinateLine: function(name) {
         if(coordinateLines[name]) {
+            this.hideCoordinateLine(name);
             delete coordinateLines[name];
             javaConnector.debug("deleted CoordinateLine object named " + name);
         }
