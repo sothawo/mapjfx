@@ -24,6 +24,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -47,7 +48,8 @@ public class TestApp extends Application {
     private static final Coordinate coordKarlsruheStation = new Coordinate(48.993284, 8.402186);
 
     private static CoordinateLine coordinateLine =
-            new CoordinateLine(coordKarlsruheCastle, coordKarlsruheHarbour, coordKarlsruheStation);
+            new CoordinateLine(coordKarlsruheCastle, coordKarlsruheHarbour, coordKarlsruheStation).setVisible(true)
+                    .setColor(Color.DODGERBLUE);
 
     private static final int DEFAULT_ZOOM = 14;
 

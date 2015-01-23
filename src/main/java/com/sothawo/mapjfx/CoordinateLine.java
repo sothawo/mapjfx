@@ -16,6 +16,7 @@
 package com.sothawo.mapjfx;
 
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.scene.paint.Color;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,15 +34,16 @@ import static java.util.Objects.requireNonNull;
 public class CoordinateLine {
 // ------------------------------ FIELDS ------------------------------
 
-    /** counter for the id */
+    /** counter for creating the id */
     private final static AtomicLong nextId = new AtomicLong(1);
     /** unique id for this object */
     private final String id;
     /** the coordinates of the line */
     private final List<Coordinate> coordinates = new ArrayList<>();
-
     /** visible property */
     private final SimpleBooleanProperty visible = new SimpleBooleanProperty(false);
+    /** color of the line */
+    private Color color;
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
@@ -57,6 +59,8 @@ public class CoordinateLine {
     public CoordinateLine(List<? extends Coordinate> coordinates) {
         this.id = "coordinateline-" + nextId.getAndIncrement();
         requireNonNull(coordinates).stream().forEach(this.coordinates::add);
+        // slightly transparent limegreen
+        this.color =  Color.web("#32CD32", 0.7);
     }
 
     /**
@@ -73,6 +77,10 @@ public class CoordinateLine {
     }
 
 // --------------------- GETTER / SETTER METHODS ---------------------
+
+    public Color getColor() {
+        return color;
+    }
 
     public String getId() {
         return id;
@@ -108,7 +116,8 @@ public class CoordinateLine {
 // -------------------------- OTHER METHODS --------------------------
 
     /**
-     * @return the coordinates as stream.
+     * @return the coordinates as stream. The coordinates are only available as stream, this prevents modification of
+     * the internal list.
      */
     public Stream<Coordinate> getCoordinateStream() {
         return coordinates.stream();
@@ -118,8 +127,28 @@ public class CoordinateLine {
         return visible.get();
     }
 
-    public void setVisible(boolean visible) {
+    /**
+     * sets the new color. when changing color, the CoordinateLine must be removed and re-added to the map in order to
+     * make the change visible.
+     *
+     * @param color
+     * @return this object
+     * @throws java.lang.NullPointerException
+     *         when color is null
+     */
+    public CoordinateLine setColor(Color color) {
+        this.color = requireNonNull(color);
+        return this;
+    }
+
+    /**
+     * @param visible
+     *         sets the visibility flag
+     * @return this object
+     */
+    public CoordinateLine setVisible(boolean visible) {
         this.visible.set(visible);
+        return this;
     }
 
     public SimpleBooleanProperty visibleProperty() {

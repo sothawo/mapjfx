@@ -4,18 +4,12 @@
 
 // Source for the coordinateLine features
 var sourceFeatures = new ol.source.Vector({
-                             features: []
-                     });
+        features: []
+    });
 // layer for the featuress
 var layerFeatures = new ol.layer.Vector({
-    source: sourceFeatures,
-    style: new ol.style.Style({
-        stroke: new ol.style.Stroke({
-                  width: 3,
-                  color: [255, 0, 0, 1]
-                })
-    })
-});
+        source: sourceFeatures
+    });
 
 // layer groups for the different map styles
 var layersOSM = new ol.layer.Group({

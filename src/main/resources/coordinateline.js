@@ -26,6 +26,8 @@ function CoordinateLine() {
     this.coordinates = [];
     this.feature = null;
     this.onMap = false;
+    // default color opaque red
+    this.color = [255, 0, 0, 1];
 }
 
 /**
@@ -50,6 +52,13 @@ CoordinateLine.prototype.addCoordinate = function(latitude, longitude) {
  */
 CoordinateLine.prototype.seal = function() {
     this.feature = new ol.Feature(new ol.geom.LineString(this.coordinates));
+    var style = new ol.style.Style({
+        stroke: new ol.style.Stroke({
+                width: 3,
+                color: this.color
+              })
+          });
+    this.feature.setStyle(style);
 };
 
 /**
@@ -76,3 +85,15 @@ CoordinateLine.prototype.setOnMap = function(flag) {
 CoordinateLine.prototype.getOnMap = function() {
     return this.onMap;
 };
+
+/**
+ * sets the color of the line.
+ *
+ * @param {number} red 0..255
+ * @param {number} green 0..255
+ * @param {number} blue 0..255
+ * @param {number} aplha 0..1
+ */
+CoordinateLine.prototype.setColor = function(red, green, blue, alpha) {
+    this.color = [red, green, blue, alpha];
+}

@@ -23,6 +23,7 @@ import javafx.concurrent.Worker;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.Region;
+import javafx.scene.paint.*;
 import javafx.scene.paint.Paint;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
@@ -315,6 +316,9 @@ public final class MapView extends Region {
 
                 coordinateLine.getCoordinateStream().forEach(
                         (coord) -> jsCoordinateLine.call("addCoordinate", coord.getLatitude(), coord.getLongitude()));
+                javafx.scene.paint.Color color = coordinateLine.getColor();
+                jsCoordinateLine.call("setColor", color.getRed() * 255, color.getGreen() * 255, color.getBlue() *
+                        255, color.getOpacity());
                 jsCoordinateLine.call("seal");
 
                 coordinateLine.visibleProperty()

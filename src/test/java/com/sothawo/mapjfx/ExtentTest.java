@@ -23,17 +23,10 @@ import java.util.Collection;
 import static org.junit.Assert.assertEquals;
 
 @SuppressWarnings("RedundantArrayCreation")
-public class ExtentTest {
+public class ExtentTest implements TestBase {
 // ------------------------------ FIELDS ------------------------------
 
-    // max longitude
-    private static final Coordinate coordKarlsruheCastle = new Coordinate(49.013517, 8.404435);
-    // min longitude, max latitude
-    private static final Coordinate coordKarlsruheHarbour = new Coordinate(49.015511, 8.323497);
-    // min latitude
-    private static final Coordinate coordKarlsruheStation = new Coordinate(48.993284, 8.402186);
-
-// -------------------------- OTHER METHODS --------------------------
+    // -------------------------- OTHER METHODS --------------------------
 
     @Test
     public void createWithArray() throws Exception {
