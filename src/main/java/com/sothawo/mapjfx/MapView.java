@@ -23,16 +23,13 @@ import javafx.concurrent.Worker;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.Region;
-import javafx.scene.paint.*;
 import javafx.scene.paint.Paint;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import netscape.javascript.JSObject;
 
 import java.awt.*;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.net.URI;
@@ -40,16 +37,12 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
 
@@ -273,30 +266,14 @@ public final class MapView extends Region {
         thread.start();
     }
 
-    /**
-     * removes the CoordinateLinewith the given id. if no such element is found, nothing happens
-     *
-     * @param id
-     *         id of the coordinate line, may not be null
-     */
-    private void removeCoordinateLineWithId(String id) {
-        // sync on the map as the cleaner thread accesses this as well
-        synchronized (coordinateLines) {
-            if (coordinateLines.containsKey(id)) {
-                logger.fine(() -> "removing coordinate line " + id);
-                coordinateLines.remove(id);
-                javascriptConnector.call("hideCoordinateLine", id);
-                javascriptConnector.call("removeCoordinateLine", id);
-            }
-        }
-    }
-
 // -------------------------- OTHER METHODS --------------------------
 
     /**
      * add a CoordinateLine to the map. If it was already added, nothing happens. The MapView only stores a weak
      * reference to the object, so the caller must keep a reference in order to prevent the line to be removed from the
-     * map.
+     * map.<br/><br/>
+     *
+     * NOTE: this method must only be called after the map is initialized!
      *
      * @param coordinateLine
      *         the CoordinateLine to add
@@ -603,15 +580,22 @@ public final class MapView extends Region {
             logger.severe(() -> "resource not found: " + MAPVIEW_HTML);
         } else {
             logger.finer(() -> "loading from " + mapviewURL.toExternalForm());
-
             try (
-                    Stream<String> lines =
-                            Files.lines(Paths.get(mapviewURL.toURI()), StandardCharsets.UTF_8);
+                    BufferedReader bufferedReader = new BufferedReader(
+                            new InputStreamReader(mapviewURL.openStream(), StandardCharsets.UTF_8))
             ) {
-                mapViewHtml = lines.map(String::trim).map((line) -> "<head>".equalsIgnoreCase(line) ?
-                        (line + "<base href=\"" + mapviewURL.toExternalForm() + "\">") : line).collect(
-                        Collectors.joining());
-            } catch (IOException | URISyntaxException e) {
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while (null != (line = bufferedReader.readLine())) {
+                    line = line.trim();
+                    if ("<head>".equalsIgnoreCase(line)) {
+                        sb.append(line);
+                        line = "<base href=\"" + mapviewURL.toExternalForm() + "\">";
+                    }
+                    sb.append(line);
+                }
+                mapViewHtml = sb.toString();
+            } catch (IOException e) {
                 logger.log(Level.SEVERE, "loading " + mapviewURL.toExternalForm(), e);
             }
         }
@@ -637,6 +621,24 @@ public final class MapView extends Region {
     public MapView removeCoordinateLine(CoordinateLine coordinateLine) {
         removeCoordinateLineWithId(requireNonNull(coordinateLine).getId());
         return this;
+    }
+
+    /**
+     * removes the CoordinateLinewith the given id. if no such element is found, nothing happens
+     *
+     * @param id
+     *         id of the coordinate line, may not be null
+     */
+    private void removeCoordinateLineWithId(String id) {
+        // sync on the map as the cleaner thread accesses this as well
+        synchronized (coordinateLines) {
+            if (coordinateLines.containsKey(id)) {
+                logger.fine(() -> "removing coordinate line " + id);
+                coordinateLines.remove(id);
+                javascriptConnector.call("hideCoordinateLine", id);
+                javascriptConnector.call("removeCoordinateLine", id);
+            }
+        }
     }
 
     /**
