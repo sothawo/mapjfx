@@ -49,7 +49,7 @@ public class TestApp extends Application {
 
     private static CoordinateLine coordinateLine =
             new CoordinateLine(coordKarlsruheCastle, coordKarlsruheHarbour, coordKarlsruheStation).setVisible(true)
-                    .setColor(Color.DODGERBLUE);
+                    .setColor(Color.DODGERBLUE).setWidth(7);
 
     private static final int DEFAULT_ZOOM = 14;
 

@@ -34,6 +34,11 @@ import static java.util.Objects.requireNonNull;
 public class CoordinateLine {
 // ------------------------------ FIELDS ------------------------------
 
+    /** default color: dodgerblue slightly transparent */
+    public static final Color DEFAULT_COLOR = Color.web("#32CD32", 0.7);
+    /** default width 3 */
+    public static final int DEFAULT_WIDTH = 3;
+
     /** counter for creating the id */
     private final static AtomicLong nextId = new AtomicLong(1);
     /** unique id for this object */
@@ -44,6 +49,8 @@ public class CoordinateLine {
     private final SimpleBooleanProperty visible = new SimpleBooleanProperty(false);
     /** color of the line */
     private Color color;
+    /** width of the line */
+    private int width;
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
@@ -60,7 +67,8 @@ public class CoordinateLine {
         this.id = "coordinateline-" + nextId.getAndIncrement();
         requireNonNull(coordinates).stream().forEach(this.coordinates::add);
         // slightly transparent limegreen
-        this.color =  Color.web("#32CD32", 0.7);
+        this.color = DEFAULT_COLOR;
+        this.width = DEFAULT_WIDTH;
     }
 
     /**
@@ -84,6 +92,10 @@ public class CoordinateLine {
 
     public String getId() {
         return id;
+    }
+
+    public int getWidth() {
+        return width;
     }
 
 // ------------------------ CANONICAL METHODS ------------------------
@@ -148,6 +160,18 @@ public class CoordinateLine {
      */
     public CoordinateLine setVisible(boolean visible) {
         this.visible.set(visible);
+        return this;
+    }
+
+    /**
+     * sets the width
+     *
+     * @param width
+     *         the new width
+     * @return this object
+     */
+    public CoordinateLine setWidth(int width) {
+        this.width = width;
         return this;
     }
 

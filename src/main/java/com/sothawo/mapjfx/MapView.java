@@ -319,6 +319,7 @@ public final class MapView extends Region {
                 javafx.scene.paint.Color color = coordinateLine.getColor();
                 jsCoordinateLine.call("setColor", color.getRed() * 255, color.getGreen() * 255, color.getBlue() *
                         255, color.getOpacity());
+                jsCoordinateLine.call("setWidth", coordinateLine.getWidth());
                 jsCoordinateLine.call("seal");
 
                 coordinateLine.visibleProperty()

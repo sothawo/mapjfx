@@ -28,6 +28,8 @@ function CoordinateLine() {
     this.onMap = false;
     // default color opaque red
     this.color = [255, 0, 0, 1];
+    // default width 3
+    this.width = 3;
 }
 
 /**
@@ -54,7 +56,7 @@ CoordinateLine.prototype.seal = function() {
     this.feature = new ol.Feature(new ol.geom.LineString(this.coordinates));
     var style = new ol.style.Style({
         stroke: new ol.style.Stroke({
-                width: 3,
+                width: this.width,
                 color: this.color
               })
           });
@@ -96,4 +98,13 @@ CoordinateLine.prototype.getOnMap = function() {
  */
 CoordinateLine.prototype.setColor = function(red, green, blue, alpha) {
     this.color = [red, green, blue, alpha];
+}
+
+/**
+ * sets the width of the line
+ *
+ * @param {number} the width
+ */
+CoordinateLine.prototype.setWidth = function(width) {
+    this.width = width;
 }

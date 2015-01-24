@@ -15,6 +15,7 @@
 */
 package com.sothawo.mapjfx;
 
+import javafx.scene.paint.Color;
 import org.junit.Test;
 
 import java.util.Set;
@@ -31,8 +32,25 @@ public class CoordinateLineTest implements TestBase {
 // -------------------------- OTHER METHODS --------------------------
 
     @Test
+    public void colorCanBeSet() throws Exception {
+        CoordinateLine coordinateLine = new CoordinateLine();
+        coordinateLine.setColor(Color.BISQUE);
+        assertEquals(Color.BISQUE, coordinateLine.getColor());
+    }
+
+    @Test
+    public void defaultColorIsSet() throws Exception {
+        assertEquals(CoordinateLine.DEFAULT_COLOR, new CoordinateLine().getColor());
+    }
+
+    @Test
     public void defaultVisibilityIsFalse() throws Exception {
         assertFalse(new CoordinateLine().getVisible());
+    }
+
+    @Test
+    public void defaultWidthIsSet() throws Exception {
+        assertEquals(CoordinateLine.DEFAULT_WIDTH, new CoordinateLine().getWidth());
     }
 
     @Test
@@ -55,5 +73,12 @@ public class CoordinateLineTest implements TestBase {
         CoordinateLine coordinateLine = new CoordinateLine();
         coordinateLine.setVisible(true);
         assertTrue(coordinateLine.getVisible());
+    }
+
+    @Test
+    public void widthCanBeSet() throws Exception {
+        CoordinateLine coordinateLine = new CoordinateLine();
+        coordinateLine.setWidth(5);
+        assertEquals(5, coordinateLine.getWidth());
     }
 }
