@@ -144,6 +144,7 @@ public class CoordinateLine {
      * make the change visible.
      *
      * @param color
+     *         the new color
      * @return this object
      * @throws java.lang.NullPointerException
      *         when color is null

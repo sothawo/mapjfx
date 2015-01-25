@@ -43,6 +43,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
 
@@ -76,6 +78,7 @@ public final class MapView extends Region {
 
     /** URL of the html code for the WebView. */
     private static final String MAPVIEW_HTML = "/mapview.html";
+    private static final String MAP_VIEW_NOT_YET_INITIALIZED = "MapView not yet initialized";
 
     /** the WebEngine of the WebView containing the OpenLayers Map. */
     private WebEngine webEngine;
@@ -271,9 +274,8 @@ public final class MapView extends Region {
     /**
      * add a CoordinateLine to the map. If it was already added, nothing happens. The MapView only stores a weak
      * reference to the object, so the caller must keep a reference in order to prevent the line to be removed from the
-     * map.<br/><br/>
-     *
-     * NOTE: this method must only be called after the map is initialized!
+     * map. This method must only be called after the map is initialized, otherwise a warning is logged and the
+     * coordinateLine is not added to the map.
      *
      * @param coordinateLine
      *         the CoordinateLine to add
@@ -282,26 +284,32 @@ public final class MapView extends Region {
      *         if argument is null
      */
     public MapView addCoordinateLine(CoordinateLine coordinateLine) {
-        // sync on the map as the cleaner thread accesses this as well
-        synchronized (coordinateLines) {
-            if (!coordinateLines.containsKey(requireNonNull(coordinateLine).getId())) {
-                logger.fine(() -> "adding coordinate line " + coordinateLine);
-                String id = coordinateLine.getId();
-                // store a weak reference to be able to remove the line from the map if the caller forgets to do so
-                coordinateLines.put(id, new WeakReference<>(coordinateLine, referenceQueueCoordinateLine));
-                JSObject jsCoordinateLine = (JSObject) javascriptConnector.call("getCoordinateLine", id);
+        if (!getInitialized()) {
+            logger.warning(MAP_VIEW_NOT_YET_INITIALIZED);
+        } else {
+            // sync on the map as the cleaner thread accesses this as well
+            synchronized (coordinateLines) {
+                if (!coordinateLines.containsKey(requireNonNull(coordinateLine).getId())) {
+                    logger.fine(() -> "adding coordinate line " + coordinateLine);
+                    String id = coordinateLine.getId();
+                    // store a weak reference to be able to remove the line from the map if the caller forgets to do so
+                    coordinateLines.put(id, new WeakReference<>(coordinateLine, referenceQueueCoordinateLine));
+                    JSObject jsCoordinateLine = (JSObject) javascriptConnector.call("getCoordinateLine", id);
 
-                coordinateLine.getCoordinateStream().forEach(
-                        (coord) -> jsCoordinateLine.call("addCoordinate", coord.getLatitude(), coord.getLongitude()));
-                javafx.scene.paint.Color color = coordinateLine.getColor();
-                jsCoordinateLine.call("setColor", color.getRed() * 255, color.getGreen() * 255, color.getBlue() *
-                        255, color.getOpacity());
-                jsCoordinateLine.call("setWidth", coordinateLine.getWidth());
-                jsCoordinateLine.call("seal");
+                    coordinateLine.getCoordinateStream().forEach(
+                            (coord) -> jsCoordinateLine
+                                    .call("addCoordinate", coord.getLatitude(), coord.getLongitude()));
+                    javafx.scene.paint.Color color = coordinateLine.getColor();
+                    jsCoordinateLine.call("setColor", color.getRed() * 255, color.getGreen() * 255, color.getBlue() *
+                            255, color.getOpacity());
+                    jsCoordinateLine.call("setWidth", coordinateLine.getWidth());
+                    jsCoordinateLine.call("seal");
 
-                coordinateLine.visibleProperty()
-                        .addListener((observable, newValue, oldValue) -> setCoordinateLineVisibleInMap(coordinateLine));
-                setCoordinateLineVisibleInMap(coordinateLine);
+                    coordinateLine.visibleProperty()
+                            .addListener(
+                                    (observable, newValue, oldValue) -> setCoordinateLineVisibleInMap(coordinateLine));
+                    setCoordinateLineVisibleInMap(coordinateLine);
+                }
             }
         }
         return this;
@@ -324,7 +332,8 @@ public final class MapView extends Region {
     }
 
     /**
-     * adds a marker to the map. If it was already added, nothing is changed.
+     * adds a marker to the map. If it was already added, nothing is changed. If the MapView is not yet initialized, a
+     * warning is logged and nothing changes.
      *
      * @param marker
      *         the marker
@@ -333,33 +342,37 @@ public final class MapView extends Region {
      *         if marker is null
      */
     public MapView addMarker(Marker marker) {
-        if (null != markers.get(requireNonNull(marker))) {
-            return this;
-        }
-        // create a change listener for the coordinate and store it along with the marker
-        ChangeListener<Coordinate> coordinateChangeListener = (observable, oldValue, newValue) -> {
-            if (null == oldValue) {
-                // if no position was available in the first call to addMarker, we need to add it to the map now
-                addMarkerInMap(marker);
-            } else {
-                moveMarkerInMap(marker);
+        if (!getInitialized()) {
+            logger.warning(MAP_VIEW_NOT_YET_INITIALIZED);
+        } else {
+            if (null != markers.get(requireNonNull(marker))) {
+                return this;
             }
-        };
-        // the same for the visibility
-        ChangeListener<Boolean> visibileChangeListener =
-                (observable, oldValue, newValue) -> setMarkerVisibleInMap(marker);
-        markers.put(marker, new MarkerChangeListeners(coordinateChangeListener, visibileChangeListener));
 
-        // observe the markers position and visibility
-        marker.positionProperty().addListener(coordinateChangeListener);
-        marker.visibleProperty().addListener(visibileChangeListener);
+            // create a change listener for the coordinate and store it along with the marker
+            ChangeListener<Coordinate> coordinateChangeListener = (observable, oldValue, newValue) -> {
+                if (null == oldValue) {
+                    // if no position was available in the first call to addMarker, we need to add it to the map now
+                    addMarkerInMap(marker);
+                } else {
+                    moveMarkerInMap(marker);
+                }
+            };
+            // the same for the visibility
+            ChangeListener<Boolean> visibileChangeListener =
+                    (observable, oldValue, newValue) -> setMarkerVisibleInMap(marker);
+            markers.put(marker, new MarkerChangeListeners(coordinateChangeListener, visibileChangeListener));
 
-        // add the marker in the map and show it if needed
-        if (marker.getVisible() && null != marker.getPosition()) {
-            addMarkerInMap(marker);
+            // observe the markers position and visibility
+            marker.positionProperty().addListener(coordinateChangeListener);
+            marker.visibleProperty().addListener(visibileChangeListener);
+
+            // add the marker in the map and show it if needed
+            if (marker.getVisible() && null != marker.getPosition()) {
+                addMarkerInMap(marker);
+            }
+            logger.finer(() -> "added marker " + marker);
         }
-        logger.finer(() -> "added marker " + marker);
-
         return this;
     }
 
@@ -581,20 +594,12 @@ public final class MapView extends Region {
         } else {
             logger.finer(() -> "loading from " + mapviewURL.toExternalForm());
             try (
-                    BufferedReader bufferedReader = new BufferedReader(
-                            new InputStreamReader(mapviewURL.openStream(), StandardCharsets.UTF_8))
+                    Stream<String> lines = new BufferedReader(
+                            new InputStreamReader(mapviewURL.openStream(), StandardCharsets.UTF_8)).lines()
             ) {
-                StringBuilder sb = new StringBuilder();
-                String line;
-                while (null != (line = bufferedReader.readLine())) {
-                    line = line.trim();
-                    if ("<head>".equalsIgnoreCase(line)) {
-                        sb.append(line);
-                        line = "<base href=\"" + mapviewURL.toExternalForm() + "\">";
-                    }
-                    sb.append(line);
-                }
-                mapViewHtml = sb.toString();
+                mapViewHtml = lines.map(String::trim).map(line -> "<head>".equalsIgnoreCase(line) ?
+                        line + "<base href=\"" + mapviewURL.toExternalForm() + "\">" : line).collect(
+                        Collectors.joining());
             } catch (IOException e) {
                 logger.log(Level.SEVERE, "loading " + mapviewURL.toExternalForm(), e);
             }
@@ -610,7 +615,8 @@ public final class MapView extends Region {
     }
 
     /**
-     * removes a CoordinateLine from the map. If it was not added, nothing happens
+     * removes a CoordinateLine from the map. If it was not added or the MapView is not yet initialized, nothing
+     * happens
      *
      * @param coordinateLine
      *         the CoordinateLine to add
@@ -619,7 +625,11 @@ public final class MapView extends Region {
      *         if argument is null
      */
     public MapView removeCoordinateLine(CoordinateLine coordinateLine) {
-        removeCoordinateLineWithId(requireNonNull(coordinateLine).getId());
+        if (!getInitialized()) {
+            logger.warning(MAP_VIEW_NOT_YET_INITIALIZED);
+        } else {
+            removeCoordinateLineWithId(requireNonNull(coordinateLine).getId());
+        }
         return this;
     }
 
@@ -642,26 +652,30 @@ public final class MapView extends Region {
     }
 
     /**
-     * removes the given marker from th map and deregisters the change listeners. If the marker was not in the map,
-     * nothing happens
+     * removes the given marker from th map and deregisters the change listeners. If the marker was not in the map ot
+     * the MapView is not yet initialized, nothing happens
      *
      * @param marker
      *         marker to remove
-     * @throws java.lang.IllegalArgumentException
+     * @return this object
+     * @throws java.lang.NullPointerException
      *         if marker is null
      */
-    public void removeMarker(Marker marker) {
-        if (null == marker) {
-            throw new IllegalArgumentException();
+    public MapView removeMarker(Marker marker) {
+        if (!getInitialized()) {
+            logger.warning(MAP_VIEW_NOT_YET_INITIALIZED);
+        } else {
+            Objects.requireNonNull(marker);
+            if (markers.containsKey(marker)) {
+                marker.positionProperty().removeListener(markers.get(marker).getCoordinateChangeListener());
+                marker.visibleProperty().removeListener(markers.get(marker).getVisibileChangeListener());
+                markers.remove(marker);
+                removeMarkerInMap(marker);
+                marker.setVisible(false);
+                logger.finer(() -> "removed marker " + marker);
+            }
         }
-        if (markers.containsKey(marker)) {
-            marker.positionProperty().removeListener(markers.get(marker).getCoordinateChangeListener());
-            marker.visibleProperty().removeListener(markers.get(marker).getVisibileChangeListener());
-            markers.remove(marker);
-            removeMarkerInMap(marker);
-            marker.setVisible(false);
-            logger.finer(() -> "removed marker " + marker);
-        }
+        return this;
     }
 
     /**
@@ -696,13 +710,20 @@ public final class MapView extends Region {
      * @param extent
      *         extent to show, if null, nothing is changed
      * @return this object
+     * @throws java.lang.NullPointerException
+     *         when extent is null
      */
     public MapView setExtent(Extent extent) {
-        if (getInitialized() && null != extent) {
+        if (!getInitialized()) {
+            logger.warning(MAP_VIEW_NOT_YET_INITIALIZED);
+        } else {
+            Objects.requireNonNull(extent);
             logger.finer(
-                    () -> "setting extent in OpenLayers map: " + extent + ", animation: " + animationDuration.get());
+                    () -> "setting extent in OpenLayers map: " + extent + ", animation: " +
+                            animationDuration.get());
             javascriptConnector.call("setExtent", extent.getMin().getLatitude(), extent.getMin().getLongitude(),
                     extent.getMax().getLatitude(), extent.getMax().getLongitude(), animationDuration.get());
+
         }
         return this;
     }

@@ -37,7 +37,9 @@ public final class MarkerChangeListeners {
 
     /**
      * @param coordinateChangeListener
+     *         coordinate change listener
      * @param visibileChangeListener
+     *         visibility change listener
      * @throws java.lang.NullPointerException
      *         if either argument is null
      */
