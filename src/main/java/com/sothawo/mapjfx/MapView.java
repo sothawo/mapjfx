@@ -547,6 +547,7 @@ public final class MapView extends Region {
                             javascriptConnector.call("hello", "master");
 
                             initialized.set(true);
+                            setMapTypeInMap();
                             setCenterInMap();
                             setZoomInMap();
                             logger.finer("initialized.");

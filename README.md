@@ -37,9 +37,17 @@ The test application does not contain all the features, to have that, check
 
 ## version history
 
-### 1.3.4-SNAPSHOT
+### 1.4.2-SNAPSHOT
 
 current development version
+
+### 1.4.1
+
+* Bugfix: wenn MapType was set before the MapView was initialized, the setting was ignored
+
+### 1.4.0
+
+* display of lines/tracks
 
 ### 1.3.3
 
