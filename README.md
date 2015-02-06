@@ -37,6 +37,10 @@ The test application does not contain all the features, to have that, check
 
 ## version history
 
+### 1.4.3-SNAPSHOT
+
+current development version
+
 ### 1.4.2
 
 * fix for interruption of 1.4.1 release process
