@@ -253,7 +253,7 @@ public final class MapView extends Region {
                         coordinateLines.forEach((k, v) -> {
                             if (null == v.get()) {
                                 idsToRemove.add(k);
-                                logger.finer(() -> "need to clean upcoordinate line " + k);
+                                logger.finer(() -> "need to cleanup coordinate line " + k);
                             }
                         });
                     }
