@@ -108,12 +108,19 @@ public final class MapView extends Region {
     private SimpleObjectProperty<MapType> mapType;
 
     /** markers in the map together with the listeners */
-    private final Map<Marker, MarkerChangeListeners> markers = new HashMap<>();
+    private final Map<Marker, MarkerListener> markers = new HashMap<>();
 
-    /** names of CoordinateLines in the map */
+    /** a map from the names of CoordinateLines in the map to WeakReferences of the CoordinateLines. When
+     * CoordianteLines are gc'ed the keys in this map point to null and are used to clean up the internal structures. */
     private final Map<String, WeakReference<CoordinateLine>> coordinateLines = new HashMap<>();
     /** reference queue for the CoordinateLine weak references */
     private final ReferenceQueue<CoordinateLine> referenceQueueCoordinateLine = new ReferenceQueue<>();
+    /**
+     * the listeners that are attached to the CoordinateLine objects. Here the names are used as keys and not the
+     * CoordinateLine objects themselves as this would prevent them from being gc'ed; and we are not the owners otf
+     * them.
+     */
+    private final Map<String, CoordinateLineListener> coordinateLineListeners = new HashMap<>();
 
     /** cache for loading images in base64 strings */
     private final ConcurrentHashMap<URL, String> imgCache = new ConcurrentHashMap<>();
@@ -243,7 +250,8 @@ public final class MapView extends Region {
      */
     private void startWeakRefCleaner() {
         Thread thread = new Thread(() -> {
-            while (true) {
+            boolean running = true;
+            while (running) {
                 try {
                     // just wait, no need to get the - gc'ed object
                     referenceQueueCoordinateLine.remove();
@@ -259,8 +267,9 @@ public final class MapView extends Region {
                     }
                     // run on the JavaFX thread, as removeCoordinateLineWithId() calls methods from the WebView
                     Platform.runLater(() -> idsToRemove.forEach(this::removeCoordinateLineWithId));
-                } catch (InterruptedException ignored) {
-                    // ignored
+                } catch (InterruptedException e) {
+                    logger.warning("thread interrupted");
+                    running = false;
                 }
             }
         });
@@ -287,15 +296,12 @@ public final class MapView extends Region {
         if (!getInitialized()) {
             logger.warning(MAP_VIEW_NOT_YET_INITIALIZED);
         } else {
-            // sync on the map as the cleaner thread accesses this as well
+            // sync on the coordinatesLines map as the cleaner thread accesses this as well
             synchronized (coordinateLines) {
                 if (!coordinateLines.containsKey(requireNonNull(coordinateLine).getId())) {
                     logger.fine(() -> "adding coordinate line " + coordinateLine);
                     String id = coordinateLine.getId();
-                    // store a weak reference to be able to remove the line from the map if the caller forgets to do so
-                    coordinateLines.put(id, new WeakReference<>(coordinateLine, referenceQueueCoordinateLine));
                     JSObject jsCoordinateLine = (JSObject) javascriptConnector.call("getCoordinateLine", id);
-
                     coordinateLine.getCoordinateStream().forEach(
                             (coord) -> jsCoordinateLine
                                     .call("addCoordinate", coord.getLatitude(), coord.getLongitude()));
@@ -305,10 +311,15 @@ public final class MapView extends Region {
                     jsCoordinateLine.call("setWidth", coordinateLine.getWidth());
                     jsCoordinateLine.call("seal");
 
-                    coordinateLine.visibleProperty()
-                            .addListener(
-                                    (observable, newValue, oldValue) -> setCoordinateLineVisibleInMap(coordinateLine));
+                    ChangeListener<Boolean> changeListener =
+                            (observable, newValue, oldValue) -> setCoordinateLineVisibleInMap(coordinateLine);
+                    coordinateLine.visibleProperty().addListener(changeListener);
+                    // store the listener as we must unregister on removeCooridnateLine
+                    coordinateLineListeners.put(id, new CoordinateLineListener(changeListener));
                     setCoordinateLineVisibleInMap(coordinateLine);
+
+                    // store a weak reference to be able to remove the line from the map if the caller forgets to do so
+                    coordinateLines.put(id, new WeakReference<>(coordinateLine, referenceQueueCoordinateLine));
                 }
             }
         }
@@ -361,7 +372,7 @@ public final class MapView extends Region {
             // the same for the visibility
             ChangeListener<Boolean> visibileChangeListener =
                     (observable, oldValue, newValue) -> setMarkerVisibleInMap(marker);
-            markers.put(marker, new MarkerChangeListeners(coordinateChangeListener, visibileChangeListener));
+            markers.put(marker, new MarkerListener(coordinateChangeListener, visibileChangeListener));
 
             // observe the markers position and visibility
             marker.positionProperty().addListener(coordinateChangeListener);
@@ -645,9 +656,19 @@ public final class MapView extends Region {
         synchronized (coordinateLines) {
             if (coordinateLines.containsKey(id)) {
                 logger.fine(() -> "removing coordinate line " + id);
-                coordinateLines.remove(id);
+
                 javascriptConnector.call("hideCoordinateLine", id);
                 javascriptConnector.call("removeCoordinateLine", id);
+
+                // if the coordinateLine was not gc'ed we need to unregister the listeners
+                CoordinateLine coordinateLine = coordinateLines.get(id).get();
+                CoordinateLineListener coordinateLineListener = coordinateLineListeners.get(id);
+                if (null != coordinateLine && null != coordinateLineListener) {
+                    coordinateLine.visibleProperty().removeListener(coordinateLineListener.getVisibileChangeListener());
+                }
+
+                coordinateLineListeners.remove(id);
+                coordinateLines.remove(id);
             }
         }
     }
