@@ -21,7 +21,7 @@ import java.util.Collection;
 import static java.util.Objects.requireNonNull;
 
 /**
- * An extent defines an area by two coordinates: min latitude/min longitude and may latitude/max longitude
+ * An extent defines an area by two coordinates: min latitude/min longitude and max latitude/max longitude.
  *
  * @author P.J. Meisch (pj.meisch@sothawo.com).
  */

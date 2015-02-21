@@ -18,12 +18,11 @@ package com.sothawo.mapjfx;
 import static java.util.Objects.requireNonNull;
 
 /**
- * Coordinates with longitude and latitude values. Tha class itself is not finale, but the latitude and longitude
- * properties are final so they cannot be modified in derived classes.
+ * Coordinates with longitude and latitude values. Tha class is finalmaking a Coordinate object immutable.
  *
  * @author P.J.Meisch (pj.meisch@sothawo.com)
  */
-public class Coordinate {
+public final class Coordinate {
 // ------------------------------ FIELDS ------------------------------
 
     /** latitude value */

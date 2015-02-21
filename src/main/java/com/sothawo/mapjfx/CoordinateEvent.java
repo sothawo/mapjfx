@@ -20,7 +20,8 @@ import javafx.event.EventTarget;
 import javafx.event.EventType;
 
 /**
- * Event class for coordinate events.
+ * Event class for coordinate events. At the moment the only event that is defined is a clickin the map. This results
+ * in a correspondign CoordinateEvent being fired.
  *
  * @author P.J. Meisch (pj.meisch@sothawo.com).
  */

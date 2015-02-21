@@ -27,7 +27,9 @@ import java.util.stream.Stream;
 import static java.util.Objects.requireNonNull;
 
 /**
- * A sequence of Coordinate objects which is drawn on the map as a line connecting the coordinates.
+ * A sequence of Coordinate objects which is drawn on the map as a line connecting the coordinates. It has a visible
+ * property that enables to switch the visibility on the map off without removing the CoordinateLine frmthe map.
+ * Invisible CoordinateLines can easily be switched to visiblae again.
  *
  * @author P.J.Meisch (pj.meisch@jaroso.de)
  */
@@ -45,7 +47,7 @@ public class CoordinateLine {
     private final String id;
     /** the coordinates of the line */
     private final List<Coordinate> coordinates = new ArrayList<>();
-    /** visible property */
+    /** property controlling the visibiloty of the CoordinateLine on the map. */
     private final SimpleBooleanProperty visible = new SimpleBooleanProperty(false);
     /** color of the line */
     private Color color;

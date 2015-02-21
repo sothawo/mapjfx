@@ -20,7 +20,9 @@ import javafx.beans.value.ChangeListener;
 import java.util.Objects;
 
 /**
- * Encapsulation of different ChangeListener instances.
+ * Internal helper class. Encapsulation of different ChangeListener instances.
+ * <br/>
+ * NOTE: will probably be removed in futureimplementation
  *
  * @author P.J. Meisch (pj.meisch@sothawo.com).
  */

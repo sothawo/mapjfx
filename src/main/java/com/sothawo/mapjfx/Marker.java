@@ -30,7 +30,7 @@ import static java.util.Objects.requireNonNull;
  * offset values, x positive to the right, y positive down.<br><br>
  *
  * The image URL and offset values can only be set at construction time, the coordinate is a JavaFX property. The Marker
- * has a visibilty property whch must be set to true to make the marker visible. With this property it is possible to
+ * has a visibility property which must be set to true to make the marker visible. With this property it is possible to
  * hide the marker without completely removing it from the map.<br><br>
  *
  * A marker has a unique (within class existence in the VM) id of the form "marker-NNN" where NNN is a consecutive
@@ -198,7 +198,7 @@ public final class Marker {
 // -------------------------- ENUMERATIONS --------------------------
 
     /**
-     * provided Markers. contains the filename and the offsets as well.
+     * provided Markers.
      */
     public static enum Provided {
         BLUE("blue_map_marker.png", -32, -64),
