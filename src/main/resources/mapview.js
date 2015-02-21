@@ -40,6 +40,9 @@ var markerOverlays = {};
 // to store coordinateLine objects with a name
 var coordinateLines = {};
 
+// to store the marker objects with a name
+var markers = {};
+
 /*******************************************************************************************************************
   map and handlers
  */
@@ -122,6 +125,7 @@ var jsConnector = {
         }
         view.setCenter(newCenter);
     },
+
     /**
      * sets the zoom of the map
      *
@@ -141,6 +145,7 @@ var jsConnector = {
             view.setZoom(zoom);
         }
     },
+
     /**
      * sets the extent of the map
      *
@@ -166,6 +171,7 @@ var jsConnector = {
         }
         view.fitExtent(extent, map.getSize());
     },
+
     /**
      * sets the map type
      *
@@ -188,7 +194,7 @@ var jsConnector = {
      *
      * @return {CoordinateLine} the object
      */
-     getCoordinateLine: function(name) {
+    getCoordinateLine: function(name) {
         var coordinateLine = coordinateLines[name];
         if(!coordinateLine) {
             coordinateLine = new CoordinateLine();
@@ -196,7 +202,7 @@ var jsConnector = {
             javaConnector.debug("created CoordinateLine object named " + name);
         }
         return coordinateLine;
-     },
+    },
 
 
     /**
@@ -204,45 +210,167 @@ var jsConnector = {
      *
      * @param {string} the name of the coordinateLine
      */
-     showCoordinateLine: function(name) {
+    showCoordinateLine: function(name) {
         var coordinateLine = coordinateLines[name];
         if(coordinateLine && !coordinateLine.getOnMap()) {
             sourceFeatures.addFeature(coordinateLine.getFeature());
             javaConnector.debug("showed CoordinateLine object named " + name);
             coordinateLine.setOnMap(true);
         }
-     },
+    },
 
     /**
      * hides a coordinateLine.
      *
      * @param {string} the name of the coordinateLine
      */
-     hideCoordinateLine: function(name) {
+    hideCoordinateLine: function(name) {
         var coordinateLine = coordinateLines[name];
         if(coordinateLine && coordinateLine.getOnMap()) {
             sourceFeatures.removeFeature(coordinateLine.getFeature());
             javaConnector.debug("hid CoordinateLine object named " + name);
             coordinateLine.setOnMap(false);
         }
-     },
+    },
 
     /**
      * removes a coordinateLine.
      *
      * @param {string} the name of the coordinateLine
      */
-     removeCoordinateLine: function(name) {
+    removeCoordinateLine: function(name) {
         if(coordinateLines[name]) {
             this.hideCoordinateLine(name);
             delete coordinateLines[name];
             javaConnector.debug("deleted CoordinateLine object named " + name);
         }
-     },
+    },
+
+    /** adds a marker to the map
+     * @param {string} the name of the marker
+     * @param {string} url the url of the marker's image
+     * @param {number} the latitude of the marker's position
+     * @param {number} the longitude of the marker's position
+     * @param {number} x-offset of the top left point of the mage to the coordinate
+     * @param {number} y-offset of the top left point of the mage to the coordinate
+     */
+    addMarker: function(name, url, latitude, longitude, offsetX, offsetY) {
+        var marker = markers[name];
+        if(!marker) {
+            marker = new Marker(name, latitude, longitude);
+            markers[name] = marker;
+
+            // add a new <img> element to <div id='markers'>
+            var markersElement = document.getElementById('markers');
+            imgElement = document.createElement('img');
+            imgElement.setAttribute('id', name);
+            imgElement.setAttribute('alt', name);
+            imgElement.setAttribute('draggable', 'false');
+            imgElement.ondragstart = function() {
+                return false;
+            }
+            marker.setImgElement(imgElement);
+
+            // create an image object that does the rest when finished loading
+            var newImg = new Image;
+            newImg.onload = function() {
+                javaConnector.debug('image loaded from ' + url);
+                imgElement.src = this.src;
+
+                markersElement.appendChild(imgElement);
+
+                var overlay = new ol.Overlay({
+                    offset: [offsetX, offsetY],
+                    position: cFromWGS84([longitude,latitude]),
+                    element: imgElement
+                });
+                marker.setOverlay(overlay);
+            };
+            newImg.onerror = function() {
+                javaConnector.debug('image load error');
+            };
+            newImg.src = url;
+
+            javaConnector.debug("created Marker object named " + name);
+        }
+    },
+
+    /**
+     * moves a marker to a new position
+     * @param {string} the name of the marker
+     * @param {number} the latitude of the new position
+     * @param {number} the longitude of the new position
+     */
+    moveMarker: function(name,latitude,longitude) {
+        var marker = markers[name];
+        // TODO: is it necessary to be on the map?
+        if(marker && marker.getOnMap){
+            var overlay = marker.getOverlay();
+            if(overlay) {
+                overlay.setPosition(cFromWGS84([longitude,latitude]));
+                javaConnector.debug("moved marker " + name);
+            }
+        }
+    },
+
+    /**
+     * removes a marker from the map
+     * @param {string} the name of the marker
+     */
+    removeMarker: function(name) {
+        var marker = markers[name];
+        if(marker) {
+            this.hideMarker(name);
+            var imgElement = marker.getImgElement();
+            if(imgElement){
+                delete imgElement;
+            }
+            delete markers[name];
+            javaConnector.debug("deleted Marker object named " + name);
+        }
+    },
+
+    /**
+     * hides a marker from the map. the overlay is deleted from the map - not from the marker object -  and the img
+     * element is moved to the markers div which is not displayed
+     * @param {string} the name of the marker
+     */
+    hideMarker: function(name) {
+        var marker = markers[name];
+        if(marker && marker.getOnMap()) {
+            var overlay = marker.getOverlay();
+            if(overlay) {
+                map.removeOverlay(overlay);
+            }
+            var imgElement = marker.getImgElement();
+            if(imgElement){
+                imgElement.parentNode.removeChild(imgElement);
+                var markersElement = document.getElementById('markers');
+                markersElement.appendChild(img);
+            }
+            marker.setOnMap(false);
+            javaConnector("hid marker " + name);
+        }
+    },
+
+    /**
+     * shows a marker on the map
+     * @param {string} the name of the marker
+     */
+    showMarker: function(name) {
+        var marker = markers[name];
+        if(marker && !marker.getOnMap()) {
+            var overlay = marker.getOverlay();
+            if(overlay) {
+                map.addOverlay(overlay);
+            }
+            javaConnector("showed marker " + name);
+        }
+    }
 }
 
 /**
- * @return the on and only jsConnector object
+ * @return the one and only jsConnector object
  */
 function getJsConnector() {
     return jsConnector;
@@ -256,7 +384,7 @@ function getJsConnector() {
 function addMarkerWithURL(name, url, latitude, longitude, offsetX, offsetY) {
     var img = document.getElementById(name);
     if(!img) {
-        var markers = document.getElementById('markers');
+        var markersElement = document.getElementById('markers');
         img = document.createElement('img');
         img.setAttribute('id', name);
         img.setAttribute('alt', name);
@@ -271,7 +399,7 @@ function addMarkerWithURL(name, url, latitude, longitude, offsetX, offsetY) {
             javaConnector.debug('image loaded from ' + url);
             img.src = this.src;
 
-            markers.appendChild(img);
+            markersElement.appendChild(img);
 
             var overlay = new ol.Overlay({
                 offset: [offsetX, offsetY],

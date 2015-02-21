@@ -23,18 +23,22 @@
 
 /**
  * @constructor
+ *
+ * @param {string} name of the marker
  */
-function Marker() {
-    this.coordinate = [];
+function Marker(nameParam) {
     this.onMap = false;
+    this.name = nameParam;
+    this.overlay = {};
+    this.imgElement = {};
 }
 
 /**
- * @returns {array} the coordinate of this Marker. Coordinates are in longitude/latitude order.
+ * @returns {string} the name of the Marker.
  */
-Marker.prototype.getCoordinate = function() {
-    return this.coordinate;
-};
+Marker.prototype.getName = function() {
+    return this.name;
+}
 
 /**
  * sets the flag wether the marker is shown on the map
@@ -51,4 +55,34 @@ Marker.prototype.setOnMap = function(flag) {
  */
 Marker.prototype.getOnMap = function() {
     return this.onMap;
+};
+
+/**
+ * sets the Markewrs's overlay
+ * @param {ol.Overlay} the overlay
+ */
+Marker.prototype.setOverlay = function(o) {
+    this.overlay = o;
+};
+
+/**
+ * @retuns {ol.Overlay} the marker's overlay
+ */
+Marker.prototype.getOverlay = funtion() {
+    return this.overlay;
+};
+
+/**
+ * sets the img element
+ * @param {Node} image element
+ */
+Marker.prototype.setImgElement = function(el) {
+    this.imgElement = el;
+};
+
+/**
+ * @returns {Node} the image element
+ */
+Marker.prototype.getImgElement = function() {
+    return this.imgElement;
 };
