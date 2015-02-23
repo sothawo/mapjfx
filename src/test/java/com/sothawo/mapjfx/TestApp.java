@@ -46,8 +46,10 @@ public class TestApp extends Application {
     private static final Coordinate coordKarlsruheCastle = new Coordinate(49.013517, 8.404435);
     private static final Coordinate coordKarlsruheHarbour = new Coordinate(49.015511, 8.323497);
     private static final Coordinate coordKarlsruheStation = new Coordinate(48.993284, 8.402186);
+    private static final Extent extentAll =
+            Extent.forCoordinates(coordKarlsruheHarbour, coordKarlsruheCastle, coordKarlsruheStation);
 
-    private static CoordinateLine coordinateLine =
+    private static final CoordinateLine coordinateLine =
             new CoordinateLine(coordKarlsruheCastle, coordKarlsruheHarbour, coordKarlsruheStation).setVisible(true)
                     .setColor(Color.DODGERBLUE).setWidth(7);
 
@@ -108,8 +110,21 @@ public class TestApp extends Application {
             @Override
             public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
                 if (newValue) {
+                    // a map is only displayed when an initial coordinate is set
                     mapView.setCenter(coordKarlsruheHarbour);
-                    mapView.setZoom(DEFAULT_ZOOM);
+                    mapView.setExtent(extentAll);
+
+                    // add two markers without keeping a ref to them, they should disappear from the map when gc'ed
+                    mapView.addMarker(Marker.createProvided(Marker.Provided.GREEN).setPosition(coordKarlsruheHarbour)
+                            .setVisible(true));
+                    mapView.addMarker(
+                            Marker.createProvided(Marker.Provided.ORANGE).setPosition(coordKarlsruheStation).setVisible(
+                                    true));
+
+                    mapView.addCoordinateLine(new CoordinateLine(coordKarlsruheHarbour, coordKarlsruheStation, coordKarlsruheCastle)
+                            .setVisible(true)
+                            .setColor(Color.FUCHSIA).setWidth(5));
+
                     topPane.setDisable(false);
                 }
             }
@@ -158,9 +173,7 @@ public class TestApp extends Application {
 
         btn = new Button();
         btn.setText("all");
-        btn.setOnAction(event -> mapView.setExtent(Extent.forCoordinates(coordKarlsruheHarbour,
-                coordKarlsruheCastle,
-                coordKarlsruheStation)));
+        btn.setOnAction(event -> mapView.setExtent(extentAll));
         hbox.getChildren().add(btn);
 
         Slider slider = new Slider(MapView.MIN_ZOOM, MapView.MAX_ZOOM, MapView.INITIAL_ZOOM);
@@ -181,45 +194,51 @@ public class TestApp extends Application {
         vbox.getChildren().add(hbox);
 
         btn = new Button();
-        btn.setText("OpenStreetMap");
-        btn.setOnAction(event -> mapView.setMapType(MapType.OSM));
+        btn.setText("OSM");
+        btn.setOnAction(evt -> mapView.setMapType(MapType.OSM));
         hbox.getChildren().add(btn);
 
         btn = new Button();
-        btn.setText("MapQuest");
-        btn.setOnAction(event -> mapView.setMapType(MapType.MAPQUEST_OSM));
+        btn.setText("MQ");
+        btn.setOnAction(evt -> mapView.setMapType(MapType.MAPQUEST_OSM));
         hbox.getChildren().add(btn);
 
         btn = new Button();
         btn.setText("add marker");
-        btn.setOnAction(event -> mapView.addMarker(marker));
+        btn.setOnAction(evt -> mapView.addMarker(marker));
         hbox.getChildren().add(btn);
 
         btn = new Button();
         btn.setText("toggle marker visibility");
-        btn.setOnAction(event -> marker.setVisible(!marker.getVisible()));
+        btn.setOnAction(evt -> marker.setVisible(!marker.getVisible()));
         hbox.getChildren().add(btn);
 
         btn = new Button();
         btn.setText("remove marker");
-        btn.setOnAction(event -> mapView.removeMarker(marker));
+        btn.setOnAction(evt -> mapView.removeMarker(marker));
         hbox.getChildren().add(btn);
 
         btn = new Button();
         btn.setText("add Track");
-        btn.setOnAction(event -> mapView.addCoordinateLine(coordinateLine));
+        btn.setOnAction(evt -> mapView.addCoordinateLine(coordinateLine));
         hbox.getChildren().add(btn);
 
         btn = new Button();
         btn.setText("remove Track");
-        btn.setOnAction(event -> mapView.removeCoordinateLine(coordinateLine));
+        btn.setOnAction(evt -> mapView.removeCoordinateLine(coordinateLine));
         hbox.getChildren().add(btn);
 
         btn = new Button();
         btn.setText("toggle Track visibilty");
-        btn.setOnAction(event -> coordinateLine.setVisible(!coordinateLine.getVisible()));
+        btn.setOnAction(evt -> coordinateLine.setVisible(!coordinateLine.getVisible()));
         hbox.getChildren().add(btn);
 
+        btn = new Button();
+        btn.setText("GC");
+        btn.setOnAction(evt -> {
+            System.gc();
+        });
+        hbox.getChildren().add(btn);
 
         vbox.setDisable(true);
 

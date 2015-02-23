@@ -257,41 +257,38 @@ var jsConnector = {
     addMarker: function(name, url, latitude, longitude, offsetX, offsetY) {
         var marker = markers[name];
         if(!marker) {
-            marker = new Marker(name, latitude, longitude);
-            markers[name] = marker;
+            marker = new Marker(name, cFromWGS84([longitude,latitude]));
+            javaConnector.debug('created Marker object named ' + name);
 
             // add a new <img> element to <div id='markers'>
             var markersElement = document.getElementById('markers');
             imgElement = document.createElement('img');
+            markersElement.appendChild(imgElement);
+
             imgElement.setAttribute('id', name);
             imgElement.setAttribute('alt', name);
             imgElement.setAttribute('draggable', 'false');
             imgElement.ondragstart = function() {
                 return false;
             }
-            marker.setImgElement(imgElement);
-
-            // create an image object that does the rest when finished loading
-            var newImg = new Image;
-            newImg.onload = function() {
+            imgElement.onload = function() {
                 javaConnector.debug('image loaded from ' + url);
-                imgElement.src = this.src;
-
-                markersElement.appendChild(imgElement);
-
-                var overlay = new ol.Overlay({
-                    offset: [offsetX, offsetY],
-                    position: cFromWGS84([longitude,latitude]),
-                    element: imgElement
-                });
-                marker.setOverlay(overlay);
             };
-            newImg.onerror = function() {
-                javaConnector.debug('image load error');
+            imgElement.onerror = function() {
+                javaConnector.debug('image load error from ' + url);
             };
-            newImg.src = url;
-
-            javaConnector.debug("created Marker object named " + name);
+            imgElement.src = url;
+            javaConnector.debug('started loading img from ' + url);
+            
+            var overlay = new ol.Overlay({
+                offset: [offsetX, offsetY],
+                position: undefined,
+                element: imgElement
+            });
+            marker.setOverlay(overlay);
+			map.addOverlay(overlay);
+			
+            markers[name] = marker;
         }
     },
 
@@ -303,13 +300,15 @@ var jsConnector = {
      */
     moveMarker: function(name,latitude,longitude) {
         var marker = markers[name];
-        // TODO: is it necessary to be on the map?
-        if(marker && marker.getOnMap){
-            var overlay = marker.getOverlay();
-            if(overlay) {
-                overlay.setPosition(cFromWGS84([longitude,latitude]));
-                javaConnector.debug("moved marker " + name);
+        if(marker){
+	        marker.setPosition(cFromWGS84([longitude,latitude]));
+	        if(marker.getOnMap()) {
+	            var overlay = marker.getOverlay();
+	            if(overlay) {
+	                overlay.setPosition(marker.getPosition());
+	            }
             }
+            javaConnector.debug('moved marker ' + name);
         }
     },
 
@@ -321,10 +320,13 @@ var jsConnector = {
         var marker = markers[name];
         if(marker) {
             this.hideMarker(name);
-            var imgElement = marker.getImgElement();
+            var overlay = marker.getOverlay();
+            map.removeOverlay(overlay);
+            var imgElement = overlay.getElement();
             if(imgElement){
                 delete imgElement;
             }
+            delete overlay;            
             delete markers[name];
             javaConnector.debug("deleted Marker object named " + name);
         }
@@ -340,16 +342,10 @@ var jsConnector = {
         if(marker && marker.getOnMap()) {
             var overlay = marker.getOverlay();
             if(overlay) {
-                map.removeOverlay(overlay);
-            }
-            var imgElement = marker.getImgElement();
-            if(imgElement){
-                imgElement.parentNode.removeChild(imgElement);
-                var markersElement = document.getElementById('markers');
-                markersElement.appendChild(img);
+                overlay.setPosition(undefined);
             }
             marker.setOnMap(false);
-            javaConnector("hid marker " + name);
+            javaConnector.debug("hid marker " + name);
         }
     },
 
@@ -362,9 +358,10 @@ var jsConnector = {
         if(marker && !marker.getOnMap()) {
             var overlay = marker.getOverlay();
             if(overlay) {
-                map.addOverlay(overlay);
+                overlay.setPosition(marker.getPosition());
             }
-            javaConnector("showed marker " + name);
+            marker.setOnMap(true);
+            javaConnector.debug("showed marker " + name);
         }
     }
 }
@@ -376,61 +373,3 @@ function getJsConnector() {
     return jsConnector;
 }
 
-/*******************************************************************************************************************
-  functions
- */
-
-
-function addMarkerWithURL(name, url, latitude, longitude, offsetX, offsetY) {
-    var img = document.getElementById(name);
-    if(!img) {
-        var markersElement = document.getElementById('markers');
-        img = document.createElement('img');
-        img.setAttribute('id', name);
-        img.setAttribute('alt', name);
-        img.setAttribute('draggable', 'false');
-        img.ondragstart = function() {
-            return false;
-        }
-
-        // create an image that does the rest when finished loading
-        var newImg = new Image;
-        newImg.onload = function() {
-            javaConnector.debug('image loaded from ' + url);
-            img.src = this.src;
-
-            markersElement.appendChild(img);
-
-            var overlay = new ol.Overlay({
-                offset: [offsetX, offsetY],
-                position: cFromWGS84([longitude,latitude]),
-                element: img
-            });
-            markerOverlays[name] = overlay;
-            map.addOverlay(overlay);
-        };
-        newImg.onerror = function() {
-            javaConnector.debug('image load error');
-        };
-        newImg.src = url;
-    }
-}
-
-function removeMarker(name) {
-    var overlay = markerOverlays[name];
-    if(overlay) {
-        map.removeOverlay(overlay);
-        delete markerOverlays[name];
-    }
-    var img = document.getElementById(name);
-    if(img){
-       img.parentNode.removeChild(img);
-    }
-}
-
-function moveMarker(name,latitude,longitude) {
-    var overlay = markerOverlays[name];
-    if(overlay) {
-        overlay.setPosition(cFromWGS84([longitude,latitude]));
-    }
-}

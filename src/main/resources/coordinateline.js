@@ -37,7 +37,7 @@ function CoordinateLine() {
  */
 CoordinateLine.prototype.getCoordinates = function() {
     return this.coordinates;
-};
+}
 
 /**
  * adds a coordinate to the coordinates array
@@ -47,7 +47,7 @@ CoordinateLine.prototype.getCoordinates = function() {
 CoordinateLine.prototype.addCoordinate = function(latitude, longitude) {
     // lat/lon reversion
     this.coordinates.push(cFromWGS84([longitude, latitude]));
-};
+}
 
 /**
  * finishes construction of the object and builds the OL Feature based in the coordinates that were set
@@ -61,7 +61,7 @@ CoordinateLine.prototype.seal = function() {
               })
           });
     this.feature.setStyle(style);
-};
+}
 
 /**
  * gets the feature for OpenLayers map
@@ -69,7 +69,7 @@ CoordinateLine.prototype.seal = function() {
  */
 CoordinateLine.prototype.getFeature = function() {
     return this.feature;
-};
+}
 
 /**
  * sets the flag wether the feature is shown on the map
@@ -78,7 +78,7 @@ CoordinateLine.prototype.getFeature = function() {
  */
 CoordinateLine.prototype.setOnMap = function(flag) {
     this.onMap = flag;
-};
+}
 
 /**
  * gets the flag wether the feature is visible on the map
@@ -86,7 +86,7 @@ CoordinateLine.prototype.setOnMap = function(flag) {
  */
 CoordinateLine.prototype.getOnMap = function() {
     return this.onMap;
-};
+}
 
 /**
  * sets the color of the line.

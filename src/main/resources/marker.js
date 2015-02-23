@@ -15,22 +15,23 @@
 */
 
 /**
- * Marker object. A CoordinateLine object contains a coordinate which is an array of two numbers.
+ * Marker object. A Marker object contains a coordinate which is an array of two numbers.
  * Internally the coordinates are stored in longitude/latitude order, as this is the order expected by OpenLayers.
- * It has a name, an url for the image to be displayed and offset values for x and y to position the image in
- reference to the coordinate.
+ * It has a name, and an overlay to be shown in the OL map.
  */
 
 /**
  * @constructor
  *
  * @param {string} name of the marker
- */
-function Marker(nameParam) {
+  * @param {array[number]} position in OL coordinates (lon/lat)
+*/
+function Marker(nameParam, positionParam) {
     this.onMap = false;
     this.name = nameParam;
     this.overlay = {};
     this.imgElement = {};
+    this.position = positionParam;
 }
 
 /**
@@ -47,7 +48,7 @@ Marker.prototype.getName = function() {
  */
 Marker.prototype.setOnMap = function(flag) {
     this.onMap = flag;
-};
+}
 
 /**
  * gets the flag wether the marker is visible on the map
@@ -55,7 +56,22 @@ Marker.prototype.setOnMap = function(flag) {
  */
 Marker.prototype.getOnMap = function() {
     return this.onMap;
-};
+}
+
+/**
+ * sets the marker's position
+ * @param {array[number]} position in OL coordinates (lon/lat)
+ */
+Marker.prototype.setPosition = function(coords) {
+	this.position = coords;
+}
+
+/**
+ * @return {array[number]} the marker's position
+ */
+Marker.prototype.getPosition = function() {
+	return this.position;
+}
 
 /**
  * sets the Markewrs's overlay
@@ -63,14 +79,14 @@ Marker.prototype.getOnMap = function() {
  */
 Marker.prototype.setOverlay = function(o) {
     this.overlay = o;
-};
+}
 
 /**
  * @retuns {ol.Overlay} the marker's overlay
  */
-Marker.prototype.getOverlay = funtion() {
+Marker.prototype.getOverlay = function() {
     return this.overlay;
-};
+}
 
 /**
  * sets the img element
@@ -78,11 +94,11 @@ Marker.prototype.getOverlay = funtion() {
  */
 Marker.prototype.setImgElement = function(el) {
     this.imgElement = el;
-};
+}
 
 /**
  * @returns {Node} the image element
  */
 Marker.prototype.getImgElement = function() {
     return this.imgElement;
-};
+}
