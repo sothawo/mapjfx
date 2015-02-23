@@ -37,7 +37,7 @@ The test application does not contain all the features, to have that, check
 
 ## version history
 
-### 1.4.3-SNAPSHOT
+### 1.4.3
 
 * fixed potential memory leaks
 * internal reimplementation of Markers
