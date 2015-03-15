@@ -34,9 +34,6 @@ var layersMQ = new ol.layer.Group({
  * global variables
  */
 
-// to store the marker names with the overlays to be able to remove them
-var markerOverlays = {};
-
 // to store coordinateLine objects with a name
 var coordinateLines = {};
 

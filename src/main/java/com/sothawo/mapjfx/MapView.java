@@ -63,6 +63,7 @@ import static java.util.Objects.requireNonNull;
  *
  * @author P.J. Meisch (pj.meisch@sothawo.com).
  */
+@SuppressWarnings("UnusedDeclaration")
 public final class MapView extends Region {
 // ------------------------------ FIELDS ------------------------------
 
