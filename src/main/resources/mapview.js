@@ -262,7 +262,7 @@ var jsConnector = {
 
             // add a new <img> element to <div id='markers'>
             var markersElement = document.getElementById('markers');
-            imgElement = document.createElement('img');
+            var imgElement = document.createElement('img');
             markersElement.appendChild(imgElement);
 
             imgElement.setAttribute('id', name);
