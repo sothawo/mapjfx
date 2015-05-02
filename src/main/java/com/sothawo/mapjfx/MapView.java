@@ -323,7 +323,7 @@ public final class MapView extends Region {
 
     /**
      * adds a marker to the map. If it was already added, nothing is changed. If the MapView is not yet initialized, a
-     * warning is logged and nothing changes. If the marker has no coordinate set, it is not added and a loging entry
+     * warning is logged and nothing changes. If the marker has no coordinate set, it is not added and a logging entry
      * is written.
      *
      * @param marker
