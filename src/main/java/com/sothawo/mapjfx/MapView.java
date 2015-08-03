@@ -233,7 +233,7 @@ public final class MapView extends Region {
                         markers.forEach((k, v) -> {
                             if (null == v.get()) {
                                 markersToRemove.add(k);
-                                logger.finer(() -> "need to cleanup gc'ed marker" + k);
+                                logger.finer(() -> "need to cleanup gc'ed marker " + k);
                             }
                         });
                     }
@@ -323,7 +323,7 @@ public final class MapView extends Region {
 
     /**
      * adds a marker to the map. If it was already added, nothing is changed. If the MapView is not yet initialized, a
-     * warning is logged and nothing changes. If the marker has no coordinate set, it is not added and a loging entry
+     * warning is logged and nothing changes. If the marker has no coordinate set, it is not added and a logging entry
      * is written.
      *
      * @param marker
@@ -345,7 +345,8 @@ public final class MapView extends Region {
             // synchronize on the markers map as the cleaning thread accesses this as well
             synchronized (markers) {
                 if (!markers.containsKey(id)) {
-                    // create a change listener for the coordinate and the visibilty and store them with the marker's id.
+                    // create a change listener for the coordinate and the visibility and store them with the
+                    // marker's id.
                     ChangeListener<Coordinate> coordinateChangeListener =
                             (observable, oldValue, newValue) -> moveMarkerInMap(id);
                     ChangeListener<Boolean> visibileChangeListener =
@@ -359,14 +360,14 @@ public final class MapView extends Region {
                     // keep a weak ref of the marker
                     markers.put(id, new WeakReference<>(marker, weakReferenceQueue));
 
+                    javascriptConnector.call("addMarker", id, marker.getImageURL().toExternalForm(),
+                            marker.getPosition().getLatitude(), marker.getPosition().getLongitude(),
+                            marker.getOffsetX(), marker.getOffsetY());
+
+                    logger.finer(() -> "add marker in OpenLayers map " + marker.toString());
+                    setMarkerVisibleInMap(id);
                 }
 
-                javascriptConnector.call("addMarker", id, marker.getImageURL().toExternalForm(),
-                        marker.getPosition().getLatitude(), marker.getPosition().getLongitude(),
-                        marker.getOffsetX(), marker.getOffsetY());
-
-                logger.finer(() -> "add marker in OpenLayers map " + marker.toString());
-                setMarkerVisibleInMap(id);
             }
         }
         return this;
