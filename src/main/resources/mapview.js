@@ -44,6 +44,8 @@ var markers = {};
   map and handlers
  */
 var map = new ol.Map({
+    /*
+    // hack needed for ol 3.1.1, not necessary in 3.4.0
     controls: [
         new ol.control.Zoom({
             zoomInLabel: '+',
@@ -52,6 +54,7 @@ var map = new ol.Map({
         }),
         new ol.control.Attribution
     ],
+    */
     target: 'map',
     layers: layersOSM,
     view: new ol.View({
