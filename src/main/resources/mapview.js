@@ -169,7 +169,7 @@ var jsConnector = {
             });
             map.beforeRender(animPan, animZoom);
         }
-        view.fitExtent(extent, map.getSize());
+        view.fit(extent, map.getSize());
     },
 
     /**
