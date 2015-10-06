@@ -37,6 +37,10 @@ The test application does not contain all the features, to have that, check
 
 ## version history
 
+### 1.4.6
+
+* update to OpenLayers 3.9.0
+
 ### 1.4.4
 
 * update to OpenLayers 3.4.0
