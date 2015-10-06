@@ -29,7 +29,6 @@ import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Paint;
 import javafx.scene.web.WebEngine;
-import javafx.scene.web.WebEvent;
 import javafx.scene.web.WebView;
 import netscape.javascript.JSException;
 import netscape.javascript.JSObject;
@@ -37,19 +36,24 @@ import netscape.javascript.JSObject;
 import java.awt.*;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -58,6 +62,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -161,6 +167,9 @@ public final class MapView extends Region {
     /** Connector object that is created in the web page and initialized when the page is fully loaded */
     private JSObject javascriptConnector;
 
+    /** Pattern to find resources to include in the html file. */
+    private Pattern htmlIncludePattern = Pattern.compile("^#(.+)#$");
+
 // --------------------------- CONSTRUCTORS ---------------------------
 
     /**
@@ -256,7 +265,6 @@ public final class MapView extends Region {
                     }
                     // run on the JavaFX thread, as removeCoordinateLineWithId() calls methods from the WebView
                     Platform.runLater(() -> markersToRemove.forEach(this::removeMarkerWithId));
-
                 } catch (InterruptedException e) {
                     logger.warning("thread interrupted");
                     running = false;
@@ -382,7 +390,6 @@ public final class MapView extends Region {
                     logger.finer(() -> "add marker in OpenLayers map " + marker.toString());
                     setMarkerVisibleInMap(id);
                 }
-
             }
         }
         return this;
@@ -650,9 +657,14 @@ public final class MapView extends Region {
                     Stream<String> lines = new BufferedReader(
                             new InputStreamReader(mapviewURL.openStream(), StandardCharsets.UTF_8)).lines()
             ) {
-                mapViewHtml = lines.map(String::trim).map(line -> "<head>".equalsIgnoreCase(line) ?
-                        line + "<base href=\"" + mapviewURL.toExternalForm() + "\">" : line).collect(
-                        Collectors.joining());
+                String baseURL = mapviewURL.toExternalForm();
+                String baseURLPath = baseURL.substring(0, baseURL.lastIndexOf(File.separatorChar) + 1);
+                mapViewHtml = lines
+                        .map(String::trim)
+                        .map(line -> processHtmlLine(baseURLPath, line))
+                        .flatMap(List::stream)
+                        .collect(Collectors.joining("\n"));
+                logger.finer(mapViewHtml);
             } catch (IOException e) {
                 logger.log(Level.SEVERE, "loading " + mapviewURL.toExternalForm(), e);
             }
@@ -665,6 +677,41 @@ public final class MapView extends Region {
      */
     public SimpleObjectProperty<MapType> mapTypeProperty() {
         return mapType;
+    }
+
+    /**
+     * processes a line from the html file, adding the base url and replacing template values.
+     *
+     * @param baseURL
+     *         the URL of the file
+     * @param line
+     *         the line to process, must be trimmed
+     * @return a List with the processed strings
+     */
+    private List<String> processHtmlLine(String baseURL, String line) {
+        // insert base url
+        if ("<head>".equalsIgnoreCase(line)) {
+            return Arrays.asList(line, "<base href=\"" + baseURL + "\">");
+        }
+
+        // check for replacement pattern
+        Matcher matcher = htmlIncludePattern.matcher(line);
+        if (matcher.matches()) {
+            String resource = baseURL + matcher.group(1);
+            logger.finer(() -> "loading from " + resource);
+            try (Stream<String> lines = new BufferedReader(
+                    new InputStreamReader(new URL(resource).openStream(), StandardCharsets.UTF_8))
+                    .lines()
+            ) {
+                return lines.collect(Collectors.toList());
+            } catch (IOException e) {
+                logger.log(Level.SEVERE, "loading " + resource, e);
+
+            }
+        }
+
+        // return the line
+        return Collections.singletonList(line);
     }
 
     /**
