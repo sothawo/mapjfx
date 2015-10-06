@@ -40,6 +40,8 @@ var coordinateLines = {};
 // to store the marker objects with a name
 var markers = {};
 
+alert('beforer map');
+
 /*******************************************************************************************************************
   map and handlers
  */
@@ -98,6 +100,8 @@ view.on('change:center', function(evt) {
 view.on('change:resolution', function(evt) {
     javaConnector.zoomChanged(view.getZoom());
 });
+
+alert('before jsConnector');
 
 /*******************************************************************************************************************
  * Connector object for the java application with the functions to be called. there is only this instance, so no
@@ -365,6 +369,8 @@ var jsConnector = {
         }
     }
 }
+
+alert('after jsCOnnector');
 
 /**
  * @return the one and only jsConnector object
