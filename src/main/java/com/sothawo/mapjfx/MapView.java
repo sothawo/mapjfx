@@ -664,7 +664,7 @@ public final class MapView extends Region {
                         .map(line -> processHtmlLine(baseURLPath, line))
                         .flatMap(List::stream)
                         .collect(Collectors.joining("\n"));
-                logger.finer(mapViewHtml);
+//                logger.finer(mapViewHtml);
             } catch (IOException e) {
                 logger.log(Level.SEVERE, "loading " + mapviewURL.toExternalForm(), e);
             }
