@@ -16,7 +16,11 @@
 package com.sothawo.mapjfx;
 
 import javafx.application.Platform;
-import javafx.beans.property.*;
+import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.ReadOnlyBooleanWrapper;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Worker;
@@ -26,23 +30,40 @@ import javafx.scene.layout.Region;
 import javafx.scene.paint.Paint;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
+import netscape.javascript.JSException;
 import netscape.javascript.JSObject;
 
 import java.awt.*;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -81,6 +102,9 @@ public final class MapView extends Region {
     private static final String MAPVIEW_HTML = "/mapview.html";
     private static final String MAP_VIEW_NOT_YET_INITIALIZED = "MapView not yet initialized";
 
+    /** number of retries if Javascript object is not ready. */
+    private static final int NUM_RETRIES_FOR_JS = 10;
+
     /** the WebEngine of the WebView containing the OpenLayers Map. */
     private WebEngine webEngine;
 
@@ -114,20 +138,19 @@ public final class MapView extends Region {
      */
     private final Map<String, WeakReference<Marker>> markers = new HashMap<>();
     /**
-     * reference queue for the weak referenced objects. We don#t need the objects themselves, so a list of Objects
-     * is enough to handle Markers and CoordinateLines
+     * reference queue for the weak referenced objects. We don#t need the objects themselves, so a list of Objects is
+     * enough to handle Markers and CoordinateLines
      */
     private final ReferenceQueue<Object> weakReferenceQueue = new ReferenceQueue<>();
 
     /**
-     * The listeners that are attached to the Marker objects.  Here the names are used as keys and not the
-     * Marker objects themselves as this would prevent them from being gc'ed; and we are not the owners otf
-     * them.
+     * The listeners that are attached to the Marker objects.  Here the names are used as keys and not the Marker
+     * objects themselves as this would prevent them from being gc'ed; and we are not the owners otf them.
      */
     private final Map<String, MarkerListener> markerListeners = new HashMap<>();
     /**
-     * a map from the names of CoordinateLines in the map to WeakReferences of the CoordinateLines. When
-     * CoordianteLines are gc'ed the keys in this map point to null and are used to clean up the internal structures.
+     * a map from the names of CoordinateLines in the map to WeakReferences of the CoordinateLines. When CoordianteLines
+     * are gc'ed the keys in this map point to null and are used to clean up the internal structures.
      */
     private final Map<String, WeakReference<CoordinateLine>> coordinateLines = new HashMap<>();
 
@@ -143,6 +166,9 @@ public final class MapView extends Region {
 
     /** Connector object that is created in the web page and initialized when the page is fully loaded */
     private JSObject javascriptConnector;
+
+    /** Pattern to find resources to include in the html file. */
+    private Pattern htmlIncludePattern = Pattern.compile("^#(.+)#$");
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
@@ -239,7 +265,6 @@ public final class MapView extends Region {
                     }
                     // run on the JavaFX thread, as removeCoordinateLineWithId() calls methods from the WebView
                     Platform.runLater(() -> markersToRemove.forEach(this::removeMarkerWithId));
-
                 } catch (InterruptedException e) {
                     logger.warning("thread interrupted");
                     running = false;
@@ -261,7 +286,6 @@ public final class MapView extends Region {
      *
      * @param coordinateLine
      *         the CoordinateLine to add
-     *
      * @return this object
      * @throws java.lang.NullPointerException
      *         if argument is null
@@ -328,7 +352,6 @@ public final class MapView extends Region {
      *
      * @param marker
      *         the marker
-     *
      * @return this object
      * @throws java.lang.NullPointerException
      *         if marker is null
@@ -367,7 +390,6 @@ public final class MapView extends Region {
                     logger.finer(() -> "add marker in OpenLayers map " + marker.toString());
                     setMarkerVisibleInMap(id);
                 }
-
             }
         }
         return this;
@@ -430,7 +452,6 @@ public final class MapView extends Region {
      *
      * @param imageURL
      *         where to load the image from, may not be null
-     *
      * @return the encoded image as data url
      */
     @SuppressWarnings("UnusedDeclaration")
@@ -499,6 +520,9 @@ public final class MapView extends Region {
             // log versions after webEngine is available
             logVersions();
 
+            // pass JS alerts to the logger
+            webView.getEngine().setOnAlert(event -> logger.warning(() -> "JS alert: " + event.getData()));
+
             // watch for load changes
             webEngine.getLoadWorker().stateProperty().addListener((observable, oldValue, newValue) -> {
                         logger.finer(() -> "WebEngine loader state " + oldValue + " -> " + newValue);
@@ -507,15 +531,34 @@ public final class MapView extends Region {
                             JSObject window = (JSObject) webEngine.executeScript("window");
                             window.setMember("javaConnector", new JavaConnector());
 
-                            // get the Javascript connector object
-                            javascriptConnector = (JSObject) webEngine.executeScript("getJsConnector()");
-                            javascriptConnector.call("hello", "master");
+                            // get the Javascript connector object. Even if the html file is loaded, JS may not yet
+                            // be ready, so prepare for an exception and retry
+                            int numRetries = 0;
+                            do {
+                                try {
+                                    javascriptConnector = (JSObject) webEngine.executeScript("getJsConnector()");
+                                } catch (JSException e) {
+                                    logger.warning("JS not ready, retrying...");
+                                    numRetries++;
+                                    try {
+                                        Thread.sleep(500);
+                                    } catch (InterruptedException e1) {
+                                        logger.warning("retry interrupted");
+                                    }
+                                }
+                            } while (null == javascriptConnector && numRetries < NUM_RETRIES_FOR_JS);
 
-                            initialized.set(true);
-                            setMapTypeInMap();
-                            setCenterInMap();
-                            setZoomInMap();
-                            logger.finer("initialized.");
+                            if (null == javascriptConnector) {
+                                logger.severe(() -> "error loading " + MAPVIEW_HTML + ", JavaScript not ready.");
+                            } else {
+                                javascriptConnector.call("hello", "master");
+
+                                initialized.set(true);
+                                setMapTypeInMap();
+                                setCenterInMap();
+                                setZoomInMap();
+                                logger.finer("initialized.");
+                            }
                         } else if (Worker.State.FAILED == newValue) {
                             logger.severe(() -> "error loading " + MAPVIEW_HTML);
                         }
@@ -614,9 +657,14 @@ public final class MapView extends Region {
                     Stream<String> lines = new BufferedReader(
                             new InputStreamReader(mapviewURL.openStream(), StandardCharsets.UTF_8)).lines()
             ) {
-                mapViewHtml = lines.map(String::trim).map(line -> "<head>".equalsIgnoreCase(line) ?
-                        line + "<base href=\"" + mapviewURL.toExternalForm() + "\">" : line).collect(
-                        Collectors.joining());
+                String baseURL = mapviewURL.toExternalForm();
+                String baseURLPath = baseURL.substring(0, baseURL.lastIndexOf(File.separatorChar) + 1);
+                mapViewHtml = lines
+                        .map(String::trim)
+                        .map(line -> processHtmlLine(baseURLPath, line))
+                        .flatMap(List::stream)
+                        .collect(Collectors.joining("\n"));
+//                logger.finer(mapViewHtml);
             } catch (IOException e) {
                 logger.log(Level.SEVERE, "loading " + mapviewURL.toExternalForm(), e);
             }
@@ -632,12 +680,46 @@ public final class MapView extends Region {
     }
 
     /**
+     * processes a line from the html file, adding the base url and replacing template values.
+     *
+     * @param baseURL
+     *         the URL of the file
+     * @param line
+     *         the line to process, must be trimmed
+     * @return a List with the processed strings
+     */
+    private List<String> processHtmlLine(String baseURL, String line) {
+        // insert base url
+        if ("<head>".equalsIgnoreCase(line)) {
+            return Arrays.asList(line, "<base href=\"" + baseURL + "\">");
+        }
+
+        // check for replacement pattern
+        Matcher matcher = htmlIncludePattern.matcher(line);
+        if (matcher.matches()) {
+            String resource = baseURL + matcher.group(1);
+            logger.finer(() -> "loading from " + resource);
+            try (Stream<String> lines = new BufferedReader(
+                    new InputStreamReader(new URL(resource).openStream(), StandardCharsets.UTF_8))
+                    .lines()
+            ) {
+                return lines.collect(Collectors.toList());
+            } catch (IOException e) {
+                logger.log(Level.SEVERE, "loading " + resource, e);
+
+            }
+        }
+
+        // return the line
+        return Collections.singletonList(line);
+    }
+
+    /**
      * removes a CoordinateLine from the map. If it was not added or the MapView is not yet initialized, nothing
      * happens
      *
      * @param coordinateLine
      *         the CoordinateLine to add
-     *
      * @return this object
      * @throws java.lang.NullPointerException
      *         if argument is null
@@ -685,7 +767,6 @@ public final class MapView extends Region {
      *
      * @param marker
      *         marker to remove
-     *
      * @return this object
      * @throws java.lang.NullPointerException
      *         if marker is null
@@ -731,13 +812,11 @@ public final class MapView extends Region {
 
     /**
      * sets the animation duration in ms. If a value greater than 1 is set, then panning or zooming the map by setting
-     * the center or zoom property will be animated in the given time. Setting this to zero does not switch off the
-     * zoom
+     * the center or zoom property will be animated in the given time. Setting this to zero does not switch off the zoom
      * animation shown when clicking the controls in the map.
      *
      * @param animationDuration
      *         animation duration in ms
-     *
      * @return this object
      */
     public MapView setAnimationDuration(int animationDuration) {
@@ -750,7 +829,6 @@ public final class MapView extends Region {
      *
      * @param center
      *         new center
-     *
      * @return this object
      */
     public MapView setCenter(Coordinate center) {
@@ -763,7 +841,6 @@ public final class MapView extends Region {
      *
      * @param extent
      *         extent to show, if null, nothing is changed
-     *
      * @return this object
      * @throws java.lang.NullPointerException
      *         when extent is null
@@ -794,7 +871,6 @@ public final class MapView extends Region {
      *
      * @param mapType
      *         the new MapType
-     *
      * @return this object
      */
     public MapView setMapType(MapType mapType) {
@@ -803,14 +879,12 @@ public final class MapView extends Region {
     }
 
     /**
-     * sets the zoom level. the zoom value is rounded to the next whole number using {@link Math#round(double)} and
-     * then
+     * sets the zoom level. the zoom value is rounded to the next whole number using {@link Math#round(double)} and then
      * checked to be in the range between {@link #MIN_ZOOM} and {@link #MAX_ZOOM }. If the value is not in this range,
      * the call is ignored.
      *
      * @param zoom
      *         new zoom level
-     *
      * @return this object
      */
     public MapView setZoom(double zoom) {

@@ -14,24 +14,48 @@ Copyright 2015 Peter-Josef Meisch (pj.meisch@sothawo.com)
    See the License for the specific language governing permissions and
    limitations under the License.
 -->
+
+<!--
+    the file is read and processed by a simple engine with the following rules:
+    - after the <head> tag, a <base> tag with the url of this file is inserted
+    - a string of the form #PATH# ,standing alone in a row, is replaced with the content read
+        from the URI that is constructed with the base url and the appended path.
+-->
 <html>
+    <!-- opening head tag alone in a row -->
     <head>
         <meta charset="UTF-8">
         <title>sothawo MapView</title>
-        <link rel="stylesheet" href="ol/3.9.0/ol.css" type="text/css">
+        <!--<link rel="stylesheet" href="ol/3.9.0/ol.css" type="text/css">-->
+        <!-- replaced by: -->
+        <style>
+            #ol/3.9.0/ol.css#
+        </style>
         <style>
             html, body { height: 100%; width: 100%; margin: 0;}
             #map { height: 100%; width: 100%; background: #ccc;}
             #markers { display: none; }
         </style>
-        <script src="ol/3.9.0/ol.js" type="text/javascript"></script>
+        <!--<script src="ol/3.9.0/ol.js" type="text/javascript"></script>-->
+        <!-- replaced by: -->
+        <script type="text/javascript">
+            #ol/3.9.0/ol.js#
+        </script>
     </head>
     <body>
         <div id="map" ondragstart="javascript: return false;"></div>
         <div id="markers"></div>
-        <script src="functions.js" type="text/javascript"></script>
-        <script src="marker.js" type="text/javascript"></script>
-        <script src="coordinateline.js" type="text/javascript"></script>
-        <script src="mapview.js" type="text/javascript"></script>
+        <!--<script src="functions.js" type="text/javascript"></script>-->
+        <!--<script src="marker.js" type="text/javascript"></script>-->
+        <!--<script src="coordinateline.js" type="text/javascript"></script>-->
+        <!--<script src="mapview.js" type="text/javascript"></script>-->
+        <!-- replaced by: -->
+        <script type="text/javascript">
+            #functions.js#
+            #marker.js#
+            #coordinateline.js#
+            #mapview.js#
+        </script>
+
     </body>
 </html>
