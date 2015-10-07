@@ -1,10 +1,5 @@
 # mapjfx
 
-## NOTICE
-
-**since JDK 8u60 the webview does not load Javascript files when the view and it's html are loaded from a jar, even, when the Javascript is in the same jar. This used to work up to 8u51. So using the mapjfx library at the moment does not work with 8u60. I am working on a fix for this.**
-
-
 mapjfx provides a JavaFX8 region containing a map, allowing to zoom, pan, and use markers.
 
 It uses [OpenLayers](http://openlayers.org) as the map technology.
@@ -41,6 +36,10 @@ The test application does not contain all the features, to have that, check
  [mapjfx-demo](http://www.sothawo.com/projects/mapjfx-demo/)
 
 ## version history
+
+### 1.4.7
+
+* fix for WebView not loading css and js files when html is loaded from a jar; introduced with JDK 1.8u60.
 
 ### 1.4.6
 
