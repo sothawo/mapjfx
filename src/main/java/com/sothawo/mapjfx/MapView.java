@@ -658,7 +658,7 @@ public final class MapView extends Region {
                             new InputStreamReader(mapviewURL.openStream(), StandardCharsets.UTF_8)).lines()
             ) {
                 String baseURL = mapviewURL.toExternalForm();
-                String baseURLPath = baseURL.substring(0, baseURL.lastIndexOf(File.separatorChar) + 1);
+                String baseURLPath = baseURL.substring(0, baseURL.lastIndexOf('/') + 1);
                 mapViewHtml = lines
                         .map(String::trim)
                         .map(line -> processHtmlLine(baseURLPath, line))
