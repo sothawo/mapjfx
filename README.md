@@ -37,9 +37,13 @@ The test application does not contain all the features, to have that, check
 
 ## version history
 
+### 1.4.9
+
+* use OpenLayers 3.1.0
+
 ### 1.4.8
 
-* the fix in 1.4.7 didi not work in Windows. Fixed in 1.4.8.
+* the fix in 1.4.7 did not work in Windows. Fixed in 1.4.8.
 
 ### 1.4.7
 
