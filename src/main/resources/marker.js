@@ -17,7 +17,7 @@
 /**
  * Marker object. A Marker object contains a coordinate which is an array of two numbers.
  * Internally the coordinates are stored in longitude/latitude order, as this is the order expected by OpenLayers.
- * It has a name, and an overlay to be shown in the OL map.
+ * It has a name, and an overlay for the image to be shown in the OL map.
  */
 
 /**
@@ -29,7 +29,7 @@
 function Marker(nameParam, positionParam) {
     this.onMap = false;
     this.name = nameParam;
-    this.overlay = {};
+    this.overlayImage = {};
     this.imgElement = {};
     this.position = positionParam;
 }
@@ -74,18 +74,18 @@ Marker.prototype.getPosition = function() {
 }
 
 /**
- * sets the Markewrs's overlay
+ * sets the Marker's image overlay
  * @param {ol.Overlay} the overlay
  */
-Marker.prototype.setOverlay = function(o) {
-    this.overlay = o;
+Marker.prototype.setOverlayImage = function(o) {
+    this.overlayImage = o;
 }
 
 /**
- * @retuns {ol.Overlay} the marker's overlay
+ * @retuns {ol.Overlay} the marker's image overlay
  */
-Marker.prototype.getOverlay = function() {
-    return this.overlay;
+Marker.prototype.getOverlayImage = function() {
+    return this.overlayImage;
 }
 
 /**

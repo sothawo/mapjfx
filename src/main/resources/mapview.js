@@ -284,13 +284,13 @@ var jsConnector = {
             imgElement.src = url;
             javaConnector.debug('started loading img from ' + url);
             
-            var overlay = new ol.Overlay({
+            var overlayImage = new ol.Overlay({
                 offset: [offsetX, offsetY],
                 position: undefined,
                 element: imgElement
             });
-            marker.setOverlay(overlay);
-			map.addOverlay(overlay);
+            marker.setOverlayImage(overlayImage);
+			map.addOverlay(overlayImage);
 			
             markers[name] = marker;
         }
@@ -307,9 +307,9 @@ var jsConnector = {
         if(marker){
 	        marker.setPosition(cFromWGS84([longitude,latitude]));
 	        if(marker.getOnMap()) {
-	            var overlay = marker.getOverlay();
-	            if(overlay) {
-	                overlay.setPosition(marker.getPosition());
+	            var overlayImage = marker.getOverlayImage();
+	            if(overlayImage) {
+	                overlayImage.setPosition(marker.getPosition());
 	            }
             }
             javaConnector.debug('moved marker ' + name);
@@ -324,13 +324,13 @@ var jsConnector = {
         var marker = markers[name];
         if(marker) {
             this.hideMarker(name);
-            var overlay = marker.getOverlay();
-            map.removeOverlay(overlay);
-            var imgElement = overlay.getElement();
+            var overlayImage = marker.getOverlayImage();
+            map.removeOverlay(overlayImage);
+            var imgElement = overlayImage.getElement();
             if(imgElement){
                 delete imgElement;
             }
-            delete overlay;            
+            delete overlayImage;
             delete markers[name];
             javaConnector.debug("deleted Marker object named " + name);
         }
@@ -344,9 +344,9 @@ var jsConnector = {
     hideMarker: function(name) {
         var marker = markers[name];
         if(marker && marker.getOnMap()) {
-            var overlay = marker.getOverlay();
-            if(overlay) {
-                overlay.setPosition(undefined);
+            var overlayImage = marker.getOverlayImage();
+            if(overlayImage) {
+                overlayImage.setPosition(undefined);
             }
             marker.setOnMap(false);
             javaConnector.debug("hid marker " + name);
@@ -360,9 +360,9 @@ var jsConnector = {
     showMarker: function(name) {
         var marker = markers[name];
         if(marker && !marker.getOnMap()) {
-            var overlay = marker.getOverlay();
-            if(overlay) {
-                overlay.setPosition(marker.getPosition());
+            var overlayImage = marker.getOverlayImage();
+            if(overlayImage) {
+                overlayImage.setPosition(marker.getPosition());
             }
             marker.setOnMap(true);
             javaConnector.debug("showed marker " + name);
