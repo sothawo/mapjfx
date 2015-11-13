@@ -40,7 +40,7 @@ The test application does not contain all the features, to have that, check
 ### 1.5.0
 
 * new MapTypes supported: BingMaps Road and BingMaps Aerial (BingMaps API key needed, 
-see https://www.bingmapsportal.com).
+see [BingMaps Portal](https://www.bingmapsportal.com)
 
 ### 1.4.9
 
