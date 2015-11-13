@@ -23,7 +23,12 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
-import javafx.scene.layout.*;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
@@ -59,6 +64,9 @@ public class TestApp extends Application {
             Marker.createProvided(Marker.Provided.BLUE).setPosition(coordKarlsruheCastle).setVisible(true);
     /** the MapView */
     private MapView mapView;
+
+    /** api keys for bing maps. */
+    private TextField bingApiKey;
 
 // -------------------------- STATIC METHODS --------------------------
 
@@ -121,9 +129,10 @@ public class TestApp extends Application {
                             Marker.createProvided(Marker.Provided.ORANGE).setPosition(coordKarlsruheStation).setVisible(
                                     true));
 
-                    mapView.addCoordinateLine(new CoordinateLine(coordKarlsruheHarbour, coordKarlsruheStation, coordKarlsruheCastle)
-                            .setVisible(true)
-                            .setColor(Color.FUCHSIA).setWidth(5));
+                    mapView.addCoordinateLine(
+                            new CoordinateLine(coordKarlsruheHarbour, coordKarlsruheStation, coordKarlsruheCastle)
+                                    .setVisible(true)
+                                    .setColor(Color.FUCHSIA).setWidth(5));
 
                     topPane.setDisable(false);
                 }
@@ -134,7 +143,7 @@ public class TestApp extends Application {
         mapView.initialize();
 
         // show the whole thing
-        Scene scene = new Scene(borderPane, 900, 600);
+        Scene scene = new Scene(borderPane, 1200, 800);
 
         primaryStage.setTitle("sothawo mapjfx devtest program");
         primaryStage.setScene(scene);
@@ -144,12 +153,48 @@ public class TestApp extends Application {
     }
 
     /**
+     * creates the bottom pane with status labels.
+     *
+     * @return Pane
+     */
+    private Pane createBottomPane() {
+        HBox hbox = new HBox();
+        hbox.setPadding(new Insets(5, 5, 5, 5));
+        hbox.setSpacing(10);
+
+        // label for showing the map's center
+        Label labelCenter = new Label();
+        hbox.getChildren().add(labelCenter);
+        // add an observer for the map's center property to adjust the corresponding label
+        mapView.centerProperty().addListener(new ChangeListener<Coordinate>() {
+            @Override
+            public void changed(ObservableValue<? extends Coordinate> observable, Coordinate oldValue,
+                                Coordinate newValue) {
+                labelCenter.setText(newValue == null ? "" : ("center: " + newValue.toString()));
+            }
+        });
+
+        // label for showing the map's zoom
+        Label labelZoom = new Label();
+        hbox.getChildren().add(labelZoom);
+        // add an observer to adjust the label
+        mapView.zoomProperty().addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                labelZoom.setText(null == newValue ? "" : ("zoom: " + newValue.toString()));
+            }
+        });
+        return hbox;
+    }
+
+    /**
      * creates the top pane with the different location buttons.
      *
      * @return Pane
      */
     private Pane createTopPane() {
         VBox vbox = new VBox();
+        vbox.setPadding(new Insets(5, 5, 5, 5));
 
         HBox hbox = new HBox();
         hbox.setPadding(new Insets(5, 5, 5, 5));
@@ -204,6 +249,22 @@ public class TestApp extends Application {
         hbox.getChildren().add(btn);
 
         btn = new Button();
+        btn.setText("BR");
+        btn.setOnAction(evt -> {
+            mapView.setBingMapsApiKey(bingApiKey.getText());
+            mapView.setMapType(MapType.BINGMAPS_ROAD);
+        });
+        hbox.getChildren().add(btn);
+
+        btn = new Button();
+        btn.setText("BA");
+        btn.setOnAction(evt -> {
+            mapView.setBingMapsApiKey(bingApiKey.getText());
+            mapView.setMapType(MapType.BINGMAPS_AERIAL);
+        });
+        hbox.getChildren().add(btn);
+
+        btn = new Button();
         btn.setText("add marker");
         btn.setOnAction(evt -> mapView.addMarker(marker));
         hbox.getChildren().add(btn);
@@ -240,44 +301,16 @@ public class TestApp extends Application {
         });
         hbox.getChildren().add(btn);
 
+        hbox = new HBox();
+        hbox.getChildren().add(new Label("Bing Maps API Key:"));
+        bingApiKey = new TextField();
+        hbox.getChildren().add(bingApiKey);
+
+        vbox.getChildren().add(hbox);
+
         vbox.setDisable(true);
 
         return vbox;
-    }
-
-    /**
-     * creates the bottom pane with status labels.
-     *
-     * @return Pane
-     */
-    private Pane createBottomPane() {
-        HBox hbox = new HBox();
-        hbox.setPadding(new Insets(5, 5, 5, 5));
-        hbox.setSpacing(10);
-
-        // label for showing the map's center
-        Label labelCenter = new Label();
-        hbox.getChildren().add(labelCenter);
-        // add an observer for the map's center property to adjust the corresponding label
-        mapView.centerProperty().addListener(new ChangeListener<Coordinate>() {
-            @Override
-            public void changed(ObservableValue<? extends Coordinate> observable, Coordinate oldValue,
-                                Coordinate newValue) {
-                labelCenter.setText(newValue == null ? "" : ("center: " + newValue.toString()));
-            }
-        });
-
-        // label for showing the map's zoom
-        Label labelZoom = new Label();
-        hbox.getChildren().add(labelZoom);
-        // add an observer to adjust the label
-        mapView.zoomProperty().addListener(new ChangeListener<Number>() {
-            @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                labelZoom.setText(null == newValue ? "" : ("zoom: " + newValue.toString()));
-            }
-        });
-        return hbox;
     }
 
 // --------------------------- main() method ---------------------------

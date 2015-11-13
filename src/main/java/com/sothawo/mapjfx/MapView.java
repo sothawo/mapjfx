@@ -36,13 +36,11 @@ import netscape.javascript.JSObject;
 import java.awt.*;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -170,6 +168,9 @@ public final class MapView extends Region {
     /** Pattern to find resources to include in the html file. */
     private Pattern htmlIncludePattern = Pattern.compile("^#(.+)#$");
 
+    /** Bing Maps API Key. */
+    private Optional<String> bingMapsApiKey = Optional.empty();
+
 // --------------------------- CONSTRUCTORS ---------------------------
 
     /**
@@ -220,13 +221,30 @@ public final class MapView extends Region {
         animationDuration = new SimpleIntegerProperty(0);
 
         mapType = new SimpleObjectProperty<>(MapType.OSM);
-        mapType.addListener(new ChangeListener<MapType>() {
-            @Override
-            public void changed(ObservableValue<? extends MapType> observable, MapType oldValue, MapType newValue) {
-                logger.finer(() -> "map type changed from " + oldValue + " to " + newValue);
-                setMapTypeInMap();
+        mapType.addListener((observable, oldValue, newValue) -> {
+            logger.finer(() -> "map type changed from " + oldValue + " to " + newValue);
+            if (!checkApiKey(newValue)) {
+                logger.warning("no api key defined for map type " + newValue);
+                mapType.set(oldValue);
             }
+            setMapTypeInMap();
         });
+    }
+
+    /**
+     * checks if the gioiven map type needs an api key, and if so, if it is set.
+     *
+     * @param mapTypeToCheck
+     * @return true if either the map type does not need an api key or an api key was set.
+     */
+    private boolean checkApiKey(MapType mapTypeToCheck) {
+        switch (Objects.requireNonNull(mapTypeToCheck)) {
+            case BINGMAPS_ROAD:
+            case BINGMAPS_AERIAL:
+                return bingMapsApiKey.isPresent();
+            default:
+                return true;
+        }
     }
 
     /**
@@ -418,7 +436,7 @@ public final class MapView extends Region {
     /**
      * sets the visibilty of a marker in the map.
      *
-     * @param marker
+     * @param markerId
      *         the marker to show or hide
      */
     private void setMarkerVisibleInMap(String markerId) {
@@ -609,6 +627,7 @@ public final class MapView extends Region {
         if (getInitialized()) {
             String mapTypeName = getMapType().toString();
             logger.finer(() -> "setting map type in OpenLayers map: " + mapTypeName);
+            bingMapsApiKey.ifPresent(apiKey ->  javascriptConnector.call("setBingMapsApiKey", apiKey));
             javascriptConnector.call("setMapType", mapTypeName);
         }
     }
@@ -706,7 +725,6 @@ public final class MapView extends Region {
                 return lines.collect(Collectors.toList());
             } catch (IOException e) {
                 logger.log(Level.SEVERE, "loading " + resource, e);
-
             }
         }
 
@@ -821,6 +839,22 @@ public final class MapView extends Region {
      */
     public MapView setAnimationDuration(int animationDuration) {
         this.animationDuration.set(animationDuration);
+        return this;
+    }
+
+    /**
+     * sets the Bing Maps API Key.
+     *
+     * @param apiKey
+     *         api key
+     * @return this object
+     */
+    public MapView setBingMapsApiKey(final String apiKey) {
+        if (null != apiKey && !apiKey.isEmpty()) {
+            bingMapsApiKey = Optional.of(apiKey);
+        } else {
+            bingMapsApiKey = Optional.empty();
+        }
         return this;
     }
 
