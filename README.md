@@ -37,6 +37,10 @@ The test application does not contain all the features, to have that, check
 
 ## version history
 
+### 1.5.1
+
+* use OpenLayers 3.11.2
+
 ### 1.5.0
 
 * new MapTypes supported: BingMaps Road and BingMaps Aerial (BingMaps API key needed, 
@@ -44,7 +48,7 @@ see [BingMaps Portal](https://www.bingmapsportal.com)
 
 ### 1.4.9
 
-* use OpenLayers 3.1.0
+* use OpenLayers 3.10.0
 
 ### 1.4.8
 
