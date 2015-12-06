@@ -368,6 +368,9 @@ public final class MapView extends Region {
      * warning is logged and nothing changes. If the marker has no coordinate set, it is not added and a logging entry
      * is written.
      *
+     * The MapView only keeps a weak reference to the marker, so the caller must keep a reference to prevent the
+     * Marker object from being garbage collected.
+     *
      * @param marker
      *         the marker
      * @return this object

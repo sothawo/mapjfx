@@ -22,68 +22,94 @@ Copyright 2015 Peter-Josef Meisch (pj.meisch@sothawo.com)
         from the URI that is constructed with the base url and the appended path.
 -->
 <html>
-    <!-- opening head tag alone in a row -->
-    <head>
-        <meta charset="UTF-8">
-        <title>sothawo MapView</title>
-        <link rel="stylesheet" href="ol/3.11.2/ol.css" type="text/css">
-        <!-- replaced by: -->
-        <!--<style>-->
-            <!--#ol/3.11.2/ol.css#-->
-        <!--</style>-->
-        <style>
-            html, body { height: 100%; width: 100%; margin: 0;}
-            #map { height: 100%; width: 100%; background: #ccc;}
-            #markers { display: none; }
-        </style>
-        <script src="ol/3.11.2/ol.js" type="text/javascript"></script>
-        <!-- replaced by: -->
-        <!--<script type="text/javascript">-->
-            <!--#ol/3.11.2/ol.js#-->
-        <!--</script>-->
-    </head>
-    <body>
-        <div id="map" ondragstart="javascript: return false;"></div>
-        <div id="markers"></div>
-        <script src="functions.js" type="text/javascript"></script>
-        <script src="marker.js" type="text/javascript"></script>
-        <script src="coordinateline.js" type="text/javascript"></script>
-        <script src="mapview.js" type="text/javascript"></script>
-        <!-- replaced by: -->
-        <!--<script type="text/javascript">-->
-            <!--#functions.js#-->
-            <!--#marker.js#-->
-            <!--#coordinateline.js#-->
-            <!--#mapview.js#-->
-        <!--</script>-->
+<!-- opening head tag alone in a row -->
+<head>
+    <meta charset="UTF-8">
+    <title>sothawo MapView</title>
+    <link rel="stylesheet" href="ol/3.11.2/ol.css" type="text/css">
+    <!-- replaced by: -->
+    <!--<style>-->
+    <!--#ol/3.11.2/ol.css#-->
+    <!--</style>-->
+    <style>
+        html, body {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+        }
 
-        <script>
-            var javaConnector = {
-                centerMovedTo: function(lat, lon) {
-                    this.debug('center moved to ' + lat + ', ' + lon);
-                },
+        #map {
+            height: 100%;
+            width: 100%;
+            background: #ccc;
+        }
 
-                singleClickAt: function(lat, lon) {
-                    this.debug('single click at ' + lat + ', ' + lon);
-                },
+        #markers {
+            display: none;
+        }
+    </style>
+    <script src="ol/3.11.2/ol.js" type="text/javascript"></script>
+    <!-- replaced by: -->
+    <!--<script type="text/javascript">-->
+    <!--#ol/3.11.2/ol.js#-->
+    <!--</script>-->
+</head>
+<body>
+<div id="map" ondragstart="javascript: return false;"></div>
+<div id="markers"></div>
+<div id="labels"></div>
+<script src="functions.js" type="text/javascript"></script>
+<script src="marker.js" type="text/javascript"></script>
+<script src="label.js" type="text/javascript"></script>
+<script src="coordinateline.js" type="text/javascript"></script>
+<script src="mapview.js" type="text/javascript"></script>
+<!-- replaced by: -->
+<!--<script type="text/javascript">-->
+<!--#functions.js#-->
+<!--#marker.js#-->
+<!--#label.js#-->
+<!--#coordinateline.js#-->
+<!--#mapview.js#-->
+<!--</script>-->
 
-                zoomChanged: function(zoom) {
-                    this.debug('zoom changed to ' + zoom);
-                },
+<script>
+    var javaConnector = {
+        centerMovedTo: function (lat, lon) {
+            this.debug('center moved to ' + lat + ', ' + lon);
+        },
 
-                showLink: function(href) {
-                    window.open(href);
-                },
+        singleClickAt: function (lat, lon) {
+            this.debug('single click at ' + lat + ', ' + lon);
+        },
 
-                debug: function(s) {
-                        console.log(s);
-                }
-            };
+        zoomChanged: function (zoom) {
+            this.debug('zoom changed to ' + zoom);
+        },
 
-            var jsConnector = getJsConnector();
-            jsConnector.setMapType('OSM');
-            jsConnector.setZoom(10, 0);
-            jsConnector.setCenter(49.0, 8.38, 0);
-        </script>
-    </body>
+        showLink: function (href) {
+            window.open(href);
+        },
+
+        debug: function (s) {
+            console.log(s);
+        }
+    };
+
+    var jsConnector = getJsConnector();
+
+    jsConnector.setMapType('OSM');
+    jsConnector.setZoom(18, 0);
+    jsConnector.setCenter(49.013517, 8.404435, 0);
+
+    jsConnector.addMarker('castle-marker', './markers/blue_map_marker.png', 49.013517, 8.404435, -32, -64);
+    jsConnector.addLabel('castle-label', 'Das Schloss', 49.013517, 8.404435, 0, 0);
+    jsConnector.showMarker('castle-marker');
+    jsConnector.showLabel('castle-label');
+</script>
+
+<!-- place for some test stuff -->
+<div>
+
+</div>
+</body>
 </html>

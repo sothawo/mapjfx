@@ -40,6 +40,9 @@ var coordinateLines = {};
 // to store the marker objects with a name
 var markers = {};
 
+// to store the label objects with a name
+var labels = {};
+
 // the Bing Maps API KEy
 var bingMapsApiKey = '';
 
@@ -47,17 +50,6 @@ var bingMapsApiKey = '';
  map and handlers
  */
 var map = new ol.Map({
-    /*
-     // hack needed for ol 3.1.1, not necessary in 3.4.0
-     controls: [
-     new ol.control.Zoom({
-     zoomInLabel: '+',
-     // en-dash instead of standard \u2212 minus, this renders as '2' since ol 3.1.1
-     zoomOutLabel: '\u2013'
-     }),
-     new ol.control.Attribution
-     ],
-     */
     target: 'map',
     layers: layersOSM,
     view: new ol.View({
@@ -273,13 +265,14 @@ var jsConnector = {
         }
     },
 
-    /** adds a marker to the map
+    /**
+     * adds a marker to the map
      * @param {string} the name of the marker
      * @param {string} url the url of the marker's image
      * @param {number} the latitude of the marker's position
      * @param {number} the longitude of the marker's position
-     * @param {number} x-offset of the top left point of the mage to the coordinate
-     * @param {number} y-offset of the top left point of the mage to the coordinate
+     * @param {number} x-offset of the top left point of the image to the coordinate
+     * @param {number} y-offset of the top left point of the image to the coordinate
      */
     addMarker: function (name, url, latitude, longitude, offsetX, offsetY) {
         var marker = markers[name];
@@ -316,6 +309,41 @@ var jsConnector = {
             map.addOverlay(overlayImage);
 
             markers[name] = marker;
+        }
+    },
+
+    /**
+     * adds a label to the map
+     * @param {string} the name of the Label
+     * @param {string} text the text of the Label
+     * @param {number} the latitude of the label's position
+     * @param {number} the longitude of the label's position
+     * @param {number} x-offset of the top left point of the image to the coordinate
+     * @param {number} y-offset of the top left point of the image to the coordinate
+     */
+    addLabel: function (name, text, latitude, longitude, offsetX, offsetY) {
+        var label = labels[name];
+        if (!label) {
+            label = new Label(name, cFromWGS84([longitude, latitude]));
+            javaConnector.debug('created Label object named ' + name);
+
+            // add a new <div> element to <div id='labels'>
+            var labelsElement = document.getElementById('labels');
+            var labelElement = document.createElement('div');
+            labelsElement.appendChild(labelElement);
+
+            labelElement.setAttribute('id', name);
+            labelElement.innerHTML = text;
+
+            var overlayText = new ol.Overlay({
+                offset: [offsetX, offsetY],
+                position: undefined,
+                element: labelElement
+            });
+            label.setOverlayText(overlayText);
+            map.addOverlay(overlayText);
+
+            labels[name] = label;
         }
     },
 
@@ -393,10 +421,26 @@ var jsConnector = {
     },
 
     /**
+     * shows a label on the map
+     * @param {string} the name of the label
+     */
+    showLabel: function (name) {
+        var label = labels[name];
+        if (label && !label.getOnMap()) {
+            var overlayText = label.getOverlayText();
+            if (overlayText) {
+                overlayText.setPosition(label.getPosition());
+            }
+            label.setOnMap(true);
+            javaConnector.debug("showed label " + name);
+        }
+    },
+
+    /**
      * sets the bing maps api key
      * @param apiKey the api key
      */
-    setBingMapsApiKey: function(apiKey) {
+    setBingMapsApiKey: function (apiKey) {
         bingMapsApiKey = apiKey;
     }
 }
