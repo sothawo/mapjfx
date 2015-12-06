@@ -429,7 +429,7 @@ public final class MapView extends Region {
                 Marker marker = markerWeakReference.get();
                 if (null != marker) {
                     logger.finer(() -> "move marker in OpenLayers map to " + marker.getPosition());
-                    javascriptConnector.call("moveMarker", marker.getId(), marker.getPosition().getLatitude(),
+                    javascriptConnector.call("moveHideable", marker.getId(), marker.getPosition().getLatitude(),
                             marker.getPosition().getLongitude());
                 }
             }
@@ -449,9 +449,9 @@ public final class MapView extends Region {
                 Marker marker = markerWeakReference.get();
                 if (null != marker) {
                     if (marker.getVisible()) {
-                        javascriptConnector.call("showMarker", marker.getId());
+                        javascriptConnector.call("showHideable", marker.getId());
                     } else {
-                        javascriptConnector.call("hideMarker", marker.getId());
+                        javascriptConnector.call("hideHideable", marker.getId());
                     }
                 }
             }
@@ -813,8 +813,8 @@ public final class MapView extends Region {
             if (markers.containsKey(id)) {
                 logger.fine(() -> "removing marker " + id);
 
-                javascriptConnector.call("hideMarker", id);
-                javascriptConnector.call("removeMarker", id);
+                javascriptConnector.call("hideHideable", id);
+                javascriptConnector.call("removeHideable", id);
 
                 // if the Marker was not gc'ed we need to unregister the listeners
                 Marker marker = markers.get(id).get();
