@@ -33,7 +33,7 @@ import static java.util.Objects.requireNonNull;
  *
  * @author P.J.Meisch (pj.meisch@jaroso.de)
  */
-public class CoordinateLine {
+public class CoordinateLine extends MapElement {
 // ------------------------------ FIELDS ------------------------------
 
     /** default color: dodgerblue slightly transparent */
@@ -47,8 +47,6 @@ public class CoordinateLine {
     private final String id;
     /** the coordinates of the line */
     private final List<Coordinate> coordinates = new ArrayList<>();
-    /** property controlling the visibiloty of the CoordinateLine on the map. */
-    private final SimpleBooleanProperty visible = new SimpleBooleanProperty(false);
     /** color of the line */
     private Color color;
     /** width of the line */
@@ -123,10 +121,11 @@ public class CoordinateLine {
     public String toString() {
         return "CoordinateLine{" +
                 "id='" + id + '\'' +
-                ", #coordinates=" + coordinates.size() +
-                '}';
+                ", coordinates=" + coordinates +
+                ", color=" + color +
+                ", width=" + width +
+                "} " + super.toString();
     }
-
 // -------------------------- OTHER METHODS --------------------------
 
     /**
@@ -135,10 +134,6 @@ public class CoordinateLine {
      */
     public Stream<Coordinate> getCoordinateStream() {
         return coordinates.stream();
-    }
-
-    public boolean getVisible() {
-        return visible.get();
     }
 
     /**
@@ -156,14 +151,9 @@ public class CoordinateLine {
         return this;
     }
 
-    /**
-     * @param visible
-     *         sets the visibility flag
-     * @return this object
-     */
+    @Override
     public CoordinateLine setVisible(boolean visible) {
-        this.visible.set(visible);
-        return this;
+        return (CoordinateLine) super.setVisible(visible);
     }
 
     /**
@@ -176,9 +166,5 @@ public class CoordinateLine {
     public CoordinateLine setWidth(int width) {
         this.width = width;
         return this;
-    }
-
-    public SimpleBooleanProperty visibleProperty() {
-        return visible;
     }
 }

@@ -513,7 +513,7 @@ public final class MapView extends Region {
     }
 
     /**
-     * @return the curtrent MapType.
+     * @return the current MapType.
      */
     public MapType getMapType() {
         return mapType.get();

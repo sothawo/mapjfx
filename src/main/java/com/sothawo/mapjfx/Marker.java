@@ -15,9 +15,6 @@
 */
 package com.sothawo.mapjfx;
 
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleObjectProperty;
-
 import java.net.URL;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -38,7 +35,7 @@ import static java.util.Objects.requireNonNull;
  *
  * @author P.J. Meisch (pj.meisch@sothawo.com).
  */
-public final class Marker {
+public final class Marker extends MapCoordinateElement {
 // ------------------------------ FIELDS ------------------------------
 
     private final static AtomicLong nextId = new AtomicLong(1);
@@ -46,14 +43,6 @@ public final class Marker {
     private final String id;
     /** the image URL */
     private final URL imageURL;
-    /** horizontal offset */
-    private final int offsetX;
-    /** the vertical offset */
-    private final int offsetY;
-    /** the coordinate */
-    private final SimpleObjectProperty<Coordinate> position = new SimpleObjectProperty<>();
-    /** vivible property */
-    private final SimpleBooleanProperty visible = new SimpleBooleanProperty(false);
 
 // -------------------------- STATIC METHODS --------------------------
 
@@ -97,10 +86,9 @@ public final class Marker {
      *         if imageURL is null
      */
     public Marker(URL imageURL, int offsetX, int offsetY) {
+        super(offsetX, offsetY);
         this.id = "marker-" + nextId.getAndIncrement();
         this.imageURL = requireNonNull(imageURL);
-        this.offsetX = offsetX;
-        this.offsetY = offsetY;
     }
 
 // --------------------- GETTER / SETTER METHODS ---------------------
@@ -114,14 +102,6 @@ public final class Marker {
 
     public URL getImageURL() {
         return imageURL;
-    }
-
-    public int getOffsetX() {
-        return offsetX;
-    }
-
-    public int getOffsetY() {
-        return offsetY;
     }
 
 // ------------------------ CANONICAL METHODS ------------------------
@@ -146,53 +126,19 @@ public final class Marker {
         return "Marker{" +
                 "id='" + id + '\'' +
                 ", imageURL=" + imageURL +
-                ", offsetX=" + offsetX +
-                ", offsetY=" + offsetY +
-                ", position=" + getPosition() +
-                ", visible=" + getVisible() +
-                '}';
-    }
-
-    public Coordinate getPosition() {
-        return position.get();
-    }
-
-    public boolean getVisible() {
-        return visible.get();
+                "} " + super.toString();
     }
 
 // -------------------------- OTHER METHODS --------------------------
 
-    public SimpleObjectProperty<Coordinate> positionProperty() {
-        return position;
-    }
-
-    /**
-     * sets the marker's new position
-     *
-     * @param position
-     *         new position
-     * @return this object
-     */
+    @Override
     public Marker setPosition(Coordinate position) {
-        this.position.set(position);
-        return this;
+        return (Marker) super.setPosition(position);
     }
 
-    /**
-     * sets the visibilty of the marker
-     *
-     * @param visible
-     *         visibilty
-     * @return this object
-     */
+    @Override
     public Marker setVisible(boolean visible) {
-        this.visible.set(visible);
-        return this;
-    }
-
-    public SimpleBooleanProperty visibleProperty() {
-        return visible;
+        return (Marker) super.setVisible(visible);
     }
 
 // -------------------------- ENUMERATIONS --------------------------
@@ -200,7 +146,7 @@ public final class Marker {
     /**
      * provided Markers.
      */
-    public static enum Provided {
+    public enum Provided {
         BLUE("blue_map_marker.png", -32, -64),
         GREEN("green_map_marker.png", -32, -64),
         ORANGE("orange_map_marker.png", -32, -64),
