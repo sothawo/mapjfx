@@ -20,17 +20,17 @@ import javafx.beans.value.ChangeListener;
 import java.util.Objects;
 
 /**
- * Internal helper class. Encapsulation of different ChangeListener instances.
+ * Encapsulation of different ChangeListener instances for a MapCoordinateElement object.
  *
  * @author P.J. Meisch (pj.meisch@sothawo.com).
  */
-public final class MarkerListener {
+public final class MapCoordinateElementListener {
 // ------------------------------ FIELDS ------------------------------
 
     /** listener for coordinate changes */
     private final ChangeListener<Coordinate> coordinateChangeListener;
 
-    /** listener for visibilty changes */
+    /** listener for visibility changes */
     private final ChangeListener<Boolean> visibileChangeListener;
 
 // --------------------------- CONSTRUCTORS ---------------------------
@@ -43,8 +43,8 @@ public final class MarkerListener {
      * @throws java.lang.NullPointerException
      *         if either argument is null
      */
-    public MarkerListener(ChangeListener<Coordinate> coordinateChangeListener,
-                          ChangeListener<Boolean> visibileChangeListener) {
+    public MapCoordinateElementListener(ChangeListener<Coordinate> coordinateChangeListener,
+                                        ChangeListener<Boolean> visibileChangeListener) {
         this.coordinateChangeListener = Objects.requireNonNull(coordinateChangeListener);
         this.visibileChangeListener = Objects.requireNonNull(visibileChangeListener);
     }

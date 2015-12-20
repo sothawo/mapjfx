@@ -130,26 +130,14 @@ public final class MapView extends Region {
     private SimpleObjectProperty<MapType> mapType;
 
     /**
-     * a map from the names of Markers in the map to WeakReferences of the Markers. When markers are gc'ed the keys in
-     * this map point to null and are used to clean up the internal structures.
+     * a map from the names of Markers in the map to WeakReferences of the Markers. When mapCoordinateElements are gc'ed
+     * the keys in this map point to null and are used to clean up the internal structures.
      */
-    private final Map<String, WeakReference<Marker>> markers = new HashMap<>();
+    private final Map<String, WeakReference<MapCoordinateElement>> mapCoordinateElements = new HashMap<>();
     /**
-     * The listeners that are attached to the Marker objects.  Here the names are used as keys and not the Marker
-     * objects themselves as this would prevent them from being gc'ed; and we are not the owners of them.
+     * The listeners that are attached to the MapCoordinateElement objects.
      */
-    private final Map<String, MarkerListener> markerListeners = new HashMap<>();
-
-    /**
-     * a map from the names of Labels in the map to WeakReferences of the Labels. When Labels are gc'ed the keys in this
-     * map point to null and are used to clean up the internal structures.
-     */
-    private final Map<String, WeakReference<Marker>> labels = new HashMap<>();
-    /**
-     * The listeners that are attached to the Label objects.  Here the names are used as keys and not the Label objects
-     * themselves as this would prevent them from being gc'ed; and we are not the owners of them.
-     */
-    private final Map<String, MarkerListener> labelListeners = new HashMap<>();
+    private final Map<String, MapCoordinateElementListener> mapCoordinateElementListeners = new HashMap<>();
 
     /**
      * a map from the names of CoordinateLines in the map to WeakReferences of the CoordinateLines. When CoordianteLines
@@ -157,9 +145,7 @@ public final class MapView extends Region {
      */
     private final Map<String, WeakReference<CoordinateLine>> coordinateLines = new HashMap<>();
     /**
-     * the listeners that are attached to the CoordinateLine objects. Here the names are used as keys and not the
-     * CoordinateLine objects themselves as this would prevent them from being gc'ed; and we are not the owners otf
-     * them.
+     * the listeners that are attached to the CoordinateLine objects.
      */
     private final Map<String, CoordinateLineListener> coordinateLineListeners = new HashMap<>();
 
@@ -275,31 +261,18 @@ public final class MapView extends Region {
                     // run on the JavaFX thread, as removeCoordinateLineWithId() calls methods from the WebView
                     Platform.runLater(() -> coordinateLinesToRemove.forEach(this::removeCoordinateLineWithId));
 
-                    // clean up the marker entries
-                    final Set<String> markersToRemove = new HashSet<>();
-                    synchronized (markers) {
-                        markers.forEach((k, v) -> {
+                    // clean up the MapCoordinateElement entries
+                    final Set<String> mapCoordinateElementsToRemove = new HashSet<>();
+                    synchronized (mapCoordinateElements) {
+                        mapCoordinateElements.forEach((k, v) -> {
                             if (null == v.get()) {
-                                markersToRemove.add(k);
-                                logger.finer(() -> "need to cleanup gc'ed marker " + k);
+                                mapCoordinateElementsToRemove.add(k);
+                                logger.finer(() -> "need to cleanup gc'ed element " + k);
                             }
                         });
                     }
                     // run on the JavaFX thread, as removeCoordinateLineWithId() calls methods from the WebView
-                    Platform.runLater(() -> markersToRemove.forEach(this::removeMarkerWithId));
-
-                    // clean up the label entries
-                    final Set<String> labelsToRemove = new HashSet<>();
-                    synchronized (labels) {
-                        labels.forEach((k, v) -> {
-                            if (null == v.get()) {
-                                labelsToRemove.add(k);
-                                logger.finer(() -> "need to cleanup gc'ed label " + k);
-                            }
-                        });
-                    }
-                    // run on the JavaFX thread, as removeCoordinateLineWithId() calls methods from the WebView
-                    Platform.runLater(() -> labelsToRemove.forEach(this::removeMarkerWithId));
+                    Platform.runLater(() -> mapCoordinateElementsToRemove.forEach(this::removeMapCoordinateElementWithId));
                 } catch (InterruptedException e) {
                     logger.warning("thread interrupted");
                     running = false;
@@ -403,23 +376,24 @@ public final class MapView extends Region {
                 return this;
             }
             String id = marker.getId();
-            // synchronize on the markers map as the cleaning thread accesses this as well
-            synchronized (markers) {
-                if (!markers.containsKey(id)) {
-                    // create a change listener for the coordinate and the visibility and store them with the
+            // synchronize on the mapCoordinateElements map as the cleaning thread accesses this as well
+            synchronized (mapCoordinateElements) {
+                if (!mapCoordinateElements.containsKey(id)) {
+                    // create change listeners for the coordinate and the visibility and store them with the
                     // marker's id.
                     ChangeListener<Coordinate> coordinateChangeListener =
-                            (observable, oldValue, newValue) -> moveMarkerInMap(id);
+                            (observable, oldValue, newValue) -> moveMapCoordinateElementInMap(id);
                     ChangeListener<Boolean> visibileChangeListener =
                             (observable, oldValue, newValue) -> setMarkerVisibleInMap(id);
-                    markerListeners.put(id, new MarkerListener(coordinateChangeListener, visibileChangeListener));
+                    mapCoordinateElementListeners.put(id, new MapCoordinateElementListener(coordinateChangeListener,
+                            visibileChangeListener));
 
-                    // observe the markers position and visibility
+                    // observe the mapCoordinateElements position and visibility with the listsners
                     marker.positionProperty().addListener(coordinateChangeListener);
                     marker.visibleProperty().addListener(visibileChangeListener);
 
                     // keep a weak ref of the marker
-                    markers.put(id, new WeakReference<>(marker, weakReferenceQueue));
+                    mapCoordinateElements.put(id, new WeakReference<>(marker, weakReferenceQueue));
 
                     javascriptConnector.call("addMarker", id, marker.getImageURL().toExternalForm(),
                             marker.getPosition().getLatitude(), marker.getPosition().getLongitude(),
@@ -434,41 +408,42 @@ public final class MapView extends Region {
     }
 
     /**
-     * adjusts the markers position in the map.
+     * adjusts the mapCoordinateElement's position in the map.
      *
-     * @param markerId
-     *         the id of the marker to move
+     * @param id
+     *         the id of the element to move
      */
-    private void moveMarkerInMap(String markerId) {
-        if (getInitialized() && null != markerId) {
-            WeakReference<Marker> markerWeakReference = markers.get(markerId);
-            if (null != markerWeakReference) {
-                Marker marker = markerWeakReference.get();
-                if (null != marker) {
-                    logger.finer(() -> "move marker in OpenLayers map to " + marker.getPosition());
-                    javascriptConnector.call("moveMapObject", marker.getId(), marker.getPosition().getLatitude(),
-                            marker.getPosition().getLongitude());
+    private void moveMapCoordinateElementInMap(String id) {
+        if (getInitialized() && null != id) {
+            WeakReference<MapCoordinateElement> weakReference = mapCoordinateElements.get(id);
+            if (null != weakReference) {
+                MapCoordinateElement mapCoordinateElement = weakReference.get();
+                if (null != mapCoordinateElement) {
+                    logger.finer(() -> "move element in OpenLayers map to " + mapCoordinateElement.getPosition());
+                    javascriptConnector.call("moveMapObject", mapCoordinateElement.getId(),
+                            mapCoordinateElement.getPosition().getLatitude(),
+                            mapCoordinateElement.getPosition().getLongitude());
                 }
             }
         }
     }
 
     /**
-     * sets the visibility of a marker in the map.
+     * sets the visibility of a MapCoordinateElement in the map.
      *
-     * @param markerId
+     * @param id
      *         the marker to show or hide
      */
-    private void setMarkerVisibleInMap(String markerId) {
-        if (null != markerId) {
-            WeakReference<Marker> markerWeakReference = markers.get(markerId);
-            if (null != markerWeakReference) {
-                Marker marker = markerWeakReference.get();
-                if (null != marker) {
-                    if (marker.getVisible()) {
-                        javascriptConnector.call("showMapObject", marker.getId());
+    private void setMarkerVisibleInMap(String id) {
+        if (null != id) {
+            WeakReference<MapCoordinateElement> weakReference = mapCoordinateElements.get(id);
+            if (null != weakReference) {
+                MapCoordinateElement mapCoordinateElement = weakReference.get();
+                if (null != mapCoordinateElement) {
+                    if (mapCoordinateElement.getVisible()) {
+                        javascriptConnector.call("showMapObject", mapCoordinateElement.getId());
                     } else {
-                        javascriptConnector.call("hideMapObject", marker.getId());
+                        javascriptConnector.call("hideMapObject", mapCoordinateElement.getId());
                     }
                 }
             }
@@ -813,37 +788,37 @@ public final class MapView extends Region {
         if (!getInitialized()) {
             logger.warning(MAP_VIEW_NOT_YET_INITIALIZED);
         } else {
-            removeMarkerWithId(requireNonNull(marker).getId());
+            removeMapCoordinateElementWithId(requireNonNull(marker).getId());
         }
         return this;
     }
 
     /**
-     * removes the marker with the given id. Ifg no such element is found, nothing happens.
+     * removes the element with the given id. If no such element is found, nothing happens.
      *
      * @param id
-     *         the marker's id
+     *         the element's id
      */
-    private void removeMarkerWithId(String id) {
+    private void removeMapCoordinateElementWithId(String id) {
         // sync on the map as the cleaner thread accesses this as well
-        synchronized (markers) {
-            if (markers.containsKey(id)) {
-                logger.fine(() -> "removing marker " + id);
+        synchronized (mapCoordinateElements) {
+            if (mapCoordinateElements.containsKey(id)) {
+                logger.fine(() -> "removing element " + id);
 
                 javascriptConnector.call("hideMapObject", id);
                 javascriptConnector.call("removeMapObject", id);
 
                 // if the Marker was not gc'ed we need to unregister the listeners
-                Marker marker = markers.get(id).get();
-                MarkerListener markerListener = markerListeners.get(id);
-                if (null != marker && null != markerListener) {
-                    marker.positionProperty().removeListener(markerListener.getCoordinateChangeListener());
-                    marker.visibleProperty().removeListener(markerListener.getVisibileChangeListener());
+                MapCoordinateElement element = mapCoordinateElements.get(id).get();
+                MapCoordinateElementListener markerListener = mapCoordinateElementListeners.get(id);
+                if (null != element && null != markerListener) {
+                    element.positionProperty().removeListener(markerListener.getCoordinateChangeListener());
+                    element.visibleProperty().removeListener(markerListener.getVisibileChangeListener());
                 }
 
-                markerListeners.remove(id);
-                markers.remove(id);
-                logger.finer(() -> "removed marker " + id);
+                mapCoordinateElementListeners.remove(id);
+                mapCoordinateElements.remove(id);
+                logger.finer(() -> "removed element " + id);
             }
         }
     }

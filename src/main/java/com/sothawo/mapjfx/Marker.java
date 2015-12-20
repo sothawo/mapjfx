@@ -93,9 +93,7 @@ public final class Marker extends MapCoordinateElement {
 
 // --------------------- GETTER / SETTER METHODS ---------------------
 
-    /**
-     * @return the marker's id
-     */
+    @Override
     public String getId() {
         return id;
     }

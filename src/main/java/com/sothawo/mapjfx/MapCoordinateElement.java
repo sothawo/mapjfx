@@ -45,6 +45,11 @@ public abstract class MapCoordinateElement extends MapElement {
 
 // ------------------------ CANONICAL METHODS ------------------------
 
+    /**
+     * @return the marker's id
+     */
+    public abstract String getId() ;
+
     @Override
     public String toString() {
         return "MapCoordinateElement{" +
