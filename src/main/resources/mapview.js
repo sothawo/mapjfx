@@ -38,7 +38,7 @@ var layersMQ = new ol.layer.Group({
 var coordinateLines = {};
 
 // to store the marker and label objects with a name
-var hideables= {};
+var mapObjects = {};
 
 // the Bing Maps API KEy
 var bingMapsApiKey = '';
@@ -94,15 +94,7 @@ view.on('change:resolution', function (evt) {
 /*******************************************************************************************************************
  * Connector object for the java application with the functions to be called. there is only this instance, so no
  * prototype is used
- * @type {{self: jsConnector, setCenter: jsConnector.setCenter, setZoom: jsConnector.setZoom, setExtent:
- *     jsConnector.setExtent, setMapType: jsConnector.setMapType, getCoordinateLine: jsConnector.getCoordinateLine,
- *     showCoordinateLine: jsConnector.showCoordinateLine, hideCoordinateLine: jsConnector.hideCoordinateLine,
- *     removeCoordinateLine: jsConnector.removeCoordinateLine, addMarker: jsConnector.addMarker, addLabel:
- *     jsConnector.addLabel, moveMarker: jsConnector.moveMarker, removeMarker: jsConnector.removeMarker, hideMarker:
- *     jsConnector.hideMarker, showMarker: jsConnector.showMarker, showLabel: jsConnector.showLabel, showHideable:
- *     jsConnector.showHideable, setBingMapsApiKey: jsConnector.setBingMapsApiKey}}
  */
-
 var jsConnector = {
 
     /**
@@ -280,9 +272,9 @@ var jsConnector = {
      * @param {number} y-offset of the top left point of the image to the coordinate
      */
     addMarker: function (name, url, latitude, longitude, offsetX, offsetY) {
-        var marker = hideables[name];
+        var marker = mapObjects[name];
         if (!marker) {
-            marker = new Hideable(cFromWGS84([longitude, latitude]));
+            marker = new MapObject(cFromWGS84([longitude, latitude]));
             javaConnector.debug('created Marker object named ' + name);
 
             // add a new <img> element to <div id='markers'>
@@ -313,7 +305,7 @@ var jsConnector = {
             marker.setOverlay(overlay);
             map.addOverlay(overlay);
 
-            hideables[name] = marker;
+            mapObjects[name] = marker;
         }
     },
 
@@ -327,9 +319,9 @@ var jsConnector = {
      * @param {number} y-offset of the top left point of the image to the coordinate
      */
     addLabel: function (name, text, latitude, longitude, offsetX, offsetY) {
-        var label = hideables[name];
+        var label = mapObjects[name];
         if (!label) {
-            label = new Hideable(cFromWGS84([longitude, latitude]));
+            label = new MapObject(cFromWGS84([longitude, latitude]));
             javaConnector.debug('created Label object named ' + name);
 
             // add a new <div> element to <div id='labels'>
@@ -348,24 +340,24 @@ var jsConnector = {
             label.setOverlay(overlay);
             map.addOverlay(overlay);
 
-            hideables[name] = label;
+            mapObjects[name] = label;
         }
     },
 
     /**
-     * moves a hideable to a new position.
-     * @param name the name of the hideable to move
+     * moves a MapObject to a new position.
+     * @param name the name of the MapObject to move
      * @param latitude new latitude
      * @param longitude new longitude
      */
-    moveHideable: function (name, latitude, longitude) {
-        var hideable = hideables[name];
-        if(hideable) {
-            hideable.setPosition(cFromWGS84([longitude, latitude]));
-            if (hideable.getOnMap()) {
-                var overlay = hideable.getOverlay();
+    moveMapObject: function (name, latitude, longitude) {
+        var mapObject = mapObjects[name];
+        if (mapObject) {
+            mapObject.setPosition(cFromWGS84([longitude, latitude]));
+            if (mapObject.getOnMap()) {
+                var overlay = mapObject.getOverlay();
                 if (overlay) {
-                    overlay.setPosition(hideable.getPosition());
+                    overlay.setPosition(mapObject.getPosition());
                 }
             }
             javaConnector.debug('moved ' + name);
@@ -373,54 +365,54 @@ var jsConnector = {
     },
 
     /**
-     * removes a hideable from the map
-     * @param {string} the name of the hideable
+     * removes a MapObject from the map
+     * @param {string} the name of the MapObject
      */
-    removeHideable: function (name) {
-        var hideable = hideables[name];
-        if(hideable) {
-            this.hideHideable(hideable);
-            var overlay = hideable.getOverlay();
+    removeMapObject: function (name) {
+        var mapObject = mapObjects[name];
+        if (mapObject) {
+            this.hideMapObject(mapObject);
+            var overlay = mapObject.getOverlay();
             map.removeOverlay(overlay);
             var element = overlay.getElement();
             if (element) {
                 delete element;
             }
             delete overlay;
-            delete hideables[name];
+            delete mapObjects[name];
             javaConnector.debug('removed ' + name);
         }
     },
 
     /**
-     * hides a hideable from the map. the overlay is set to an undefined position which removes it from the map
-     * @param {string} the name of the hideable
+     * hides a MapObject from the map. the overlay is set to an undefined position which removes it from the map
+     * @param {string} the name of the MapObject
      */
-    hideHideable: function (name) {
-        var hideable = hideables[name];
-        if (hideable && hideable.getOnMap()) {
-            var overlay = hideable.getOverlay();
+    hideMapObject: function (name) {
+        var mapObject = mapObjects[name];
+        if (mapObject && mapObject.getOnMap()) {
+            var overlay = mapObject.getOverlay();
             if (overlay) {
                 overlay.setPosition(undefined);
             }
-            hideable.setOnMap(false);
+            mapObject.setOnMap(false);
             javaConnector.debug("hid " + name);
         }
     },
 
 
     /**
-     * shows a Hideable.
-     * @param the name of the hideable to show
+     * shows a MapObject.
+     * @param the name of the MapObject to show
      */
-    showHideable: function (name) {
-        var hideable = hideables[name];
-        if (hideable && !hideable.getOnMap()) {
-            var overlay = hideable.getOverlay();
+    showMapObject: function (name) {
+        var mapObject = mapObjects[name];
+        if (mapObject && !mapObject.getOnMap()) {
+            var overlay = mapObject.getOverlay();
             if (overlay) {
-                overlay.setPosition(hideable.getPosition());
+                overlay.setPosition(mapObject.getPosition());
             }
-            hideable.setOnMap(true);
+            mapObject.setOnMap(true);
             javaConnector.debug("showed " + name);
         }
     },

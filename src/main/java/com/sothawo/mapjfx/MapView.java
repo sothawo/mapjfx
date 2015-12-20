@@ -22,7 +22,6 @@ import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Worker;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
@@ -131,33 +130,44 @@ public final class MapView extends Region {
     private SimpleObjectProperty<MapType> mapType;
 
     /**
-     * a map from the names of Markes in the map to WeakReferences of the Markers. When markers are gc'ed the keys in
+     * a map from the names of Markers in the map to WeakReferences of the Markers. When markers are gc'ed the keys in
      * this map point to null and are used to clean up the internal structures.
      */
     private final Map<String, WeakReference<Marker>> markers = new HashMap<>();
     /**
-     * reference queue for the weak referenced objects. We don#t need the objects themselves, so a list of Objects is
-     * enough to handle Markers and CoordinateLines
-     */
-    private final ReferenceQueue<Object> weakReferenceQueue = new ReferenceQueue<>();
-
-    /**
      * The listeners that are attached to the Marker objects.  Here the names are used as keys and not the Marker
-     * objects themselves as this would prevent them from being gc'ed; and we are not the owners otf them.
+     * objects themselves as this would prevent them from being gc'ed; and we are not the owners of them.
      */
     private final Map<String, MarkerListener> markerListeners = new HashMap<>();
+
+    /**
+     * a map from the names of Labels in the map to WeakReferences of the Labels. When Labels are gc'ed the keys in this
+     * map point to null and are used to clean up the internal structures.
+     */
+    private final Map<String, WeakReference<Marker>> labels = new HashMap<>();
+    /**
+     * The listeners that are attached to the Label objects.  Here the names are used as keys and not the Label objects
+     * themselves as this would prevent them from being gc'ed; and we are not the owners of them.
+     */
+    private final Map<String, MarkerListener> labelListeners = new HashMap<>();
+
     /**
      * a map from the names of CoordinateLines in the map to WeakReferences of the CoordinateLines. When CoordianteLines
      * are gc'ed the keys in this map point to null and are used to clean up the internal structures.
      */
     private final Map<String, WeakReference<CoordinateLine>> coordinateLines = new HashMap<>();
-
     /**
      * the listeners that are attached to the CoordinateLine objects. Here the names are used as keys and not the
      * CoordinateLine objects themselves as this would prevent them from being gc'ed; and we are not the owners otf
      * them.
      */
     private final Map<String, CoordinateLineListener> coordinateLineListeners = new HashMap<>();
+
+    /**
+     * reference queue for the weak referenced objects. We don#t need the objects themselves, so a list of Objects is
+     * enough to handle Markers and CoordinateLines
+     */
+    private final ReferenceQueue<Object> weakReferenceQueue = new ReferenceQueue<>();
 
     /** cache for loading images in base64 strings */
     private final ConcurrentHashMap<URL, String> imgCache = new ConcurrentHashMap<>();
@@ -193,28 +203,21 @@ public final class MapView extends Region {
      */
     private void initProperties() {
         center = new SimpleObjectProperty<>();
-        center.addListener(new ChangeListener<Coordinate>() {
-            @Override
-            public void changed(ObservableValue<? extends Coordinate> observable, Coordinate oldValue,
-                                Coordinate newValue) {
-                // check if this is the same value that was just reported from the map using object equality
-                if (newValue != lastCoordinateFromMap.get()) {
-                    logger.finer(() -> "center changed from " + oldValue + " to " + newValue);
-                    setCenterInMap();
-                }
+        center.addListener((observable, oldValue, newValue) -> {
+            // check if this is the same value that was just reported from the map using object equality
+            if (newValue != lastCoordinateFromMap.get()) {
+                logger.finer(() -> "center changed from " + oldValue + " to " + newValue);
+                setCenterInMap();
             }
         });
 
         zoom = new SimpleDoubleProperty(INITIAL_ZOOM);
-        zoom.addListener(new ChangeListener<Number>() {
-            @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                // check if this is the same value that was just reported from the map using object equality
-                //noinspection NumberEquality
-                if (newValue != lastZoomFromMap.get()) {
-                    logger.finer(() -> "zoom changed from " + oldValue + " to " + newValue);
-                    setZoomInMap();
-                }
+        zoom.addListener((observable, oldValue, newValue) -> {
+            // check if this is the same value that was just reported from the map using object equality
+            //noinspection NumberEquality
+            if (newValue != lastZoomFromMap.get()) {
+                logger.finer(() -> "zoom changed from " + oldValue + " to " + newValue);
+                setZoomInMap();
             }
         });
 
@@ -232,9 +235,10 @@ public final class MapView extends Region {
     }
 
     /**
-     * checks if the gioiven map type needs an api key, and if so, if it is set.
+     * checks if the given map type needs an api key, and if so, if it is set.
      *
      * @param mapTypeToCheck
+     *         the map type
      * @return true if either the map type does not need an api key or an api key was set.
      */
     private boolean checkApiKey(MapType mapTypeToCheck) {
@@ -283,6 +287,19 @@ public final class MapView extends Region {
                     }
                     // run on the JavaFX thread, as removeCoordinateLineWithId() calls methods from the WebView
                     Platform.runLater(() -> markersToRemove.forEach(this::removeMarkerWithId));
+
+                    // clean up the label entries
+                    final Set<String> labelsToRemove = new HashSet<>();
+                    synchronized (labels) {
+                        labels.forEach((k, v) -> {
+                            if (null == v.get()) {
+                                labelsToRemove.add(k);
+                                logger.finer(() -> "need to cleanup gc'ed label " + k);
+                            }
+                        });
+                    }
+                    // run on the JavaFX thread, as removeCoordinateLineWithId() calls methods from the WebView
+                    Platform.runLater(() -> labelsToRemove.forEach(this::removeMarkerWithId));
                 } catch (InterruptedException e) {
                     logger.warning("thread interrupted");
                     running = false;
@@ -342,7 +359,7 @@ public final class MapView extends Region {
     }
 
     /**
-     * shows or hides the coordinateline in the mpa according to it's visible property.
+     * shows or hides the coordinateline in the map according to it's visible property.
      *
      * @param coordinateLineId
      *         the id of the CoordinateLine object
@@ -368,8 +385,8 @@ public final class MapView extends Region {
      * warning is logged and nothing changes. If the marker has no coordinate set, it is not added and a logging entry
      * is written.
      *
-     * The MapView only keeps a weak reference to the marker, so the caller must keep a reference to prevent the
-     * Marker object from being garbage collected.
+     * The MapView only keeps a weak reference to the marker, so the caller must keep a reference to prevent the Marker
+     * object from being garbage collected.
      *
      * @param marker
      *         the marker
@@ -429,7 +446,7 @@ public final class MapView extends Region {
                 Marker marker = markerWeakReference.get();
                 if (null != marker) {
                     logger.finer(() -> "move marker in OpenLayers map to " + marker.getPosition());
-                    javascriptConnector.call("moveHideable", marker.getId(), marker.getPosition().getLatitude(),
+                    javascriptConnector.call("moveMapObject", marker.getId(), marker.getPosition().getLatitude(),
                             marker.getPosition().getLongitude());
                 }
             }
@@ -437,7 +454,7 @@ public final class MapView extends Region {
     }
 
     /**
-     * sets the visibilty of a marker in the map.
+     * sets the visibility of a marker in the map.
      *
      * @param markerId
      *         the marker to show or hide
@@ -449,9 +466,9 @@ public final class MapView extends Region {
                 Marker marker = markerWeakReference.get();
                 if (null != marker) {
                     if (marker.getVisible()) {
-                        javascriptConnector.call("showHideable", marker.getId());
+                        javascriptConnector.call("showMapObject", marker.getId());
                     } else {
-                        javascriptConnector.call("hideHideable", marker.getId());
+                        javascriptConnector.call("hideMapObject", marker.getId());
                     }
                 }
             }
@@ -630,7 +647,7 @@ public final class MapView extends Region {
         if (getInitialized()) {
             String mapTypeName = getMapType().toString();
             logger.finer(() -> "setting map type in OpenLayers map: " + mapTypeName);
-            bingMapsApiKey.ifPresent(apiKey ->  javascriptConnector.call("setBingMapsApiKey", apiKey));
+            bingMapsApiKey.ifPresent(apiKey -> javascriptConnector.call("setBingMapsApiKey", apiKey));
             javascriptConnector.call("setMapType", mapTypeName);
         }
     }
@@ -813,8 +830,8 @@ public final class MapView extends Region {
             if (markers.containsKey(id)) {
                 logger.fine(() -> "removing marker " + id);
 
-                javascriptConnector.call("hideHideable", id);
-                javascriptConnector.call("removeHideable", id);
+                javascriptConnector.call("hideMapObject", id);
+                javascriptConnector.call("removeMapObject", id);
 
                 // if the Marker was not gc'ed we need to unregister the listeners
                 Marker marker = markers.get(id).get();

@@ -15,9 +15,9 @@
  */
 
 /**
- * Hideable object that cna be hidden and reshown. An Hideable object combines an OL overlay with  a position which is
- * an array of two numbers. Internally the coordinates are stored in longitude/latitude order, as this is the order
- * expected by OpenLayers. It has a name, and an overlay for the label to be shown in the OL map.
+ * MapObject: an object that can be hidden and reshown on the map. An MapObject object combines an OL overlay with a position
+ * which is an array of two numbers. Internally the coordinates are stored in longitude/latitude order, as this is the order
+ * expected by OpenLayers. It has a name, and an overlay for the element to be shown in the OL map.
  */
 
 /**
@@ -26,7 +26,7 @@
  * @param {string} name of the label
  * @param {array[number]} position in OL coordinates (lon/lat)
  */
-function Hideable(positionParam) {
+function MapObject(positionParam) {
     this.onMap = false;
     this.overlay = {};
     this.element = {};
@@ -38,7 +38,7 @@ function Hideable(positionParam) {
  *
  * @param {boolean}
  */
-Hideable.prototype.setOnMap = function (flag) {
+MapObject.prototype.setOnMap = function (flag) {
     this.onMap = flag;
 }
 
@@ -46,7 +46,7 @@ Hideable.prototype.setOnMap = function (flag) {
  * gets the flag wether the label is visible on the map
  * @return {boolean}
  */
-Hideable.prototype.getOnMap = function () {
+MapObject.prototype.getOnMap = function () {
     return this.onMap;
 }
 
@@ -54,28 +54,28 @@ Hideable.prototype.getOnMap = function () {
  * sets the label's position
  * @param {array[number]} position in OL coordinates (lon/lat)
  */
-Hideable.prototype.setPosition = function (coords) {
+MapObject.prototype.setPosition = function (coords) {
     this.position = coords;
 }
 
 /**
  * @return {array[number]} the label's position
  */
-Hideable.prototype.getPosition = function () {
+MapObject.prototype.getPosition = function () {
     return this.position;
 }
 
 /**
- * sets the Hideable's overlay
+ * sets the MapObject's overlay
  * @param {ol.Overlay} the overlay
  */
-Hideable.prototype.setOverlay = function (o) {
+MapObject.prototype.setOverlay = function (o) {
     this.overlay = o;
 }
 
 /**
  * @retuns {ol.Overlay} the label's image overlay
  */
-Hideable.prototype.getOverlay = function () {
+MapObject.prototype.getOverlay = function () {
     return this.overlay;
 }

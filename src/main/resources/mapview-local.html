@@ -59,13 +59,13 @@ Copyright 2015 Peter-Josef Meisch (pj.meisch@sothawo.com)
 <div id="markers"></div>
 <div id="labels"></div>
 <script src="functions.js" type="text/javascript"></script>
-<script src="Hideable.js" type="text/javascript"></script>
+<script src="MapObject.js" type="text/javascript"></script>
 <script src="coordinateline.js" type="text/javascript"></script>
 <script src="mapview.js" type="text/javascript"></script>
 <!-- replaced by: -->
 <!--<script type="text/javascript">-->
 <!--#functions.js#-->
-<!--#Hideable.js#-->
+<!--#MapObject.js#-->
 <!--#coordinateline.js#-->
 <!--#mapview.js#-->
 <!--</script>-->
@@ -78,8 +78,8 @@ Copyright 2015 Peter-Josef Meisch (pj.meisch@sothawo.com)
 
         singleClickAt: function (lat, lon) {
             this.debug('single click at ' + lat + ', ' + lon);
-            jsConnector.moveHideable('castle-marker', lat, lon);
-            jsConnector.moveHideable('castle-label', lat, lon);
+            jsConnector.moveMapObject('castle-marker', lat, lon);
+            jsConnector.moveMapObject('castle-label', lat, lon);
         },
 
         zoomChanged: function (zoom) {
@@ -103,22 +103,22 @@ Copyright 2015 Peter-Josef Meisch (pj.meisch@sothawo.com)
 
     var addAll = function() {
         jsConnector.addMarker('castle-marker', './markers/blue_map_marker.png', 49.013517, 8.404435, -32, -64);
-        jsConnector.addLabel('castle-label', 'Das Schloss', 49.013517, 8.404435, 24, -48);
+        jsConnector.addLabel('castle-label', 'Das Schloss', 49.013517, 8.404435, 0, 0);
     };
 
     var showAll = function() {
-        jsConnector.showHideable('castle-marker');
-        jsConnector.showHideable('castle-label');
+        jsConnector.showMapObject('castle-marker');
+        jsConnector.showMapObject('castle-label');
     };
 
     var hideAll = function() {
-        jsConnector.hideHideable('castle-marker');
-        jsConnector.hideHideable('castle-label');
+        jsConnector.hideMapObject('castle-marker');
+        jsConnector.hideMapObject('castle-label');
     };
 
     var removeAll = function() {
-        jsConnector.removeHideable('castle-marker');
-        jsConnector.removeHideable('castle-label');
+        jsConnector.removeMapObject('castle-marker');
+        jsConnector.removeMapObject('castle-label');
     };
 </script>
 
