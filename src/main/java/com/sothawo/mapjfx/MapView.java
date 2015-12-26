@@ -130,8 +130,9 @@ public final class MapView extends Region {
     private SimpleObjectProperty<MapType> mapType;
 
     /**
-     * a map from the names of Markers in the map to WeakReferences of the Markers. When mapCoordinateElements are gc'ed
-     * the keys in this map point to null and are used to clean up the internal structures.
+     * a map from the names of MapCoordinateELements in the map to WeakReferences of the Objects. When
+     * mapCoordinateElements are gc'ed the keys in this map point to null and are used to clean up the internal
+     * structures.
      */
     private final Map<String, WeakReference<MapCoordinateElement>> mapCoordinateElements = new HashMap<>();
     /**
@@ -150,8 +151,8 @@ public final class MapView extends Region {
     private final Map<String, CoordinateLineListener> coordinateLineListeners = new HashMap<>();
 
     /**
-     * reference queue for the weak referenced objects. We don#t need the objects themselves, so a list of Objects is
-     * enough to handle Markers and CoordinateLines
+     * reference queue for the weak referenced objects. We don't need the objects themselves, so a list of Objects is
+     * enough to handle Markers and CoordinateLines.
      */
     private final ReferenceQueue<Object> weakReferenceQueue = new ReferenceQueue<>();
 
@@ -161,7 +162,7 @@ public final class MapView extends Region {
     /** Connector object that is created in the web page and initialized when the page is fully loaded */
     private JSObject javascriptConnector;
 
-    /** Pattern to find resources to include in the html file. */
+    /** Pattern to find resources to include in the local html file. */
     private Pattern htmlIncludePattern = Pattern.compile("^#(.+)#$");
 
     /** Bing Maps API Key. */
@@ -272,7 +273,8 @@ public final class MapView extends Region {
                         });
                     }
                     // run on the JavaFX thread, as removeCoordinateLineWithId() calls methods from the WebView
-                    Platform.runLater(() -> mapCoordinateElementsToRemove.forEach(this::removeMapCoordinateElementWithId));
+                    Platform.runLater(
+                            () -> mapCoordinateElementsToRemove.forEach(this::removeMapCoordinateElementWithId));
                 } catch (InterruptedException e) {
                     logger.warning("thread interrupted");
                     running = false;
@@ -379,22 +381,7 @@ public final class MapView extends Region {
             // synchronize on the mapCoordinateElements map as the cleaning thread accesses this as well
             synchronized (mapCoordinateElements) {
                 if (!mapCoordinateElements.containsKey(id)) {
-                    // create change listeners for the coordinate and the visibility and store them with the
-                    // marker's id.
-                    ChangeListener<Coordinate> coordinateChangeListener =
-                            (observable, oldValue, newValue) -> moveMapCoordinateElementInMap(id);
-                    ChangeListener<Boolean> visibileChangeListener =
-                            (observable, oldValue, newValue) -> setMarkerVisibleInMap(id);
-                    mapCoordinateElementListeners.put(id, new MapCoordinateElementListener(coordinateChangeListener,
-                            visibileChangeListener));
-
-                    // observe the mapCoordinateElements position and visibility with the listsners
-                    marker.positionProperty().addListener(coordinateChangeListener);
-                    marker.visibleProperty().addListener(visibileChangeListener);
-
-                    // keep a weak ref of the marker
-                    mapCoordinateElements.put(id, new WeakReference<>(marker, weakReferenceQueue));
-
+                    addMapCoordinateElement(marker);
                     javascriptConnector.call("addMarker", id, marker.getImageURL().toExternalForm(),
                             marker.getPosition().getLatitude(), marker.getPosition().getLongitude(),
                             marker.getOffsetX(), marker.getOffsetY());
@@ -405,6 +392,31 @@ public final class MapView extends Region {
             }
         }
         return this;
+    }
+
+    /**
+     * sets up the internal information about a MpaCoordinate Element.
+     *
+     * @param mapCoordinateElement
+     *         the MpaCooordinate Element
+     */
+    private void addMapCoordinateElement(MapCoordinateElement mapCoordinateElement) {
+        String id = mapCoordinateElement.getId();
+        // create change listeners for the coordinate and the visibility and store them with the
+        // marker's id.
+        ChangeListener<Coordinate> coordinateChangeListener =
+                (observable, oldValue, newValue) -> moveMapCoordinateElementInMap(id);
+        ChangeListener<Boolean> visibileChangeListener =
+                (observable, oldValue, newValue) -> setMarkerVisibleInMap(id);
+        mapCoordinateElementListeners.put(id, new MapCoordinateElementListener(coordinateChangeListener,
+                visibileChangeListener));
+
+        // observe the mapCoordinateElements position and visibility with the listsners
+        mapCoordinateElement.positionProperty().addListener(coordinateChangeListener);
+        mapCoordinateElement.visibleProperty().addListener(visibileChangeListener);
+
+        // keep a weak ref of the mapCoordinateELement
+        mapCoordinateElements.put(id, new WeakReference<>(mapCoordinateElement, weakReferenceQueue));
     }
 
     /**
@@ -788,16 +800,26 @@ public final class MapView extends Region {
         if (!getInitialized()) {
             logger.warning(MAP_VIEW_NOT_YET_INITIALIZED);
         } else {
-            removeMapCoordinateElementWithId(requireNonNull(marker).getId());
+            removeMapCoordinateElement(marker);
         }
         return this;
     }
 
     /**
-     * removes the element with the given id. If no such element is found, nothing happens.
+     * removes a MapCoordinateElement from the map. If no such element is found, nothing happens.
+     *
+     * @param mapCoordinateElement
+     *         the element to remove
+     */
+    private void removeMapCoordinateElement(MapCoordinateElement mapCoordinateElement) {
+        removeMapCoordinateElementWithId(Objects.requireNonNull(mapCoordinateElement).getId());
+    }
+
+    /**
+     * remove a MapCoordinateElement with a given id from the map.  If no such element is found, nothing happens.
      *
      * @param id
-     *         the element's id
+     *         the id of the element to remove.
      */
     private void removeMapCoordinateElementWithId(String id) {
         // sync on the map as the cleaner thread accesses this as well
@@ -808,7 +830,8 @@ public final class MapView extends Region {
                 javascriptConnector.call("hideMapObject", id);
                 javascriptConnector.call("removeMapObject", id);
 
-                // if the Marker was not gc'ed we need to unregister the listeners
+                // if the element was not gc'ed we need to unregister the listeners so we dont' react to events from
+                // removed elements
                 MapCoordinateElement element = mapCoordinateElements.get(id).get();
                 MapCoordinateElementListener markerListener = mapCoordinateElementListeners.get(id);
                 if (null != element && null != markerListener) {
