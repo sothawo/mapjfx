@@ -356,6 +356,45 @@ public final class MapView extends Region {
     }
 
     /**
+     * adds a label to the map. If it was already added, nothing is changed. If the MapView is not yet initialized, a
+     * warning is logged and nothing changes. If the label has no coordinate set, it is not added and a logging entry is
+     * written.
+     *
+     * The MapView only keeps a weak reference to the label, so the caller must keep a reference to prevent the Label
+     * object from being garbage collected.
+     *
+     * @param label
+     *         the label
+     * @return this object
+     * @throws java.lang.NullPointerException
+     *         if marker is null
+     */
+    public MapView addLabel(Label label) {
+        if (!getInitialized()) {
+            logger.warning(MAP_VIEW_NOT_YET_INITIALIZED);
+        } else {
+            if (null == requireNonNull(label).getPosition()) {
+                logger.finer(() -> "label with no position was not added: " + label);
+                return this;
+            }
+            String id = label.getId();
+            // synchronize on the mapCoordinateElements map as the cleaning thread accesses this as well
+            synchronized (mapCoordinateElements) {
+                if (!mapCoordinateElements.containsKey(id)) {
+                    addMapCoordinateElement(label);
+                    javascriptConnector.call("addLabel", id, label.getText(),
+                            label.getPosition().getLatitude(), label.getPosition().getLongitude(),
+                            label.getOffsetX(), label.getOffsetY());
+
+                    logger.finer(() -> "add label in OpenLayers map " + label.toString());
+                    setMarkerVisibleInMap(id);
+                }
+            }
+        }
+        return this;
+    }
+
+    /**
      * adds a marker to the map. If it was already added, nothing is changed. If the MapView is not yet initialized, a
      * warning is logged and nothing changes. If the marker has no coordinate set, it is not added and a logging entry
      * is written.
@@ -787,20 +826,20 @@ public final class MapView extends Region {
     }
 
     /**
-     * removes the given marker from the map and deregisters the change listeners. If the marker was not in the map or
-     * the MapView is not yet initialized, nothing happens.
+     * removes the given label from the map and deregisters the change listeners. If the label was not in the map or the
+     * MapView is not yet initialized, nothing happens.
      *
-     * @param marker
-     *         marker to remove
+     * @param label
+     *         label to remove
      * @return this object
      * @throws java.lang.NullPointerException
      *         if marker is null
      */
-    public MapView removeMarker(Marker marker) {
+    public MapView removeLabel(Label label) {
         if (!getInitialized()) {
             logger.warning(MAP_VIEW_NOT_YET_INITIALIZED);
         } else {
-            removeMapCoordinateElement(marker);
+            removeMapCoordinateElement(label);
         }
         return this;
     }
@@ -844,6 +883,25 @@ public final class MapView extends Region {
                 logger.finer(() -> "removed element " + id);
             }
         }
+    }
+
+    /**
+     * removes the given marker from the map and deregisters the change listeners. If the marker was not in the map or
+     * the MapView is not yet initialized, nothing happens.
+     *
+     * @param marker
+     *         marker to remove
+     * @return this object
+     * @throws java.lang.NullPointerException
+     *         if marker is null
+     */
+    public MapView removeMarker(Marker marker) {
+        if (!getInitialized()) {
+            logger.warning(MAP_VIEW_NOT_YET_INITIALIZED);
+        } else {
+            removeMapCoordinateElement(marker);
+        }
+        return this;
     }
 
     /**

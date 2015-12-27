@@ -330,6 +330,7 @@ var jsConnector = {
             labelsElement.appendChild(labelElement);
 
             labelElement.setAttribute('id', name);
+            labelElement.setAttribute("class", "mapview-label");
             labelElement.innerHTML = text;
 
             var overlay = new ol.Overlay({

@@ -1,0 +1,7 @@
+/*default style for a mapview label */
+.mapview-label {
+    border-radius: 5px;
+    border: 1px solid black;
+    background-color: #eeeeee;
+    padding: 2px;
+}

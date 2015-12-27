@@ -21,7 +21,6 @@ import javafx.beans.value.ObservableValue;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
@@ -60,8 +59,10 @@ public class TestApp extends Application {
 
     private static final int DEFAULT_ZOOM = 14;
 
-    private static final Marker marker =
-            Marker.createProvided(Marker.Provided.BLUE).setPosition(coordKarlsruheCastle).setVisible(true);
+    private static final Marker marker;
+
+    private static final Label label;
+
     /** the MapView */
     private MapView mapView;
 
@@ -81,6 +82,9 @@ public class TestApp extends Application {
             }
         }
         logger = Logger.getLogger(TestApp.class.getCanonicalName());
+
+        marker = Marker.createProvided(Marker.Provided.BLUE).setPosition(coordKarlsruheCastle).setVisible(true);
+        label = new Label("blau!").setPosition(coordKarlsruheCastle).setVisible(true);
     }
 
 // -------------------------- OTHER METHODS --------------------------
@@ -111,31 +115,35 @@ public class TestApp extends Application {
             if (marker.getVisible()) {
                 marker.setPosition(event.getCoordinate());
             }
+            if (label.getVisible()) {
+                label.setPosition(event.getCoordinate());
+            }
         });
 
         // add listener for mapView initialization state
-        mapView.initializedProperty().addListener(new ChangeListener<Boolean>() {
-            @Override
-            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-                if (newValue) {
-                    // a map is only displayed when an initial coordinate is set
-                    mapView.setCenter(coordKarlsruheHarbour);
-                    mapView.setExtent(extentAll);
+        mapView.initializedProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue) {
+                // a map is only displayed when an initial coordinate is set
+                mapView.setCenter(coordKarlsruheHarbour);
+                mapView.setExtent(extentAll);
 
-                    // add two markers without keeping a ref to them, they should disappear from the map when gc'ed
-                    mapView.addMarker(Marker.createProvided(Marker.Provided.GREEN).setPosition(coordKarlsruheHarbour)
-                            .setVisible(true));
-                    mapView.addMarker(
-                            Marker.createProvided(Marker.Provided.ORANGE).setPosition(coordKarlsruheStation).setVisible(
-                                    true));
+                // add two markers without keeping a ref to them, they should disappear from the map when gc'ed
+                mapView.addMarker(Marker.createProvided(Marker.Provided.GREEN).setPosition(coordKarlsruheHarbour)
+                        .setVisible(true));
+                mapView.addMarker(
+                        Marker.createProvided(Marker.Provided.ORANGE).setPosition(coordKarlsruheStation).setVisible(
+                                true));
 
-                    mapView.addCoordinateLine(
-                            new CoordinateLine(coordKarlsruheHarbour, coordKarlsruheStation, coordKarlsruheCastle)
-                                    .setVisible(true)
-                                    .setColor(Color.FUCHSIA).setWidth(5));
+                // add a coordinate line to be gc'ed
+                mapView.addCoordinateLine(
+                        new CoordinateLine(coordKarlsruheHarbour, coordKarlsruheStation, coordKarlsruheCastle)
+                                .setVisible(true)
+                                .setColor(Color.FUCHSIA).setWidth(5));
 
-                    topPane.setDisable(false);
-                }
+                // add a label to be gc'ed
+                mapView.addLabel(new Label("clean me up").setPosition(coordKarlsruheStation).setVisible(true));
+
+                topPane.setDisable(false);
             }
         });
 
@@ -163,26 +171,19 @@ public class TestApp extends Application {
         hbox.setSpacing(10);
 
         // label for showing the map's center
-        Label labelCenter = new Label();
+        javafx.scene.control.Label labelCenter = new javafx.scene.control.Label();
         hbox.getChildren().add(labelCenter);
         // add an observer for the map's center property to adjust the corresponding label
-        mapView.centerProperty().addListener(new ChangeListener<Coordinate>() {
-            @Override
-            public void changed(ObservableValue<? extends Coordinate> observable, Coordinate oldValue,
-                                Coordinate newValue) {
-                labelCenter.setText(newValue == null ? "" : ("center: " + newValue.toString()));
-            }
+        mapView.centerProperty().addListener((observable, oldValue, newValue) -> {
+            labelCenter.setText(newValue == null ? "" : ("center: " + newValue.toString()));
         });
 
         // label for showing the map's zoom
-        Label labelZoom = new Label();
+        javafx.scene.control.Label labelZoom = new javafx.scene.control.Label();
         hbox.getChildren().add(labelZoom);
         // add an observer to adjust the label
-        mapView.zoomProperty().addListener(new ChangeListener<Number>() {
-            @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                labelZoom.setText(null == newValue ? "" : ("zoom: " + newValue.toString()));
-            }
+        mapView.zoomProperty().addListener((observable, oldValue, newValue) -> {
+            labelZoom.setText(null == newValue ? "" : ("zoom: " + newValue.toString()));
         });
         return hbox;
     }
@@ -302,9 +303,26 @@ public class TestApp extends Application {
         hbox.getChildren().add(btn);
 
         hbox = new HBox();
-        hbox.getChildren().add(new Label("Bing Maps API Key:"));
+        hbox.setPadding(new Insets(5, 5, 5, 5));
+        hbox.setSpacing(5);
+        hbox.getChildren().add(new javafx.scene.control.Label("Bing Maps API Key:"));
         bingApiKey = new TextField();
         hbox.getChildren().add(bingApiKey);
+
+        btn = new Button();
+        btn.setText("add label");
+        btn.setOnAction(evt -> mapView.addLabel(label));
+        hbox.getChildren().add(btn);
+
+        btn = new Button();
+        btn.setText("toggle label visibility");
+        btn.setOnAction(evt -> label.setVisible(!label.getVisible()));
+        hbox.getChildren().add(btn);
+
+        btn = new Button();
+        btn.setText("remove label");
+        btn.setOnAction(evt -> mapView.removeLabel(label));
+        hbox.getChildren().add(btn);
 
         vbox.getChildren().add(hbox);
 

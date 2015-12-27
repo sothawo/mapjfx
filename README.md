@@ -37,6 +37,10 @@ The test application does not contain all the features, to have that, check
 
 ## version history
 
+### 1.6.0
+
+* added Label objects to the MapView
+
 ### 1.5.1
 
 * use OpenLayers 3.11.2
