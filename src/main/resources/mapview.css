@@ -2,6 +2,7 @@
 .mapview-label {
     border-radius: 5px;
     border: 1px solid black;
-    background-color: #eeeeee;
+    background: #eeeeee;
+    background: linear-gradient(#eeeeee, #aaaaaa);
     padding: 2px;
 }
