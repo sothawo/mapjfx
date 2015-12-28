@@ -52,7 +52,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -101,6 +100,9 @@ public final class MapView extends Region {
 
     /** number of retries if Javascript object is not ready. */
     private static final int NUM_RETRIES_FOR_JS = 10;
+
+    /** marker for custom_mapview.css. */
+    private static final String CUSTOM_MAPVIEW_CSS = "custom_mapview.css";
 
     /** the WebEngine of the WebView containing the OpenLayers Map. */
     private WebEngine webEngine;
@@ -168,6 +170,9 @@ public final class MapView extends Region {
     /** Bing Maps API Key. */
     private Optional<String> bingMapsApiKey = Optional.empty();
 
+    /** URL for custom mapview css. */
+    private Optional<URL> customMapviewCssURL = Optional.empty();
+
 // --------------------------- CONSTRUCTORS ---------------------------
 
     /**
@@ -229,7 +234,7 @@ public final class MapView extends Region {
      * @return true if either the map type does not need an api key or an api key was set.
      */
     private boolean checkApiKey(MapType mapTypeToCheck) {
-        switch (Objects.requireNonNull(mapTypeToCheck)) {
+        switch (requireNonNull(mapTypeToCheck)) {
             case BINGMAPS_ROAD:
             case BINGMAPS_AERIAL:
                 return bingMapsApiKey.isPresent();
@@ -763,14 +768,31 @@ public final class MapView extends Region {
         Matcher matcher = htmlIncludePattern.matcher(line);
         if (matcher.matches()) {
             String resource = baseURL + matcher.group(1);
-            logger.finer(() -> "loading from " + resource);
-            try (Stream<String> lines = new BufferedReader(
-                    new InputStreamReader(new URL(resource).openStream(), StandardCharsets.UTF_8))
-                    .lines()
-            ) {
-                return lines.collect(Collectors.toList());
-            } catch (IOException e) {
-                logger.log(Level.SEVERE, "loading " + resource, e);
+            if (CUSTOM_MAPVIEW_CSS.equals(matcher.group(1))) {
+                if (customMapviewCssURL.isPresent()) {
+                    logger.finer(
+                            () -> "loading custom mapview css from " + customMapviewCssURL.get().toExternalForm());
+                    try (Stream<String> lines = new BufferedReader(
+                            new InputStreamReader(customMapviewCssURL.get().openStream(), StandardCharsets.UTF_8))
+                            .lines()
+                    ) {
+                        return lines
+                                .filter(l -> !l.contains("<"))
+                                .collect(Collectors.toList());
+                    } catch (IOException e) {
+                        logger.log(Level.SEVERE, "loading resource " + resource, e);
+                    }
+                }
+            } else {
+                logger.finer(() -> "loading from " + resource);
+                try (Stream<String> lines = new BufferedReader(
+                        new InputStreamReader(new URL(resource).openStream(), StandardCharsets.UTF_8))
+                        .lines()
+                ) {
+                    return lines.collect(Collectors.toList());
+                } catch (IOException e) {
+                    logger.log(Level.SEVERE, "loading resource " + resource, e);
+                }
             }
         }
 
@@ -845,13 +867,32 @@ public final class MapView extends Region {
     }
 
     /**
+     * removes the given marker from the map and deregisters the change listeners. If the marker was not in the map or
+     * the MapView is not yet initialized, nothing happens.
+     *
+     * @param marker
+     *         marker to remove
+     * @return this object
+     * @throws java.lang.NullPointerException
+     *         if marker is null
+     */
+    public MapView removeMarker(Marker marker) {
+        if (!getInitialized()) {
+            logger.warning(MAP_VIEW_NOT_YET_INITIALIZED);
+        } else {
+            removeMapCoordinateElement(marker);
+        }
+        return this;
+    }
+
+    /**
      * removes a MapCoordinateElement from the map. If no such element is found, nothing happens.
      *
      * @param mapCoordinateElement
      *         the element to remove
      */
     private void removeMapCoordinateElement(MapCoordinateElement mapCoordinateElement) {
-        removeMapCoordinateElementWithId(Objects.requireNonNull(mapCoordinateElement).getId());
+        removeMapCoordinateElementWithId(requireNonNull(mapCoordinateElement).getId());
     }
 
     /**
@@ -883,25 +924,6 @@ public final class MapView extends Region {
                 logger.finer(() -> "removed element " + id);
             }
         }
-    }
-
-    /**
-     * removes the given marker from the map and deregisters the change listeners. If the marker was not in the map or
-     * the MapView is not yet initialized, nothing happens.
-     *
-     * @param marker
-     *         marker to remove
-     * @return this object
-     * @throws java.lang.NullPointerException
-     *         if marker is null
-     */
-    public MapView removeMarker(Marker marker) {
-        if (!getInitialized()) {
-            logger.warning(MAP_VIEW_NOT_YET_INITIALIZED);
-        } else {
-            removeMapCoordinateElement(marker);
-        }
-        return this;
     }
 
     /**
@@ -947,6 +969,19 @@ public final class MapView extends Region {
     }
 
     /**
+     * sets the URL for the custom mapview css file.
+     *
+     * @param url
+     *         css url
+     * @throws NullPointerException
+     *         if url is null
+     */
+    public void setCustomMapviewCssURL(URL url) {
+        requireNonNull(url);
+        customMapviewCssURL = Optional.of(url);
+    }
+
+    /**
      * sets the center and zoom of the map so that the given extent is visible.
      *
      * @param extent
@@ -959,7 +994,7 @@ public final class MapView extends Region {
         if (!getInitialized()) {
             logger.warning(MAP_VIEW_NOT_YET_INITIALIZED);
         } else {
-            Objects.requireNonNull(extent);
+            requireNonNull(extent);
             logger.finer(
                     () -> "setting extent in OpenLayers map: " + extent + ", animation: " +
                             animationDuration.get());

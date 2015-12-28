@@ -33,6 +33,7 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
@@ -146,6 +147,9 @@ public class TestApp extends Application {
                 topPane.setDisable(false);
             }
         });
+
+        // set custom css url
+        mapView.setCustomMapviewCssURL(getClass().getResource("/custom_mapview.css"));
 
         // now initialize the mapView
         mapView.initialize();
