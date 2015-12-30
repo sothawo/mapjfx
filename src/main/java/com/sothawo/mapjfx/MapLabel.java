@@ -148,31 +148,12 @@ public class MapLabel extends MapCoordinateElement {
 
     @Override
     public MapLabel setPosition(Coordinate position) {
-        return optMarker.isPresent() ? this : setPositionFromMarker(position);
-    }
-
-    /**
-     * sets the position. called from the marker, so no check for marker existence. package scope
-     *
-     * @param position
-     *         the new position
-     * @return this object.
-     */
-    MapLabel setPositionFromMarker(Coordinate position) {
         return (MapLabel) super.setPosition(position);
     }
 
     @Override
     public MapLabel setVisible(boolean visible) {
-        return optMarker.isPresent() ? this : setVisibleFromMarker(visible);
-    }
-
-    /**
-     * sets the visible state. Called from the marker. package scope
-     * @param visible
-     * @return
-     */
-    MapLabel setVisibleFromMarker(boolean visible) {
         return (MapLabel) super.setVisible(visible);
     }
+
 }

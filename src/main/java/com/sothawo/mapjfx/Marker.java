@@ -149,8 +149,8 @@ public final class Marker extends MapCoordinateElement {
     public Marker attachLabel(MapLabel mapLabel) {
         optMapLabel = Optional.of(requireNonNull(mapLabel));
         mapLabel.setMarker(this);
-        mapLabel.setVisibleFromMarker(getVisible());
-        mapLabel.setPositionFromMarker(getPosition());
+        mapLabel.visibleProperty().bind(visibleProperty());
+        mapLabel.positionProperty().bind(positionProperty());
         return this;
     }
 
@@ -160,7 +160,11 @@ public final class Marker extends MapCoordinateElement {
      * @return this object
      */
     public Marker detachLabel() {
-        optMapLabel.ifPresent(mapLabel -> mapLabel.setMarker(null));
+        optMapLabel.ifPresent(mapLabel -> {
+            mapLabel.setMarker(null);
+            mapLabel.visibleProperty().unbind();
+            mapLabel.positionProperty().unbind();
+        });
         optMapLabel = Optional.empty();
         return this;
     }
@@ -171,13 +175,11 @@ public final class Marker extends MapCoordinateElement {
 
     @Override
     public Marker setPosition(Coordinate position) {
-        optMapLabel.ifPresent(mapLabel -> mapLabel.setPositionFromMarker(position));
         return (Marker) super.setPosition(position);
     }
 
     @Override
     public Marker setVisible(boolean visible) {
-        optMapLabel.ifPresent(mapLabel -> mapLabel.setVisibleFromMarker(visible));
         return (Marker) super.setVisible(visible);
     }
 
