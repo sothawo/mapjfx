@@ -16,6 +16,7 @@
 package com.sothawo.mapjfx;
 
 import java.net.URL;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static java.util.Objects.requireNonNull;
@@ -33,6 +34,9 @@ import static java.util.Objects.requireNonNull;
  * A marker has a unique (within class existence in the VM) id of the form "marker-NNN" where NNN is a consecutive
  * number assigned on creation.
  *
+ * A Marker may have an attached Label. If it has one, the Label is shown/hidden/moved/removed together with the Marker.
+ * Any attempt to do these operations directly on the Label are ignored.
+ *
  * @author P.J. Meisch (pj.meisch@sothawo.com).
  */
 public final class Marker extends MapCoordinateElement {
@@ -43,6 +47,10 @@ public final class Marker extends MapCoordinateElement {
     private final String id;
     /** the image URL */
     private final URL imageURL;
+
+    /** the optional attached Label. */
+    private Optional<MapLabel> optMapLabel = Optional.empty();
+
 
 // -------------------------- STATIC METHODS --------------------------
 
@@ -129,13 +137,47 @@ public final class Marker extends MapCoordinateElement {
 
 // -------------------------- OTHER METHODS --------------------------
 
+    /**
+     * attaches the MapLabel to this Marker
+     *
+     * @param mapLabel
+     *         the MapLabel to attach
+     * @return this object
+     * @throws NullPointerException
+     *         of mapLabel is null
+     */
+    public Marker attachLabel(MapLabel mapLabel) {
+        optMapLabel = Optional.of(requireNonNull(mapLabel));
+        mapLabel.setMarker(this);
+        mapLabel.setVisibleFromMarker(getVisible());
+        mapLabel.setPositionFromMarker(getPosition());
+        return this;
+    }
+
+    /**
+     * detaches an attached Label.
+     *
+     * @return this object
+     */
+    public Marker detachLabel() {
+        optMapLabel.ifPresent(mapLabel -> mapLabel.setMarker(null));
+        optMapLabel = Optional.empty();
+        return this;
+    }
+
+    public Optional<MapLabel> getMapLabel() {
+        return optMapLabel;
+    }
+
     @Override
     public Marker setPosition(Coordinate position) {
+        optMapLabel.ifPresent(mapLabel -> mapLabel.setPositionFromMarker(position));
         return (Marker) super.setPosition(position);
     }
 
     @Override
     public Marker setVisible(boolean visible) {
+        optMapLabel.ifPresent(mapLabel -> mapLabel.setVisibleFromMarker(visible));
         return (Marker) super.setVisible(visible);
     }
 

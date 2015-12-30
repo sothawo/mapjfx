@@ -6,6 +6,7 @@
 package com.sothawo.mapjfx;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static java.util.Objects.requireNonNull;
@@ -22,9 +23,12 @@ import static java.util.Objects.requireNonNull;
  * A label has a unique (within class existence in the VM) id of the form "label-NNN" where NNN is a consecutive number
  * assigned on creation.
  *
- * A label on the map has a css class namedn mapview-label. In addition to that an additional class for the lable can
- * be set with the #setCssClass(String) method. This method must be called before a Label object is added to a
- * MapView. If it is changed afterwards, the Label must be removed and readded.
+ * A label on the map has a css class namedn mapview-label. In addition to that an additional class for the lable can be
+ * set with the #setCssClass(String) method. This method must be called before a Label object is added to a MapView. If
+ * it is changed afterwards, the Label must be removed and readded.
+ *
+ * A Label may be attached to a Marker. If it is, the Label is shown/hidden/moved/removed together with the Marker. Any
+ * attempt to do these operations directly on the Label are ignored.
  *
  * @author P.J. Meisch (pj.meisch@sothawo.com).
  */
@@ -39,8 +43,11 @@ public class MapLabel extends MapCoordinateElement {
     /** the label text */
     private final String text;
 
-    /** cusrtom css style name. */
+    /** custom css style name. */
     private String cssClass = "";
+
+    /** the Marker this Label is attached to. */
+    private Optional<Marker> optMarker = Optional.empty();
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
@@ -83,16 +90,6 @@ public class MapLabel extends MapCoordinateElement {
         return cssClass;
     }
 
-    /**
-     * sets the cssClass for the Label
-     * @param cssClass class name
-     * @return this object
-     */
-    public MapLabel setCssClass(String cssClass) {
-        this.cssClass = (null == cssClass) ? "" : cssClass;
-        return this;
-    }
-
     public String getId() {
         return id;
     }
@@ -126,13 +123,56 @@ public class MapLabel extends MapCoordinateElement {
 
 // -------------------------- OTHER METHODS --------------------------
 
+    public Optional<Marker> getMarker() {
+        return optMarker;
+    }
+
+    /**
+     * sets the cssClass for the Label
+     *
+     * @param cssClass
+     *         class name
+     * @return this object
+     */
+    public MapLabel setCssClass(String cssClass) {
+        this.cssClass = (null == cssClass) ? "" : cssClass;
+        return this;
+    }
+
+    /**
+     * sets the Marker this Label is attached to. Package scope as it should only be called from the Marker.
+     */
+    void setMarker(Marker marker) {
+        optMarker = Optional.ofNullable(marker);
+    }
+
     @Override
     public MapLabel setPosition(Coordinate position) {
+        return optMarker.isPresent() ? this : setPositionFromMarker(position);
+    }
+
+    /**
+     * sets the position. called from the marker, so no check for marker existence. package scope
+     *
+     * @param position
+     *         the new position
+     * @return this object.
+     */
+    MapLabel setPositionFromMarker(Coordinate position) {
         return (MapLabel) super.setPosition(position);
     }
 
     @Override
     public MapLabel setVisible(boolean visible) {
+        return optMarker.isPresent() ? this : setVisibleFromMarker(visible);
+    }
+
+    /**
+     * sets the visible state. Called from the marker. package scope
+     * @param visible
+     * @return
+     */
+    MapLabel setVisibleFromMarker(boolean visible) {
         return (MapLabel) super.setVisible(visible);
     }
 }

@@ -60,7 +60,7 @@ public class TestApp extends Application {
 
     private static final Marker marker;
 
-    private static final MapLabel MAP_LABEL;
+    private static final MapLabel mapLabel;
 
     /** the MapView */
     private MapView mapView;
@@ -83,7 +83,8 @@ public class TestApp extends Application {
         logger = Logger.getLogger(TestApp.class.getCanonicalName());
 
         marker = Marker.createProvided(Marker.Provided.BLUE).setPosition(coordKarlsruheCastle).setVisible(true);
-        MAP_LABEL = new MapLabel("blau!").setCssClass("blue-label").setPosition(coordKarlsruheCastle).setVisible(true);
+        mapLabel = new MapLabel("blau!").setCssClass("blue-label").setPosition(coordKarlsruheCastle).setVisible(true);
+        marker.attachLabel(mapLabel);
     }
 
 // -------------------------- OTHER METHODS --------------------------
@@ -114,8 +115,8 @@ public class TestApp extends Application {
             if (marker.getVisible()) {
                 marker.setPosition(event.getCoordinate());
             }
-            if (MAP_LABEL.getVisible()) {
-                MAP_LABEL.setPosition(event.getCoordinate());
+            if (mapLabel.getVisible()) {
+                mapLabel.setPosition(event.getCoordinate());
             }
         });
 
@@ -314,17 +315,17 @@ public class TestApp extends Application {
 
         btn = new Button();
         btn.setText("add label");
-        btn.setOnAction(evt -> mapView.addLabel(MAP_LABEL));
+        btn.setOnAction(evt -> mapView.addLabel(mapLabel));
         hbox.getChildren().add(btn);
 
         btn = new Button();
         btn.setText("toggle label visibility");
-        btn.setOnAction(evt -> MAP_LABEL.setVisible(!MAP_LABEL.getVisible()));
+        btn.setOnAction(evt -> mapLabel.setVisible(!mapLabel.getVisible()));
         hbox.getChildren().add(btn);
 
         btn = new Button();
         btn.setText("remove label");
-        btn.setOnAction(evt -> mapView.removeLabel(MAP_LABEL));
+        btn.setOnAction(evt -> mapView.removeLabel(mapLabel));
         hbox.getChildren().add(btn);
 
         vbox.getChildren().add(hbox);

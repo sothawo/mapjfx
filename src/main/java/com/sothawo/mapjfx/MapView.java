@@ -385,6 +385,11 @@ public final class MapView extends Region {
             String id = mapLabel.getId();
             // synchronize on the mapCoordinateElements map as the cleaning thread accesses this as well
             synchronized (mapCoordinateElements) {
+                // if the label is attached to a Marker, only add it when the marker is already added to the MapView
+                if (mapLabel.getMarker().isPresent() && !mapCoordinateElements.containsKey(mapLabel.getMarker().get()
+                        .getId())) {
+                    return this;
+                }
                 if (!mapCoordinateElements.containsKey(id)) {
                     addMapCoordinateElement(mapLabel);
                     javascriptConnector.call("addLabel", id, mapLabel.getText(), mapLabel.getCssClass(),
@@ -434,6 +439,7 @@ public final class MapView extends Region {
                     setMarkerVisibleInMap(id);
                 }
             }
+            marker.getMapLabel().ifPresent(this::addLabel);
         }
         return this;
     }
@@ -855,13 +861,15 @@ public final class MapView extends Region {
      *         label to remove
      * @return this object
      * @throws java.lang.NullPointerException
-     *         if marker is null
+     *         if mapLabel is null
      */
     public MapView removeLabel(MapLabel mapLabel) {
         if (!getInitialized()) {
             logger.warning(MAP_VIEW_NOT_YET_INITIALIZED);
         } else {
-            removeMapCoordinateElement(mapLabel);
+            if (!requireNonNull(mapLabel).getMarker().isPresent()) {
+                removeMapCoordinateElement(mapLabel);
+            }
         }
         return this;
     }
@@ -880,6 +888,7 @@ public final class MapView extends Region {
         if (!getInitialized()) {
             logger.warning(MAP_VIEW_NOT_YET_INITIALIZED);
         } else {
+            requireNonNull(marker).getMapLabel().ifPresent(this::removeMapCoordinateElement);
             removeMapCoordinateElement(marker);
         }
         return this;
