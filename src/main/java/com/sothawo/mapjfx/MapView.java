@@ -387,7 +387,7 @@ public final class MapView extends Region {
             synchronized (mapCoordinateElements) {
                 if (!mapCoordinateElements.containsKey(id)) {
                     addMapCoordinateElement(label);
-                    javascriptConnector.call("addLabel", id, label.getText(),
+                    javascriptConnector.call("addLabel", id, label.getText(), label.getCssClass(),
                             label.getPosition().getLatitude(), label.getPosition().getLongitude(),
                             label.getOffsetX(), label.getOffsetY());
 

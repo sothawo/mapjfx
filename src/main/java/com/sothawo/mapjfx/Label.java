@@ -22,6 +22,10 @@ import static java.util.Objects.requireNonNull;
  * A label has a unique (within class existence in the VM) id of the form "label-NNN" where NNN is a consecutive number
  * assigned on creation.
  *
+ * A label on the map has a css class namedn mapview-label. In addition to that an additional class for the lable can
+ * be set with the #setCssClass(String) method. This method must be called before a Label object is added to a
+ * MapView. If it is changed afterwards, the Label must be removed and readded.
+ *
  * @author P.J. Meisch (pj.meisch@sothawo.com).
  */
 public class Label extends MapCoordinateElement {
@@ -34,6 +38,9 @@ public class Label extends MapCoordinateElement {
 
     /** the label text */
     private final String text;
+
+    /** cusrtom css style name. */
+    private String cssClass = "";
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
@@ -71,6 +78,20 @@ public class Label extends MapCoordinateElement {
     }
 
 // --------------------- GETTER / SETTER METHODS ---------------------
+
+    public String getCssClass() {
+        return cssClass;
+    }
+
+    /**
+     * sets the cssClass for the Label
+     * @param cssClass class name
+     * @return this object
+     */
+    public Label setCssClass(String cssClass) {
+        this.cssClass = (null == cssClass) ? "" : cssClass;
+        return this;
+    }
 
     public String getId() {
         return id;

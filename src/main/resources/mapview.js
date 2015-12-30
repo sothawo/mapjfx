@@ -313,12 +313,13 @@ var jsConnector = {
      * adds a label to the map
      * @param {string} the name of the Label. must be unique within all markers and labels.
      * @param {string} text the text of the Label
+     * @param {string} the css class for the label
      * @param {number} the latitude of the label's position
      * @param {number} the longitude of the label's position
      * @param {number} x-offset of the top left point of the image to the coordinate
      * @param {number} y-offset of the top left point of the image to the coordinate
      */
-    addLabel: function (name, text, latitude, longitude, offsetX, offsetY) {
+    addLabel: function (name, text, cssClass, latitude, longitude, offsetX, offsetY) {
         var label = mapObjects[name];
         if (!label) {
             label = new MapObject(cFromWGS84([longitude, latitude]));
@@ -330,7 +331,7 @@ var jsConnector = {
             labelsElement.appendChild(labelElement);
 
             labelElement.setAttribute('id', name);
-            labelElement.setAttribute("class", "mapview-label");
+            labelElement.setAttribute("class", "mapview-label " + cssClass);
             labelElement.innerHTML = text;
 
             var overlay = new ol.Overlay({

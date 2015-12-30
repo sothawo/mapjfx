@@ -85,7 +85,7 @@ public class TestApp extends Application {
         logger = Logger.getLogger(TestApp.class.getCanonicalName());
 
         marker = Marker.createProvided(Marker.Provided.BLUE).setPosition(coordKarlsruheCastle).setVisible(true);
-        label = new Label("blau!").setPosition(coordKarlsruheCastle).setVisible(true);
+        label = new Label("blau!").setCssClass("blue-label").setPosition(coordKarlsruheCastle).setVisible(true);
     }
 
 // -------------------------- OTHER METHODS --------------------------
@@ -142,7 +142,8 @@ public class TestApp extends Application {
                                 .setColor(Color.FUCHSIA).setWidth(5));
 
                 // add a label to be gc'ed
-                mapView.addLabel(new Label("clean me up").setPosition(coordKarlsruheStation).setVisible(true));
+                mapView.addLabel(new Label("clean me up").setPosition(coordKarlsruheStation)
+                        .setVisible(true));
 
                 topPane.setDisable(false);
             }
