@@ -16,11 +16,10 @@
 package com.sothawo.mapjfx;
 
 import javafx.application.Application;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
@@ -33,7 +32,6 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
@@ -62,7 +60,7 @@ public class TestApp extends Application {
 
     private static final Marker marker;
 
-    private static final Label label;
+    private static final MapLabel MAP_LABEL;
 
     /** the MapView */
     private MapView mapView;
@@ -85,7 +83,7 @@ public class TestApp extends Application {
         logger = Logger.getLogger(TestApp.class.getCanonicalName());
 
         marker = Marker.createProvided(Marker.Provided.BLUE).setPosition(coordKarlsruheCastle).setVisible(true);
-        label = new Label("blau!").setCssClass("blue-label").setPosition(coordKarlsruheCastle).setVisible(true);
+        MAP_LABEL = new MapLabel("blau!").setCssClass("blue-label").setPosition(coordKarlsruheCastle).setVisible(true);
     }
 
 // -------------------------- OTHER METHODS --------------------------
@@ -116,8 +114,8 @@ public class TestApp extends Application {
             if (marker.getVisible()) {
                 marker.setPosition(event.getCoordinate());
             }
-            if (label.getVisible()) {
-                label.setPosition(event.getCoordinate());
+            if (MAP_LABEL.getVisible()) {
+                MAP_LABEL.setPosition(event.getCoordinate());
             }
         });
 
@@ -142,7 +140,7 @@ public class TestApp extends Application {
                                 .setColor(Color.FUCHSIA).setWidth(5));
 
                 // add a label to be gc'ed
-                mapView.addLabel(new Label("clean me up").setPosition(coordKarlsruheStation)
+                mapView.addLabel(new MapLabel("clean me up").setPosition(coordKarlsruheStation)
                         .setVisible(true));
 
                 topPane.setDisable(false);
@@ -176,7 +174,7 @@ public class TestApp extends Application {
         hbox.setSpacing(10);
 
         // label for showing the map's center
-        javafx.scene.control.Label labelCenter = new javafx.scene.control.Label();
+        Label labelCenter = new Label();
         hbox.getChildren().add(labelCenter);
         // add an observer for the map's center property to adjust the corresponding label
         mapView.centerProperty().addListener((observable, oldValue, newValue) -> {
@@ -184,7 +182,7 @@ public class TestApp extends Application {
         });
 
         // label for showing the map's zoom
-        javafx.scene.control.Label labelZoom = new javafx.scene.control.Label();
+        Label labelZoom = new Label();
         hbox.getChildren().add(labelZoom);
         // add an observer to adjust the label
         mapView.zoomProperty().addListener((observable, oldValue, newValue) -> {
@@ -310,23 +308,23 @@ public class TestApp extends Application {
         hbox = new HBox();
         hbox.setPadding(new Insets(5, 5, 5, 5));
         hbox.setSpacing(5);
-        hbox.getChildren().add(new javafx.scene.control.Label("Bing Maps API Key:"));
+        hbox.getChildren().add(new Label("Bing Maps API Key:"));
         bingApiKey = new TextField();
         hbox.getChildren().add(bingApiKey);
 
         btn = new Button();
         btn.setText("add label");
-        btn.setOnAction(evt -> mapView.addLabel(label));
+        btn.setOnAction(evt -> mapView.addLabel(MAP_LABEL));
         hbox.getChildren().add(btn);
 
         btn = new Button();
         btn.setText("toggle label visibility");
-        btn.setOnAction(evt -> label.setVisible(!label.getVisible()));
+        btn.setOnAction(evt -> MAP_LABEL.setVisible(!MAP_LABEL.getVisible()));
         hbox.getChildren().add(btn);
 
         btn = new Button();
         btn.setText("remove label");
-        btn.setOnAction(evt -> mapView.removeLabel(label));
+        btn.setOnAction(evt -> mapView.removeLabel(MAP_LABEL));
         hbox.getChildren().add(btn);
 
         vbox.getChildren().add(hbox);

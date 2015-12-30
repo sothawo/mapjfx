@@ -28,7 +28,7 @@ import static java.util.Objects.requireNonNull;
  *
  * @author P.J. Meisch (pj.meisch@sothawo.com).
  */
-public class Label extends MapCoordinateElement {
+public class MapLabel extends MapCoordinateElement {
 // ------------------------------ FIELDS ------------------------------
 
     private final static AtomicLong nextId = new AtomicLong(1);
@@ -50,7 +50,7 @@ public class Label extends MapCoordinateElement {
      * @param text
      *         label text
      */
-    public Label(String text) {
+    public MapLabel(String text) {
         this(text, 0, 0);
     }
 
@@ -68,7 +68,7 @@ public class Label extends MapCoordinateElement {
      * @throws IllegalArgumentException
      *         if text is empty
      */
-    public Label(String text, int offsetX, int offsetY) {
+    public MapLabel(String text, int offsetX, int offsetY) {
         super(offsetX, offsetY);
         this.text = requireNonNull(text);
         if (text.isEmpty()) {
@@ -88,7 +88,7 @@ public class Label extends MapCoordinateElement {
      * @param cssClass class name
      * @return this object
      */
-    public Label setCssClass(String cssClass) {
+    public MapLabel setCssClass(String cssClass) {
         this.cssClass = (null == cssClass) ? "" : cssClass;
         return this;
     }
@@ -107,8 +107,8 @@ public class Label extends MapCoordinateElement {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Label label = (Label) o;
-        return Objects.equals(id, label.id);
+        MapLabel mapLabel = (MapLabel) o;
+        return Objects.equals(id, mapLabel.id);
     }
 
     @Override
@@ -127,12 +127,12 @@ public class Label extends MapCoordinateElement {
 // -------------------------- OTHER METHODS --------------------------
 
     @Override
-    public Label setPosition(Coordinate position) {
-        return (Label) super.setPosition(position);
+    public MapLabel setPosition(Coordinate position) {
+        return (MapLabel) super.setPosition(position);
     }
 
     @Override
-    public Label setVisible(boolean visible) {
-        return (Label) super.setVisible(visible);
+    public MapLabel setVisible(boolean visible) {
+        return (MapLabel) super.setVisible(visible);
     }
 }

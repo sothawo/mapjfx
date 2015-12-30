@@ -20,7 +20,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-public class LabelTest {
+public class MapLabelTest {
 // ------------------------------ FIELDS ------------------------------
 
     private static final String TEXT = "text";
@@ -29,32 +29,32 @@ public class LabelTest {
 
     @Test
     public void ctorArgsAreSet() throws Exception {
-        Label label = new Label(TEXT, 47, 11);
-        assertEquals(label.getText(), TEXT);
-        assertEquals(47, label.getOffsetX());
-        assertEquals(11, label.getOffsetY());
+        MapLabel mapLabel = new MapLabel(TEXT, 47, 11);
+        assertEquals(mapLabel.getText(), TEXT);
+        assertEquals(47, mapLabel.getOffsetX());
+        assertEquals(11, mapLabel.getOffsetY());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void ctorWithEmptyLabel() throws Exception {
-        new Label("");
+        new MapLabel("");
     }
 
     @Test(expected = NullPointerException.class)
     public void ctorWithNullLabel() throws Exception {
-        new Label(null);
+        new MapLabel(null);
     }
 
     @Test
     public void noPositionInNewObject() throws Exception {
-        assertNull(new Label(TEXT).getPosition());
+        assertNull(new MapLabel(TEXT).getPosition());
     }
 
     @Test
     public void positionIsSet() throws Exception {
         Coordinate position = new Coordinate(48.3, 8.2);
-        Label label = new Label(TEXT);
-        label.setPosition(position);
-        assertEquals(position, label.getPosition());
+        MapLabel mapLabel = new MapLabel(TEXT);
+        mapLabel.setPosition(position);
+        assertEquals(position, mapLabel.getPosition());
     }
 }

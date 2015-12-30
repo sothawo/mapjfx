@@ -368,30 +368,30 @@ public final class MapView extends Region {
      * The MapView only keeps a weak reference to the label, so the caller must keep a reference to prevent the Label
      * object from being garbage collected.
      *
-     * @param label
+     * @param mapLabel
      *         the label
      * @return this object
      * @throws java.lang.NullPointerException
      *         if marker is null
      */
-    public MapView addLabel(Label label) {
+    public MapView addLabel(MapLabel mapLabel) {
         if (!getInitialized()) {
             logger.warning(MAP_VIEW_NOT_YET_INITIALIZED);
         } else {
-            if (null == requireNonNull(label).getPosition()) {
-                logger.finer(() -> "label with no position was not added: " + label);
+            if (null == requireNonNull(mapLabel).getPosition()) {
+                logger.finer(() -> "label with no position was not added: " + mapLabel);
                 return this;
             }
-            String id = label.getId();
+            String id = mapLabel.getId();
             // synchronize on the mapCoordinateElements map as the cleaning thread accesses this as well
             synchronized (mapCoordinateElements) {
                 if (!mapCoordinateElements.containsKey(id)) {
-                    addMapCoordinateElement(label);
-                    javascriptConnector.call("addLabel", id, label.getText(), label.getCssClass(),
-                            label.getPosition().getLatitude(), label.getPosition().getLongitude(),
-                            label.getOffsetX(), label.getOffsetY());
+                    addMapCoordinateElement(mapLabel);
+                    javascriptConnector.call("addLabel", id, mapLabel.getText(), mapLabel.getCssClass(),
+                            mapLabel.getPosition().getLatitude(), mapLabel.getPosition().getLongitude(),
+                            mapLabel.getOffsetX(), mapLabel.getOffsetY());
 
-                    logger.finer(() -> "add label in OpenLayers map " + label.toString());
+                    logger.finer(() -> "add label in OpenLayers map " + mapLabel.toString());
                     setMarkerVisibleInMap(id);
                 }
             }
@@ -851,17 +851,17 @@ public final class MapView extends Region {
      * removes the given label from the map and deregisters the change listeners. If the label was not in the map or the
      * MapView is not yet initialized, nothing happens.
      *
-     * @param label
+     * @param mapLabel
      *         label to remove
      * @return this object
      * @throws java.lang.NullPointerException
      *         if marker is null
      */
-    public MapView removeLabel(Label label) {
+    public MapView removeLabel(MapLabel mapLabel) {
         if (!getInitialized()) {
             logger.warning(MAP_VIEW_NOT_YET_INITIALIZED);
         } else {
-            removeMapCoordinateElement(label);
+            removeMapCoordinateElement(mapLabel);
         }
         return this;
     }
