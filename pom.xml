@@ -3,7 +3,7 @@
 
     <groupId>com.sothawo</groupId>
     <artifactId>mapjfx</artifactId>
-    <version>1.6.0</version>
+    <version>1.6.1-SNAPSHOT</version>
     <name>${project.groupId}:${project.artifactId}</name>
     <description>a JavaFX map component build by using OpenLayers</description>
     <url>http://www.sothawo.com/projects/mapjfx</url>
@@ -28,7 +28,7 @@
         <connection>scm:git:git@github.com:sothawo/mapjfx.git</connection>
         <developerConnection>scm:git:git@github.com:sothawo/mapjfx.git</developerConnection>
         <url>git@github.com:sothawo/mapjfx.git</url>
-        <tag>mapjfx-1.6.0</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <properties>
