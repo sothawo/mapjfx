@@ -15,7 +15,7 @@
 */
 package com.sothawo.mapjfx;
 
-import com.sothawo.mapjfx.offline.MapViewURLStreamHandlerFactory;
+import com.sothawo.mapjfx.offline.CachingURLStreamHandlerFactory;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
@@ -189,7 +189,6 @@ public final class MapView extends Region {
         setBackground(new Background(new BackgroundFill(Paint.valueOf("#ccc"), null, null)));
 
         startWeakRefCleaner();
-
     }
 
     /**
@@ -582,7 +581,7 @@ public final class MapView extends Region {
     public void initialize() {
         logger.finer("initializing...");
 
-        setupURLStreamHandler();
+        setupCaching();
 
         // we could load the html via the URL, but then we run into problems loading local images or track files when
         // the mapView is embededded in a jar and loaded via jar: URI. If we load the page with loadContent, these
@@ -651,20 +650,6 @@ public final class MapView extends Region {
     }
 
     /**
-     * tries to setup a URLStreamHandlerFactory to be able to implement caching of map images.
-     */
-    private void setupURLStreamHandler() {
-        try {
-            URL.setURLStreamHandlerFactory(MapViewURLStreamHandlerFactory.INSTANCE);
-        } catch (Error e) {
-            logger.warning("cannot setup URLStreamFactoryHandler, it is already set in this application. " + e.getMessage());
-        } catch (SecurityException e) {
-            logger.severe("cannot setup URLStreamFactoryHandler. " + e.getMessage());
-
-        }
-    }
-
-    /**
      * log Java, JavaFX , OS and WebKit version.
      */
     private void logVersions() {
@@ -725,6 +710,19 @@ public final class MapView extends Region {
      */
     public double getZoom() {
         return zoom.get();
+    }
+
+    /**
+     * sets up the mechanisms to be able to implement caching of map images.
+     */
+    private void setupCaching() {
+        try {
+            URL.setURLStreamHandlerFactory(CachingURLStreamHandlerFactory.INSTANCE);
+        } catch (Error e) {
+            logger.warning("cannot setup URLStreamFactoryHandler, it is already set in this application. " + e.getMessage());
+        } catch (SecurityException e) {
+            logger.severe("cannot setup URLStreamFactoryHandler. " + e.getMessage());
+        }
     }
 
     /**

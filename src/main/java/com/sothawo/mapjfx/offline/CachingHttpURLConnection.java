@@ -19,11 +19,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * TODO: description.
+ * HttpURLConnection implementation that caches the data in a local file, if it is not already stored there.
  *
  * @author P.J. Meisch (pj.meisch@sothawo.com).
  */
-public class MyHttpURLConnection extends HttpURLConnection {
+public class CachingHttpURLConnection extends HttpURLConnection {
 // ------------------------------ FIELDS ------------------------------
 
     private HttpURLConnection delegate;
@@ -79,16 +79,24 @@ public class MyHttpURLConnection extends HttpURLConnection {
 // --------------------------- CONSTRUCTORS ---------------------------
 
     /**
-     * Constructor for the HttpURLConnection.
+     * inherited constructor for the HttpURLConnection, private.
      *
      * @param u
      *         the URL
      */
-    private MyHttpURLConnection(URL u) {
+    private CachingHttpURLConnection(URL u) {
         super(u);
     }
 
-    public MyHttpURLConnection(HttpURLConnection delegate) {
+    /**
+     * creates a CachingHttpURlConnection.
+     *
+     * @param cacheKey
+     *         the cacheKey under which the cached content ist stored
+     * @param delegate
+     *         the delegate that provides the content
+     */
+    public CachingHttpURLConnection(String cacheKey, HttpURLConnection delegate) {
         super(delegate.getURL());
         this.delegate = delegate;
     }
@@ -195,8 +203,16 @@ public class MyHttpURLConnection extends HttpURLConnection {
         return delegate.getIfModifiedSince();
     }
 
+    /**
+     * return the delegate's InputStream wrapped in a {@link WriteCacheFileInputStream} or a FileInputStream in case
+     * when the data is already cached.
+     *
+     * @return wrapping InputStream
+     * @throws IOException
+     */
     public InputStream getInputStream() throws IOException {
-        return delegate.getInputStream();
+        // todo read cache
+        return new WriteCacheFileInputStream(delegate.getInputStream());
     }
 
     public boolean getInstanceFollowRedirects() {

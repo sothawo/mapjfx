@@ -25,11 +25,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * TODO: description.
+ * HttpsURLConnection implementation that caches the data in a local file, if it is not already stored there.
  *
  * @author P.J. Meisch (pj.meisch@sothawo.com).
  */
-public class MyHttpsURLConnection extends HttpsURLConnection {
+public class CachingHttpsURLConnection extends HttpsURLConnection {
 // ------------------------------ FIELDS ------------------------------
 
     private HttpsURLConnection delegate;
@@ -100,11 +100,25 @@ public class MyHttpsURLConnection extends HttpsURLConnection {
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
-    private MyHttpsURLConnection(URL url) {
+    /**
+     * inherited constructor for the HttpURLConnection, private.
+     *
+     * @param u
+     *         the URL
+     */
+    private CachingHttpsURLConnection(URL url) {
         super(url);
     }
 
-    public MyHttpsURLConnection(HttpsURLConnection delegate) {
+    /**
+     * creates a CachingHttpsURlConnection.
+     *
+     * @param cacheKey
+     *         the cacheKey under which the cached content ist stored
+     * @param delegate
+     *         the delegate that provides the content
+     */
+    public CachingHttpsURLConnection(String cacheKey, HttpsURLConnection delegate) {
         super(delegate.getURL());
         this.delegate = delegate;
     }
@@ -219,8 +233,16 @@ public class MyHttpsURLConnection extends HttpsURLConnection {
         return delegate.getIfModifiedSince();
     }
 
+    /**
+     * return the delegate's InputStream wrapped in a {@link WriteCacheFileInputStream} or a FileInputStream in case
+     * when the data is already cached.
+     *
+     * @return wrapping InputStream
+     * @throws IOException
+     */
     public InputStream getInputStream() throws IOException {
-        return delegate.getInputStream();
+        // todo read cache
+        return new WriteCacheFileInputStream(delegate.getInputStream());
     }
 
     public boolean getInstanceFollowRedirects() {
