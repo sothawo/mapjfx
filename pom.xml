@@ -28,7 +28,7 @@
         <connection>scm:git:git@github.com:sothawo/mapjfx.git</connection>
         <developerConnection>scm:git:git@github.com:sothawo/mapjfx.git</developerConnection>
         <url>git@github.com:sothawo/mapjfx.git</url>
-        <tag>mapjfx-1.6.2</tag>
+        <tag>mapjfx-1.6.2-web-cache</tag>
     </scm>
 
     <properties>

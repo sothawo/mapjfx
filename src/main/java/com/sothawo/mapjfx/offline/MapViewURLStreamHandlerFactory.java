@@ -3,10 +3,12 @@
  *
  * http://www.sothawo.com
  */
-package com.sothawo.mapjfx;
+package com.sothawo.mapjfx.offline;
 
+import javax.net.ssl.HttpsURLConnection;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
@@ -28,13 +30,7 @@ public enum MapViewURLStreamHandlerFactory implements URLStreamHandlerFactory {
     public static final String PROTO_HTTP = "http";
     public static final String PROTO_HTTPS = "https";
 
-    /** the default http handler. */
-    private URLStreamHandler urlStreamHandlerHttp = null;
-
-    /** the default https handler. */
-    private URLStreamHandler urlStreamHandlerHttps = null;
-
-    /** the map with the predefined handlers. */
+    /** the map with the default handlers for different protocols. */
     private Map<String, URLStreamHandler> handlers = new ConcurrentHashMap<>();
 
 // ------------------------------ FIELDS ------------------------------
@@ -43,10 +39,8 @@ public enum MapViewURLStreamHandlerFactory implements URLStreamHandlerFactory {
     private static final Logger logger = Logger.getLogger(MapViewURLStreamHandlerFactory.class.getCanonicalName());
 
     {
-        urlStreamHandlerHttp = getURLStreamHandler(PROTO_HTTP);
-        urlStreamHandlerHttps = getURLStreamHandler(PROTO_HTTPS);
-        handlers.put(PROTO_HTTP, urlStreamHandlerHttp);
-        handlers.put(PROTO_HTTPS, urlStreamHandlerHttps);
+        handlers.put(PROTO_HTTP, getURLStreamHandler(PROTO_HTTP));
+        handlers.put(PROTO_HTTPS, getURLStreamHandler(PROTO_HTTPS));
     }
 
     /**
@@ -76,9 +70,12 @@ public enum MapViewURLStreamHandlerFactory implements URLStreamHandlerFactory {
 
     @Override
     public URLStreamHandler createURLStreamHandler(String protocol) {
+        if (null == protocol) {
+            throw new IllegalArgumentException("null protocol not allowed");
+        }
         logger.finer("need to create URLStreamHandler for protocol " + protocol);
 
-        if (PROTO_HTTP.equals(protocol) || PROTO_HTTPS.equals(protocol)) {
+        if (PROTO_HTTP.equals(protocol.toLowerCase()) || PROTO_HTTPS.equals(protocol.toLowerCase())) {
             return new URLStreamHandler() {
                 @Override
                 protected URLConnection openConnection(URL u) throws IOException {
@@ -88,10 +85,21 @@ public enum MapViewURLStreamHandlerFactory implements URLStreamHandlerFactory {
                     // if so, return a URL to the file resource
                     // if the url is not cached read the content, store it and return a file url for the cached content.
 
-                    // at the moment, just pass it through, using the default handlers
-                    // TODO: what to do, if the default handler cannot be retrieved via reflection?
-                    final URLStreamHandler urlStreamHandler = handlers.get(protocol);
-                    return new URL(protocol, u.getHost(), u.getPort(), u.getFile(), urlStreamHandler).openConnection();
+                    // URLConnection only has a protected ctor, so we need to go through the URL ctor with the
+                    // mathcing handler to get a default implementation of the needed URLSTreamHandler
+                    final URLStreamHandler defaultHandler = handlers.get(protocol);
+                    final URLConnection defaultUrlConnection =
+                            new URL(protocol, u.getHost(), u.getPort(), u.getFile(), defaultHandler).openConnection();
+
+                    // now wrap the default connection
+                    switch (protocol) {
+                        case PROTO_HTTP:
+                            return new MyHttpURLConnection((HttpURLConnection) defaultUrlConnection);
+                        case PROTO_HTTPS:
+                            return new MyHttpsURLConnection((HttpsURLConnection) defaultUrlConnection);
+                    }
+
+                    throw new IOException("no matching handler");
                 }
             };
         }

@@ -15,6 +15,7 @@
 */
 package com.sothawo.mapjfx;
 
+import com.sothawo.mapjfx.offline.MapViewURLStreamHandlerFactory;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
