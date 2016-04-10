@@ -8,6 +8,7 @@ package com.sothawo.mapjfx.offline;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.logging.Logger;
 
 /**
@@ -18,11 +19,11 @@ import java.util.logging.Logger;
  * @author P.J. Meisch (pj.meisch@sothawo.com).
  */
 public class WriteCacheFileInputStream extends FilterInputStream {
-// ------------------------------ FIELDS ------------------------------
 
     private static final Logger logger = Logger.getLogger(WriteCacheFileInputStream.class.getCanonicalName());
 
-// --------------------------- CONSTRUCTORS ---------------------------
+    /** the output stream where th data is stored. */
+    private final OutputStream out;
 
     /**
      * Creates a <code>FilterInputStream</code> by assigning the  argument <code>in</code> to the field
@@ -31,36 +32,48 @@ public class WriteCacheFileInputStream extends FilterInputStream {
      * @param in
      *         the underlying input stream, or <code>null</code> if this instance is to be created without an underlying
      *         stream.
+     * @param out
+     *         the stream where the data read from in should be written to.
      */
-    protected WriteCacheFileInputStream(InputStream in) {
+    protected WriteCacheFileInputStream(InputStream in, OutputStream out) {
         super(in);
+        this.out = out;
     }
-
-// ------------------------ INTERFACE METHODS ------------------------
-
-
-// --------------------- Interface AutoCloseable ---------------------
 
     @Override
     public void close() throws IOException {
         logger.finer("closing stream");
         super.close();
+        if (null != out) {
+            out.flush();
+            out.close();
+        }
     }
-
-// -------------------------- OTHER METHODS --------------------------
 
     @Override
     public int read() throws IOException {
-        return super.read();
+        final int i = super.read();
+        if (null != out) {
+            out.write(i);
+        }
+        return i;
     }
 
     @Override
     public int read(byte[] b) throws IOException {
-        return super.read(b);
+        final int numBytes = super.read(b);
+        if (null != out) {
+            out.write(b, 0, numBytes);
+        }
+        return numBytes;
     }
 
     @Override
     public int read(byte[] b, int off, int len) throws IOException {
-        return super.read(b, off, len);
+        final int numBytes = super.read(b, off, len);
+        if (null != out) {
+            out.write(b, off, numBytes);
+        }
+        return numBytes;
     }
 }

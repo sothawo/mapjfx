@@ -5,6 +5,7 @@
  */
 package com.sothawo.mapjfx.offline;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -14,6 +15,7 @@ import java.net.HttpURLConnection;
 import java.net.ProtocolException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.Path;
 import java.security.Permission;
 import java.util.List;
 import java.util.Map;
@@ -24,11 +26,9 @@ import java.util.Map;
  * @author P.J. Meisch (pj.meisch@sothawo.com).
  */
 public class CachingHttpURLConnection extends HttpURLConnection {
-// ------------------------------ FIELDS ------------------------------
 
-    private HttpURLConnection delegate;
-
-// -------------------------- STATIC METHODS --------------------------
+    private final Path cacheFile;
+    private final HttpURLConnection delegate;
 
     public static void setDefaultAllowUserInteraction(boolean defaultallowuserinteraction) {
         URLConnection.setDefaultAllowUserInteraction(defaultallowuserinteraction);
@@ -76,8 +76,6 @@ public class CachingHttpURLConnection extends HttpURLConnection {
         URLConnection.setContentHandlerFactory(fac);
     }
 
-// --------------------------- CONSTRUCTORS ---------------------------
-
     /**
      * inherited constructor for the HttpURLConnection, private.
      *
@@ -86,22 +84,23 @@ public class CachingHttpURLConnection extends HttpURLConnection {
      */
     private CachingHttpURLConnection(URL u) {
         super(u);
+        this.delegate = null;
+        this.cacheFile = null;
     }
 
     /**
      * creates a CachingHttpURlConnection.
      *
-     * @param cacheKey
-     *         the cacheKey under which the cached content ist stored
+     * @param cacheFile
+     *         the path to the file where the cached content ist stored
      * @param delegate
      *         the delegate that provides the content
      */
-    public CachingHttpURLConnection(String cacheKey, HttpURLConnection delegate) {
+    public CachingHttpURLConnection(Path cacheFile, HttpURLConnection delegate) {
         super(delegate.getURL());
         this.delegate = delegate;
+        this.cacheFile = cacheFile;
     }
-
-// -------------------------- OTHER METHODS --------------------------
 
     public void addRequestProperty(String key, String value) {
         delegate.addRequestProperty(key, value);
@@ -211,8 +210,7 @@ public class CachingHttpURLConnection extends HttpURLConnection {
      * @throws IOException
      */
     public InputStream getInputStream() throws IOException {
-        // todo read cache
-        return new WriteCacheFileInputStream(delegate.getInputStream());
+        return new WriteCacheFileInputStream(delegate.getInputStream(), new FileOutputStream(cacheFile.toFile()));
     }
 
     public boolean getInstanceFollowRedirects() {

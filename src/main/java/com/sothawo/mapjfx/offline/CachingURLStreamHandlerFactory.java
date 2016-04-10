@@ -14,36 +14,40 @@ import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.net.URLStreamHandler;
 import java.net.URLStreamHandlerFactory;
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 /**
- * Custom URLStreamHandlerFactory that is used to implement caching. Singleton implementation. The factory creates
- * CachingHttpUrlConnection (and https) instances that wrap the original URLConnection elements.
+ * Custom URLStreamHandlerFactory that is used to implement caching. sThe factory creates CachingHttpUrlConnection (and
+ * https) instances that wrap the original URLConnection elements.
  *
  * @author P.J. Meisch (pj.meisch@sothawo.com).
  */
-public enum CachingURLStreamHandlerFactory implements URLStreamHandlerFactory {
-    /** the instance. */
-    INSTANCE;
-
-// ------------------------------ FIELDS ------------------------------
+public class CachingURLStreamHandlerFactory implements URLStreamHandlerFactory {
 
     public static final String PROTO_HTTP = "http";
     public static final String PROTO_HTTPS = "https";
+
     /** Logger for the class */
     private static final Logger logger = Logger.getLogger(CachingURLStreamHandlerFactory.class.getCanonicalName());
+
+    /** the cache this instance blegons to. */
+    private final OfflineCache cache;
 
     /** the map with the default handlers for different protocols. */
     private Map<String, URLStreamHandler> handlers = new ConcurrentHashMap<>();
 
-// --------------------------- CONSTRUCTORS ---------------------------
 
     /**
      * initializes the {@link #handlers} map with the current handlers for the relevant protocols.
+     *
+     * @param cache
+     *         the cache this instance belongs to
      */
-    CachingURLStreamHandlerFactory() {
+    CachingURLStreamHandlerFactory(OfflineCache cache) {
+        this.cache = cache;
         handlers.put(PROTO_HTTP, getURLStreamHandler(PROTO_HTTP));
         handlers.put(PROTO_HTTPS, getURLStreamHandler(PROTO_HTTPS));
     }
@@ -66,10 +70,6 @@ public enum CachingURLStreamHandlerFactory implements URLStreamHandlerFactory {
         }
     }
 
-// ------------------------ INTERFACE METHODS ------------------------
-
-
-// --------------------- Interface URLStreamHandlerFactory ---------------------
 
     /** default Handler for http. */
     @Override
@@ -94,16 +94,13 @@ public enum CachingURLStreamHandlerFactory implements URLStreamHandlerFactory {
 
                     if (urlShouldBeCached(u)) {
 
-                        final String cacheKey = URLEncoder.encode(u.toExternalForm(), "UTF-8");
-                        logger.info("encoded: " + cacheKey);
-
                         // now wrap the default connection
+                        final Path cacheFile = cache.filenameForURL(u);
                         switch (proto) {
                             case PROTO_HTTP:
-                                return new CachingHttpURLConnection(cacheKey, (HttpURLConnection) defaultUrlConnection);
+                                return new CachingHttpURLConnection(cacheFile, (HttpURLConnection) defaultUrlConnection);
                             case PROTO_HTTPS:
-                                return new CachingHttpsURLConnection(cacheKey,
-                                        (HttpsURLConnection) defaultUrlConnection);
+                                return new CachingHttpsURLConnection(cacheFile, (HttpsURLConnection) defaultUrlConnection);
                         }
 
                         throw new IOException("no matching handler");

@@ -16,6 +16,7 @@
 package com.sothawo.mapjfx;
 
 import com.sothawo.mapjfx.offline.CachingURLStreamHandlerFactory;
+import com.sothawo.mapjfx.offline.OfflineCache;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
@@ -46,6 +47,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystems;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
@@ -173,6 +175,9 @@ public final class MapView extends Region {
 
     /** URL for custom mapview css. */
     private Optional<URL> customMapviewCssURL = Optional.empty();
+
+    /** the OfflineCache. */
+    private OfflineCache offlineCache = new OfflineCache();
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
@@ -716,13 +721,9 @@ public final class MapView extends Region {
      * sets up the mechanisms to be able to implement caching of map images.
      */
     private void setupCaching() {
-        try {
-            URL.setURLStreamHandlerFactory(CachingURLStreamHandlerFactory.INSTANCE);
-        } catch (Error e) {
-            logger.warning("cannot setup URLStreamFactoryHandler, it is already set in this application. " + e.getMessage());
-        } catch (SecurityException e) {
-            logger.severe("cannot setup URLStreamFactoryHandler. " + e.getMessage());
-        }
+        // todo: let app setup the cache
+        offlineCache.setCacheDirectory(FileSystems.getDefault().getPath("tmpdata/cache"));
+        offlineCache.setActive(true);
     }
 
     /**
