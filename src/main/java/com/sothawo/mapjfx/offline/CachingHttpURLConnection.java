@@ -27,8 +27,14 @@ import java.util.Map;
  */
 public class CachingHttpURLConnection extends HttpURLConnection {
 
-    private final Path cacheFile;
+    /** the delegate original connection. */
     private final HttpURLConnection delegate;
+
+    /** the file to store the cache data in. */
+    private final Path cacheFile;
+
+    /** the input stream for this object, lazy created. */
+    private InputStream inputStream;
 
     public static void setDefaultAllowUserInteraction(boolean defaultallowuserinteraction) {
         URLConnection.setDefaultAllowUserInteraction(defaultallowuserinteraction);
@@ -210,7 +216,11 @@ public class CachingHttpURLConnection extends HttpURLConnection {
      * @throws IOException
      */
     public InputStream getInputStream() throws IOException {
-        return new WriteCacheFileInputStream(delegate.getInputStream(), new FileOutputStream(cacheFile.toFile()));
+        if (null == inputStream) {
+            inputStream = new WriteCacheFileInputStream(delegate.getInputStream(), new FileOutputStream(cacheFile
+                    .toFile()));
+        }
+        return inputStream;
     }
 
     public boolean getInstanceFollowRedirects() {

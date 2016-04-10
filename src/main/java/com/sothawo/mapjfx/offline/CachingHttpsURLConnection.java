@@ -33,8 +33,14 @@ import java.util.Map;
  */
 public class CachingHttpsURLConnection extends HttpsURLConnection {
 
+    /** the delegate original connection. */
     private final HttpsURLConnection delegate;
+
+    /** the file to store the cache data in. */
     private final Path cacheFile;
+
+    /** the input stream for this object, lazy created. */
+    private InputStream inputStream;
 
 
     public static void setDefaultAllowUserInteraction(boolean defaultallowuserinteraction) {
@@ -118,8 +124,10 @@ public class CachingHttpsURLConnection extends HttpsURLConnection {
      *         the path to the file where the cached content ist stored
      * @param delegate
      *         the delegate that provides the content
+     * @throws IOException
+     *         if the output file cannot be created, or the input stream from the delegate cannot be retrieved
      */
-    public CachingHttpsURLConnection(Path cacheFile, HttpsURLConnection delegate) {
+    public CachingHttpsURLConnection(Path cacheFile, HttpsURLConnection delegate) throws IOException {
         super(delegate.getURL());
         this.delegate = delegate;
         this.cacheFile = cacheFile;
@@ -241,7 +249,11 @@ public class CachingHttpsURLConnection extends HttpsURLConnection {
      * @throws IOException
      */
     public InputStream getInputStream() throws IOException {
-        return new WriteCacheFileInputStream(delegate.getInputStream(), new FileOutputStream(cacheFile.toFile()));
+        if (null == inputStream) {
+            inputStream = new WriteCacheFileInputStream(delegate.getInputStream(), new FileOutputStream(cacheFile
+                    .toFile()));
+        }
+        return inputStream;
     }
 
     public boolean getInstanceFollowRedirects() {

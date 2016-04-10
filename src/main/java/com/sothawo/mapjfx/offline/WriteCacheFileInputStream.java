@@ -14,8 +14,6 @@ import java.util.logging.Logger;
 /**
  * FilterInputStream that dumps all data passed through it to a cache file before passing the data on.
  *
- * todo: implement cache writing.
- *
  * @author P.J. Meisch (pj.meisch@sothawo.com).
  */
 public class WriteCacheFileInputStream extends FilterInputStream {
@@ -42,7 +40,6 @@ public class WriteCacheFileInputStream extends FilterInputStream {
 
     @Override
     public void close() throws IOException {
-        logger.finer("closing stream");
         super.close();
         if (null != out) {
             out.flush();
@@ -51,27 +48,9 @@ public class WriteCacheFileInputStream extends FilterInputStream {
     }
 
     @Override
-    public int read() throws IOException {
-        final int i = super.read();
-        if (null != out) {
-            out.write(i);
-        }
-        return i;
-    }
-
-    @Override
-    public int read(byte[] b) throws IOException {
-        final int numBytes = super.read(b);
-        if (null != out) {
-            out.write(b, 0, numBytes);
-        }
-        return numBytes;
-    }
-
-    @Override
     public int read(byte[] b, int off, int len) throws IOException {
         final int numBytes = super.read(b, off, len);
-        if (null != out) {
+        if (null != out && numBytes > 0) {
             out.write(b, off, numBytes);
         }
         return numBytes;
