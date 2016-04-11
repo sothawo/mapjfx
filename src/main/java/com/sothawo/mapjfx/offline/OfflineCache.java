@@ -19,6 +19,9 @@ import java.util.logging.Logger;
  * returned without a further connect to the network. If it is not in the cache directory, a network request is made and
  * the returned data is stored in the local cache directory.
  *
+ * todo: honor the active flag
+ *
+ *
  * @author P.J. Meisch (pj.meisch@sothawo.com).
  */
 public class OfflineCache {

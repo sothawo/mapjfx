@@ -9,9 +9,12 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSocketFactory;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.ContentHandlerFactory;
 import java.net.FileNameMap;
@@ -19,12 +22,16 @@ import java.net.HttpURLConnection;
 import java.net.ProtocolException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.Permission;
 import java.security.Principal;
 import java.security.cert.Certificate;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * HttpsURLConnection implementation that caches the data in a local file, if it is not already stored there.
@@ -33,15 +40,25 @@ import java.util.Map;
  */
 public class CachingHttpsURLConnection extends HttpsURLConnection {
 
+    /** Logger for the class */
+    private static final Logger logger = Logger.getLogger(CachingHttpsURLConnection.class.getCanonicalName());
+
     /** the delegate original connection. */
     private final HttpsURLConnection delegate;
 
     /** the file to store the cache data in. */
     private final Path cacheFile;
+    /** the file where the meta info is stored. */
+    private final Path cacheDataFile;
+
+    /** flag wether to read from the cache file or from the delegate. */
+    private boolean readFromCache = false;
 
     /** the input stream for this object, lazy created. */
     private InputStream inputStream;
 
+    /** info about the cached data. */
+    private CachedDataInfo cachedDataInfo;
 
     public static void setDefaultAllowUserInteraction(boolean defaultallowuserinteraction) {
         URLConnection.setDefaultAllowUserInteraction(defaultallowuserinteraction);
@@ -115,6 +132,7 @@ public class CachingHttpsURLConnection extends HttpsURLConnection {
         super(url);
         this.delegate = null;
         this.cacheFile = null;
+        this.cacheDataFile = null;
     }
 
     /**
@@ -131,6 +149,27 @@ public class CachingHttpsURLConnection extends HttpsURLConnection {
         super(delegate.getURL());
         this.delegate = delegate;
         this.cacheFile = cacheFile;
+        this.cacheDataFile = Paths.get(cacheFile.toString() + ".dataInfo");
+
+        if (Files.exists(cacheFile) && Files.isReadable(cacheFile) && Files.size(cacheFile) > 0) {
+            readFromCache = true;
+        }
+
+        if (readFromCache) {
+            // get the cached data info
+            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(cacheDataFile.toFile()))) {
+                cachedDataInfo = (CachedDataInfo) ois.readObject();
+            } catch (Exception e) {
+                logger.severe("could not read dataInfo from " + cacheDataFile);
+                cachedDataInfo = new CachedDataInfo();
+                readFromCache = false;
+            }
+        } else {
+            cachedDataInfo = new CachedDataInfo();
+        }
+
+        logger.finer(MessageFormat.format("URL: {0}, cache file: {1}, read from cache: {2}", delegate.getURL()
+                .toExternalForm(), cacheFile, readFromCache));
     }
 
     public void addRequestProperty(String key, String value) {
@@ -138,11 +177,16 @@ public class CachingHttpsURLConnection extends HttpsURLConnection {
     }
 
     public void connect() throws IOException {
-        delegate.connect();
+        if (!readFromCache) {
+            logger.finer("connect to " + delegate.getURL().toExternalForm());
+            delegate.connect();
+        }
     }
 
     public void disconnect() {
-        delegate.disconnect();
+        if (!readFromCache) {
+            delegate.disconnect();
+        }
     }
 
     public boolean getAllowUserInteraction() {
@@ -154,7 +198,7 @@ public class CachingHttpsURLConnection extends HttpsURLConnection {
     }
 
     public int getConnectTimeout() {
-        return delegate.getConnectTimeout();
+        return readFromCache ? 10 : delegate.getConnectTimeout();
     }
 
     public Object getContent() throws IOException {
@@ -166,23 +210,29 @@ public class CachingHttpsURLConnection extends HttpsURLConnection {
     }
 
     public String getContentEncoding() {
-        return delegate.getContentEncoding();
+        if (!readFromCache) {
+            cachedDataInfo.setContentEncoding(delegate.getContentEncoding());
+        }
+        return cachedDataInfo.getContentEncoding();
     }
 
     public int getContentLength() {
-        return delegate.getContentLength();
+        return readFromCache ? -1 : delegate.getContentLength();
     }
 
     public long getContentLengthLong() {
-        return delegate.getContentLengthLong();
+        return readFromCache ? -1 : delegate.getContentLengthLong();
     }
 
     public String getContentType() {
-        return delegate.getContentType();
+        if (!readFromCache) {
+            cachedDataInfo.setContentType(delegate.getContentType());
+        }
+        return cachedDataInfo.getContentType();
     }
 
     public long getDate() {
-        return delegate.getDate();
+        return readFromCache ? 0 : delegate.getDate();
     }
 
     public boolean getDefaultUseCaches() {
@@ -202,7 +252,7 @@ public class CachingHttpsURLConnection extends HttpsURLConnection {
     }
 
     public long getExpiration() {
-        return delegate.getExpiration();
+        return readFromCache ? 0 : delegate.getExpiration();
     }
 
     public String getHeaderField(int n) {
@@ -250,10 +300,28 @@ public class CachingHttpsURLConnection extends HttpsURLConnection {
      */
     public InputStream getInputStream() throws IOException {
         if (null == inputStream) {
-            inputStream = new WriteCacheFileInputStream(delegate.getInputStream(), new FileOutputStream(cacheFile
-                    .toFile()));
+            if (readFromCache) {
+                inputStream = new FileInputStream(cacheFile.toFile());
+            } else {
+                inputStream = new WriteCacheFileInputStream(delegate.getInputStream(),
+                        new FileOutputStream(cacheFile.toFile()));
+                ((WriteCacheFileInputStream) inputStream).onInputStreamClose(this::saveCacheDataInfo);
+            }
         }
         return inputStream;
+    }
+
+    /**
+     * called when the inputstrem is closed.
+     */
+    private void saveCacheDataInfo() {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(cacheDataFile.toFile()))) {
+            oos.writeObject(cachedDataInfo);
+            oos.flush();
+            logger.finer("save dataInfo " + cacheDataFile);
+        } catch (Exception e) {
+            logger.severe("could not save dataInfo " + cacheDataFile);
+        }
     }
 
     public boolean getInstanceFollowRedirects() {
@@ -261,7 +329,7 @@ public class CachingHttpsURLConnection extends HttpsURLConnection {
     }
 
     public long getLastModified() {
-        return delegate.getLastModified();
+        return readFromCache ? 0 : delegate.getLastModified();
     }
 
     public Certificate[] getLocalCertificates() {
@@ -301,11 +369,11 @@ public class CachingHttpsURLConnection extends HttpsURLConnection {
     }
 
     public int getResponseCode() throws IOException {
-        return delegate.getResponseCode();
+        return readFromCache ? HTTP_OK : delegate.getResponseCode();
     }
 
     public String getResponseMessage() throws IOException {
-        return delegate.getResponseMessage();
+        return readFromCache ? "OK" : delegate.getResponseMessage();
     }
 
     public SSLSocketFactory getSSLSocketFactory() {

@@ -23,6 +23,10 @@ public class WriteCacheFileInputStream extends FilterInputStream {
     /** the output stream where th data is stored. */
     private final OutputStream out;
 
+    /** a Runnable to be called when the inputstream is closed. */
+    private Runnable notifyOnClose;
+
+
     /**
      * Creates a <code>FilterInputStream</code> by assigning the  argument <code>in</code> to the field
      * <code>this.in</code> so as to remember it for later use.
@@ -45,6 +49,9 @@ public class WriteCacheFileInputStream extends FilterInputStream {
             out.flush();
             out.close();
         }
+        if (null != notifyOnClose) {
+            notifyOnClose.run();
+        }
     }
 
     @Override
@@ -54,5 +61,9 @@ public class WriteCacheFileInputStream extends FilterInputStream {
             out.write(b, off, numBytes);
         }
         return numBytes;
+    }
+
+    public void onInputStreamClose(Runnable r) {
+        notifyOnClose = r;
     }
 }

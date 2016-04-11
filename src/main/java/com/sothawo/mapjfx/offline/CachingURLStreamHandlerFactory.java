@@ -9,9 +9,9 @@ import javax.net.ssl.HttpsURLConnection;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
+import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
-import java.net.URLEncoder;
 import java.net.URLStreamHandler;
 import java.net.URLStreamHandlerFactory;
 import java.nio.file.Path;
@@ -77,14 +77,14 @@ public class CachingURLStreamHandlerFactory implements URLStreamHandlerFactory {
         if (null == protocol) {
             throw new IllegalArgumentException("null protocol not allowed");
         }
+        logger.finer("need to create URLStreamHandler for protocol " + protocol);
 
         final String proto = protocol.toLowerCase();
         if (PROTO_HTTP.equals(proto) || PROTO_HTTPS.equals(proto)) {
-            logger.finer("need to create URLStreamHandler for protocol " + proto);
             return new URLStreamHandler() {
                 @Override
                 protected URLConnection openConnection(URL u) throws IOException {
-                    logger.info("should open connection to " + u.toExternalForm());
+                    logger.finer("should open connection to " + u.toExternalForm());
 
                     // URLConnection only has a protected ctor, so we need to go through the URL ctor with the
                     // matching handler to get a default implementation of the needed URLStreamHandler
@@ -98,18 +98,29 @@ public class CachingURLStreamHandlerFactory implements URLStreamHandlerFactory {
                         final Path cacheFile = cache.filenameForURL(u);
                         switch (proto) {
                             case PROTO_HTTP:
-                                return new CachingHttpURLConnection(cacheFile, (HttpURLConnection) defaultUrlConnection);
+                                return new CachingHttpURLConnection(cacheFile,
+                                        (HttpURLConnection) defaultUrlConnection);
                             case PROTO_HTTPS:
-                                return new CachingHttpsURLConnection(cacheFile, (HttpsURLConnection) defaultUrlConnection);
+                                return new CachingHttpsURLConnection(cacheFile,
+                                        (HttpsURLConnection) defaultUrlConnection);
                         }
-
                         throw new IOException("no matching handler");
                     }
 
                     return defaultUrlConnection;
                 }
 
+                @Override
+                protected URLConnection openConnection(URL u, Proxy p) throws IOException {
+                    logger.finer("should open connection to " + u.toExternalForm() + " via " + p.toString());
+                    // URLConnection only has a protected ctor, so we need to go through the URL ctor with the
+                    // matching handler to get a default implementation of the needed URLStreamHandler
+                    final URLConnection defaultUrlConnection =
+                            new URL(protocol, u.getHost(), u.getPort(), u.getFile(), handlers.get(protocol))
+                                    .openConnection(p);
 
+                    return defaultUrlConnection;
+                }
             };
         }
         // return null to use default ones

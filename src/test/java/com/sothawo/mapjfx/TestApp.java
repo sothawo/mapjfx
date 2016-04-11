@@ -125,7 +125,8 @@ public class TestApp extends Application {
             if (newValue) {
                 // a map is only displayed when an initial coordinate is set
                 mapView.setCenter(coordKarlsruheHarbour);
-                mapView.setExtent(extentAll);
+//                mapView.setExtent(extentAll);
+                mapView.setZoom(0);
 
                 // add two markers without keeping a ref to them, they should disappear from the map when gc'ed
                 mapView.addMarker(Marker.createProvided(Marker.Provided.GREEN).setPosition(coordKarlsruheHarbour)

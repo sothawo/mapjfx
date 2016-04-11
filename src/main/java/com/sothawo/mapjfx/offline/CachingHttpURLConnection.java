@@ -5,6 +5,7 @@
  */
 package com.sothawo.mapjfx.offline;
 
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,10 +16,13 @@ import java.net.HttpURLConnection;
 import java.net.ProtocolException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.Permission;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * HttpURLConnection implementation that caches the data in a local file, if it is not already stored there.
@@ -27,11 +31,17 @@ import java.util.Map;
  */
 public class CachingHttpURLConnection extends HttpURLConnection {
 
+    /** Logger for the class */
+    private static final Logger logger = Logger.getLogger(CachingHttpURLConnection.class.getCanonicalName());
+
     /** the delegate original connection. */
     private final HttpURLConnection delegate;
 
     /** the file to store the cache data in. */
     private final Path cacheFile;
+
+    /** flag wether to read from the cache file or from the delegate. */
+    private boolean readFromCache = false;
 
     /** the input stream for this object, lazy created. */
     private InputStream inputStream;
@@ -101,11 +111,20 @@ public class CachingHttpURLConnection extends HttpURLConnection {
      *         the path to the file where the cached content ist stored
      * @param delegate
      *         the delegate that provides the content
+     * @throws IOException
+     *         if the output file cannot be created, or the input stream from the delegate cannot be retrieved
      */
-    public CachingHttpURLConnection(Path cacheFile, HttpURLConnection delegate) {
+    public CachingHttpURLConnection(Path cacheFile, HttpURLConnection delegate) throws IOException {
         super(delegate.getURL());
         this.delegate = delegate;
         this.cacheFile = cacheFile;
+
+        if (Files.exists(cacheFile) && Files.isReadable(cacheFile) && Files.size(cacheFile) > 0) {
+            readFromCache = true;
+        }
+
+        logger.finer(MessageFormat.format("URL: {0}, cache file: {1}, read from cache: {2}", delegate.getURL()
+                .toExternalForm(), cacheFile, readFromCache));
     }
 
     public void addRequestProperty(String key, String value) {
@@ -113,7 +132,10 @@ public class CachingHttpURLConnection extends HttpURLConnection {
     }
 
     public void connect() throws IOException {
-        delegate.connect();
+        if (!readFromCache) {
+            logger.finer("connect to " + delegate.getURL().toExternalForm());
+            delegate.connect();
+        }
     }
 
     public void disconnect() {
@@ -217,8 +239,12 @@ public class CachingHttpURLConnection extends HttpURLConnection {
      */
     public InputStream getInputStream() throws IOException {
         if (null == inputStream) {
-            inputStream = new WriteCacheFileInputStream(delegate.getInputStream(), new FileOutputStream(cacheFile
-                    .toFile()));
+            if (readFromCache) {
+                inputStream = new FileInputStream(cacheFile.toFile());
+            } else {
+                inputStream = new WriteCacheFileInputStream(delegate.getInputStream(), new FileOutputStream(cacheFile
+                        .toFile()));
+            }
         }
         return inputStream;
     }
