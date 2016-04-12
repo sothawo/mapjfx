@@ -280,7 +280,10 @@ public class CachingHttpsURLConnection extends HttpsURLConnection {
     }
 
     public Map<String, List<String>> getHeaderFields() {
-        return delegate.getHeaderFields();
+        if (!readFromCache) {
+            cachedDataInfo.setHeaderFields(delegate.getHeaderFields());
+        }
+        return cachedDataInfo.getHeaderFields();
     }
 
     public HostnameVerifier getHostnameVerifier() {

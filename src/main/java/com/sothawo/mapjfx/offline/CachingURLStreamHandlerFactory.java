@@ -101,8 +101,8 @@ public class CachingURLStreamHandlerFactory implements URLStreamHandlerFactory {
                                 return new CachingHttpURLConnection(cacheFile,
                                         (HttpURLConnection) defaultUrlConnection);
                             case PROTO_HTTPS:
-                                return new CachingHttpsURLConnection(cacheFile,
-                                        (HttpsURLConnection) defaultUrlConnection);
+                                return new CachingHttpURLConnection(cacheFile,
+                                        (HttpURLConnection) defaultUrlConnection);
                         }
                         throw new IOException("no matching handler");
                     }
