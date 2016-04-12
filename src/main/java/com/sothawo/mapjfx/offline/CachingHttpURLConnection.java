@@ -42,8 +42,8 @@ public class CachingHttpURLConnection extends HttpURLConnection {
 
     /** the file to store the cache data in. */
     private final Path cacheFile;
-    /** the file where the meta info is stored. */
-    private final Path cacheDataFile;
+    /** the offline cache. */
+    private final OfflineCache cache;
 
     /** flag wether to read from the cache file or from the delegate. */
     private boolean readFromCache = false;
@@ -108,43 +108,29 @@ public class CachingHttpURLConnection extends HttpURLConnection {
      */
     private CachingHttpURLConnection(URL u) {
         super(u);
+        this.cache = null;
         this.delegate = null;
         this.cacheFile = null;
-        this.cacheDataFile = null;
     }
 
     /**
      * creates a CachingHttpURlConnection.
      *
-     * @param cacheFile
-     *         the path to the file where the cached content ist stored
+     * @param cache
+     *         the offline cache
      * @param delegate
      *         the delegate that provides the content
      * @throws IOException
      *         if the output file cannot be created, or the input stream from the delegate cannot be retrieved
      */
-    public CachingHttpURLConnection(Path cacheFile, HttpURLConnection delegate) throws IOException {
+    public CachingHttpURLConnection(OfflineCache cache, HttpURLConnection delegate) throws IOException {
         super(delegate.getURL());
+        this.cache = cache;
         this.delegate = delegate;
-        this.cacheFile = cacheFile;
-        this.cacheDataFile = Paths.get(cacheFile.toString() + ".dataInfo");
+        this.cacheFile = cache.filenameForURL(delegate.getURL());
 
-        if (Files.exists(cacheFile) && Files.isReadable(cacheFile) && Files.size(cacheFile) > 0) {
-            readFromCache = true;
-        }
-
-        if (readFromCache) {
-            // get the cached data info
-            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(cacheDataFile.toFile()))) {
-                cachedDataInfo = (CachedDataInfo) ois.readObject();
-            } catch (Exception e) {
-                logger.severe("could not read dataInfo from " + cacheDataFile);
-                cachedDataInfo = new CachedDataInfo();
-                readFromCache = false;
-            }
-        } else {
-            cachedDataInfo = new CachedDataInfo();
-        }
+        readFromCache = cache.isCached(delegate.getURL());
+        cachedDataInfo = cache.readCachedDataInfo(cacheFile);
 
         logger.finer(MessageFormat.format("URL: {0}, cache file: {1}, read from cache: {2}", delegate.getURL()
                 .toExternalForm(), cacheFile, readFromCache));
@@ -276,25 +262,13 @@ public class CachingHttpURLConnection extends HttpURLConnection {
             if (readFromCache) {
                 inputStream = new FileInputStream(cacheFile.toFile());
             } else {
-                inputStream = new WriteCacheFileInputStream(delegate.getInputStream(),
+                WriteCacheFileInputStream wis = new WriteCacheFileInputStream(delegate.getInputStream(),
                         new FileOutputStream(cacheFile.toFile()));
-                ((WriteCacheFileInputStream) inputStream).onInputStreamClose(this::saveCacheDataInfo);
+                wis.onInputStreamClose(() -> cache.saveCachedDataInfo(cacheFile, cachedDataInfo));
+                inputStream = wis;
             }
         }
         return inputStream;
-    }
-
-    /**
-     * called when the inputstrem is closed.
-     */
-    private void saveCacheDataInfo() {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(cacheDataFile.toFile()))) {
-            oos.writeObject(cachedDataInfo);
-            oos.flush();
-            logger.finer("save dataInfo " + cacheDataFile);
-        } catch (Exception e) {
-            logger.severe("could not save dataInfo " + cacheDataFile);
-        }
     }
 
     public boolean getInstanceFollowRedirects() {

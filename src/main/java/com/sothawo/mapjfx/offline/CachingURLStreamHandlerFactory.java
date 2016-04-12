@@ -83,31 +83,36 @@ public class CachingURLStreamHandlerFactory implements URLStreamHandlerFactory {
         if (PROTO_HTTP.equals(proto) || PROTO_HTTPS.equals(proto)) {
             return new URLStreamHandler() {
                 @Override
-                protected URLConnection openConnection(URL u) throws IOException {
-                    logger.finer("should open connection to " + u.toExternalForm());
+                protected URLConnection openConnection(URL url) throws IOException {
+                    logger.finer("should open connection to " + url.toExternalForm());
 
-                    // URLConnection only has a protected ctor, so we need to go through the URL ctor with the
-                    // matching handler to get a default implementation of the needed URLStreamHandler
+                    // URLConnection only has a protected ctor, so we need to go through the URL ctor with the matching handler
                     final URLConnection defaultUrlConnection =
-                            new URL(protocol, u.getHost(), u.getPort(), u.getFile(), handlers.get(protocol))
+                            new URL(protocol, url.getHost(), url.getPort(), url.getFile(), handlers.get(protocol))
                                     .openConnection();
 
-                    if (urlShouldBeCached(u)) {
 
-                        // now wrap the default connection
-                        final Path cacheFile = cache.filenameForURL(u);
-                        switch (proto) {
-                            case PROTO_HTTP:
-                                return new CachingHttpURLConnection(cacheFile,
-                                        (HttpURLConnection) defaultUrlConnection);
-                            case PROTO_HTTPS:
-                                return new CachingHttpURLConnection(cacheFile,
-                                        (HttpURLConnection) defaultUrlConnection);
-                        }
-                        throw new IOException("no matching handler");
+                    if (!cache.urlShouldBeCached(url)) {
+                        return defaultUrlConnection;
                     }
 
-                    return defaultUrlConnection;
+                    final Path cacheFile = cache.filenameForURL(url);
+                    // now wrap the defaultUrlConnection
+                    if (cache.isCached(url)) {
+                        // if cached, always use http connection to prevent ssl handshake. As we are reading from the
+                        // cache, this is enough
+                        return new CachingHttpURLConnection(cache, (HttpURLConnection) defaultUrlConnection);
+                    } else {
+                        switch (proto) {
+                            case PROTO_HTTP:
+                                return new CachingHttpURLConnection(cache, (HttpURLConnection) defaultUrlConnection);
+                            case PROTO_HTTPS:
+                                return new CachingHttpsURLConnection(cache, (HttpsURLConnection) defaultUrlConnection);
+                        }
+                    }
+                    throw new IOException("no matching handler");
+
+
                 }
 
                 @Override
@@ -127,14 +132,4 @@ public class CachingURLStreamHandlerFactory implements URLStreamHandlerFactory {
         return null;
     }
 
-    /**
-     * checks wether a URL should be cached at all.
-     *
-     * @param u
-     *         the ULR to check
-     * @return true if the URL should be cached.
-     */
-    private boolean urlShouldBeCached(URL u) {
-        return true;
-    }
 }

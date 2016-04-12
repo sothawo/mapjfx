@@ -5,11 +5,17 @@
  */
 package com.sothawo.mapjfx.offline;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.logging.Logger;
 
@@ -20,7 +26,6 @@ import java.util.logging.Logger;
  * the returned data is stored in the local cache directory.
  *
  * todo: honor the active flag
- *
  *
  * @author P.J. Meisch (pj.meisch@sothawo.com).
  */
@@ -41,6 +46,36 @@ public class OfflineCache {
 
     public Path getCacheDirectory() {
         return cacheDirectory;
+    }
+
+    /**
+     * sets the cacheDirectory.
+     *
+     * @param cacheDirectory
+     *         the new directory
+     * @throws NullPointerException
+     *         if cacheDirectory is null
+     * @throws IllegalArgumentException
+     *         if cacheDirectory does not exist or is not writeable
+     */
+    public void setCacheDirectory(Path cacheDirectory) {
+        Path dir = Objects.requireNonNull(cacheDirectory);
+        if (!Files.isDirectory(dir) || !Files.isWritable(dir)) {
+            throw new IllegalArgumentException("cacheDirectory");
+        }
+        this.cacheDirectory = dir;
+    }
+
+    /**
+     * checks wether a URL should be cached at all.
+     *
+     * @param u
+     *         the ULR to check
+     * @return true if the URL should be cached.
+     */
+    public boolean urlShouldBeCached(URL u) {
+        // todo: add something like pattern matchern to be more selective
+        return isActive();
     }
 
     public boolean isActive() {
@@ -68,24 +103,6 @@ public class OfflineCache {
     }
 
     /**
-     * sets the cacheDirectory.
-     *
-     * @param cacheDirectory
-     *         the new directory
-     * @throws NullPointerException
-     *         if cacheDirectory is null
-     * @throws IllegalArgumentException
-     *         if cacheDirectory does not exist or is not writeable
-     */
-    public void setCacheDirectory(Path cacheDirectory) {
-        Path dir = Objects.requireNonNull(cacheDirectory);
-        if (!Files.isDirectory(dir) || !Files.isWritable(dir)) {
-            throw new IllegalArgumentException("cacheDirectory");
-        }
-        this.cacheDirectory = dir;
-    }
-
-    /**
      * sets up the URLStreamHandlerFactory.
      *
      * @throws IllegalStateException
@@ -110,6 +127,23 @@ public class OfflineCache {
     }
 
     /**
+     * check wether an URL is cached.
+     *
+     * @param url
+     *         the URL to check
+     * @return true if cached
+     */
+    public boolean isCached(URL url) {
+        try {
+            Path cacheFile = filenameForURL(url);
+            return (Files.exists(cacheFile) && Files.isReadable(cacheFile) && Files.size(cacheFile) > 0);
+        } catch (IOException ignored) {
+            // ignore
+        }
+        return false;
+    }
+
+    /**
      * returns the filename path for a cachefile
      *
      * @param url
@@ -127,4 +161,41 @@ public class OfflineCache {
         return cacheDirectory.resolve(URLEncoder.encode(Objects.requireNonNull(url.toExternalForm()), "UTF-8"));
     }
 
+    /**
+     * writes the datainfo for a cache file.
+     *
+     * @param cacheFile
+     *         the cache file
+     * @param cachedDataInfo
+     *         the data info
+     */
+    public void saveCachedDataInfo(Path cacheFile, CachedDataInfo cachedDataInfo) {
+        Path cacheDataFile = Paths.get(cacheFile.toString() + ".dataInfo");
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(cacheDataFile.toFile()))) {
+            oos.writeObject(cachedDataInfo);
+            oos.flush();
+            logger.finer("save dataInfo " + cacheDataFile);
+        } catch (Exception e) {
+            logger.severe("could not save dataInfo " + cacheDataFile);
+        }
+    }
+
+    /**
+     * reads the cached data info for a cache file
+     *
+     * @param cacheFile
+     *         the cache file
+     * @return the cached data info. If not found an new created object is returned
+     */
+    public CachedDataInfo readCachedDataInfo(Path cacheFile) {
+        Path cacheDataFile = Paths.get(cacheFile.toString() + ".dataInfo");
+        CachedDataInfo cachedDataInfo;
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(cacheDataFile.toFile()))) {
+            cachedDataInfo = (CachedDataInfo) ois.readObject();
+        } catch (Exception e) {
+            logger.severe("could not read dataInfo from " + cacheDataFile);
+            cachedDataInfo = new CachedDataInfo();
+        }
+        return cachedDataInfo;
+    }
 }
