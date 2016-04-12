@@ -54,52 +54,6 @@ public class CachingHttpURLConnection extends HttpURLConnection {
     /** info about the cached data. */
     private CachedDataInfo cachedDataInfo;
 
-    public static void setDefaultAllowUserInteraction(boolean defaultallowuserinteraction) {
-        URLConnection.setDefaultAllowUserInteraction(defaultallowuserinteraction);
-    }
-
-    public static FileNameMap getFileNameMap() {
-        return URLConnection.getFileNameMap();
-    }
-
-    public static String guessContentTypeFromStream(InputStream is) throws IOException {
-        return URLConnection.guessContentTypeFromStream(is);
-    }
-
-    public static boolean getDefaultAllowUserInteraction() {
-        return URLConnection.getDefaultAllowUserInteraction();
-    }
-
-    @Deprecated
-    public static void setDefaultRequestProperty(String key, String value) {
-        URLConnection.setDefaultRequestProperty(key, value);
-    }
-
-    public static void setFollowRedirects(boolean set) {
-        HttpURLConnection.setFollowRedirects(set);
-    }
-
-    public static boolean getFollowRedirects() {
-        return HttpURLConnection.getFollowRedirects();
-    }
-
-    public static void setFileNameMap(FileNameMap map) {
-        URLConnection.setFileNameMap(map);
-    }
-
-    @Deprecated
-    public static String getDefaultRequestProperty(String key) {
-        return URLConnection.getDefaultRequestProperty(key);
-    }
-
-    public static String guessContentTypeFromName(String fname) {
-        return URLConnection.guessContentTypeFromName(fname);
-    }
-
-    public static void setContentHandlerFactory(ContentHandlerFactory fac) {
-        URLConnection.setContentHandlerFactory(fac);
-    }
-
     /**
      * inherited constructor for the HttpURLConnection, private.
      *
