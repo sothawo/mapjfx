@@ -37,6 +37,10 @@ The test application does not contain all the features, to have that, check
 
 ## version history
 
+### 1.7.0
+
+* implemented caching of the files loaded from the web (map images) for faster access and offline usage.
+
 ### 1.6.2
 
 * use OpenLayers 3.14.2
