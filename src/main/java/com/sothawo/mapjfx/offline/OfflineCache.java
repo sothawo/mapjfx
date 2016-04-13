@@ -76,7 +76,7 @@ public class OfflineCache {
      *         if cacheDirectory does not exist or is not writeable
      */
     public void setCacheDirectory(String cacheDirectory) {
-        FileSystems.getDefault().getPath(Objects.requireNonNull(cacheDirectory));
+        setCacheDirectory(FileSystems.getDefault().getPath(Objects.requireNonNull(cacheDirectory)));
     }
 
     /**
