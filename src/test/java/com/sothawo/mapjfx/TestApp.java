@@ -15,6 +15,7 @@
 */
 package com.sothawo.mapjfx;
 
+import com.sothawo.mapjfx.offline.OfflineCache;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
@@ -32,6 +33,7 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.FileSystems;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
@@ -120,13 +122,17 @@ public class TestApp extends Application {
             }
         });
 
+        final OfflineCache offlineCache = mapView.getOfflineCache();
+        offlineCache.setCacheDirectory(FileSystems.getDefault().getPath("tmpdata/cache"));
+        offlineCache.setActive(true);
+
         // add listener for mapView initialization state
         mapView.initializedProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue) {
                 // a map is only displayed when an initial coordinate is set
                 mapView.setCenter(coordKarlsruheHarbour);
-//                mapView.setExtent(extentAll);
-                mapView.setZoom(0);
+                mapView.setExtent(extentAll);
+//                mapView.setZoom(0);
 
                 // add two markers without keeping a ref to them, they should disappear from the map when gc'ed
                 mapView.addMarker(Marker.createProvided(Marker.Provided.GREEN).setPosition(coordKarlsruheHarbour)

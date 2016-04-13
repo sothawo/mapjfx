@@ -13,6 +13,7 @@ import java.io.ObjectOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -24,8 +25,6 @@ import java.util.logging.Logger;
  * https resource is intercepted. If the reuslt of the same call is already stored in the local cache directory, it is
  * returned without a further connect to the network. If it is not in the cache directory, a network request is made and
  * the returned data is stored in the local cache directory.
- *
- * todo: honor the active flag
  *
  * @author P.J. Meisch (pj.meisch@sothawo.com).
  */
@@ -67,13 +66,27 @@ public class OfflineCache {
     }
 
     /**
+     * sets the cacheDirectory.
+     *
+     * @param cacheDirectory
+     *         the new directory
+     * @throws NullPointerException
+     *         if cacheDirectory is null
+     * @throws IllegalArgumentException
+     *         if cacheDirectory does not exist or is not writeable
+     */
+    public void setCacheDirectory(String cacheDirectory) {
+        FileSystems.getDefault().getPath(Objects.requireNonNull(cacheDirectory));
+    }
+
+    /**
      * checks wether a URL should be cached at all.
      *
      * @param u
      *         the ULR to check
      * @return true if the URL should be cached.
      */
-    public boolean urlShouldBeCached(URL u) {
+    boolean urlShouldBeCached(URL u) {
         // todo: add something like pattern matchern to be more selective
         return isActive();
     }
@@ -133,7 +146,7 @@ public class OfflineCache {
      *         the URL to check
      * @return true if cached
      */
-    public boolean isCached(URL url) {
+    boolean isCached(URL url) {
         try {
             Path cacheFile = filenameForURL(url);
             return (Files.exists(cacheFile) && Files.isReadable(cacheFile) && Files.size(cacheFile) > 0);
@@ -154,7 +167,7 @@ public class OfflineCache {
      * @throws UnsupportedEncodingException
      *         if the url cannot be UTF-8 encoded
      */
-    public Path filenameForURL(URL url) throws UnsupportedEncodingException {
+    Path filenameForURL(URL url) throws UnsupportedEncodingException {
         if (null == cacheDirectory) {
             throw new IllegalStateException("cannot resolve filename for url");
         }
@@ -169,7 +182,7 @@ public class OfflineCache {
      * @param cachedDataInfo
      *         the data info
      */
-    public void saveCachedDataInfo(Path cacheFile, CachedDataInfo cachedDataInfo) {
+    void saveCachedDataInfo(Path cacheFile, CachedDataInfo cachedDataInfo) {
         Path cacheDataFile = Paths.get(cacheFile.toString() + ".dataInfo");
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(cacheDataFile.toFile()))) {
             oos.writeObject(cachedDataInfo);
@@ -187,7 +200,7 @@ public class OfflineCache {
      *         the cache file
      * @return the cached data info. If not found an new created object is returned
      */
-    public CachedDataInfo readCachedDataInfo(Path cacheFile) {
+    CachedDataInfo readCachedDataInfo(Path cacheFile) {
         Path cacheDataFile = Paths.get(cacheFile.toString() + ".dataInfo");
         CachedDataInfo cachedDataInfo;
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(cacheDataFile.toFile()))) {

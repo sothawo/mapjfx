@@ -106,34 +106,12 @@ public final class MapView extends Region {
 
     /** marker for custom_mapview.css. */
     private static final String CUSTOM_MAPVIEW_CSS = "custom_mapview.css";
-
-    /** the WebEngine of the WebView containing the OpenLayers Map. */
-    private WebEngine webEngine;
-
     /** readonly property that informs if this MapView is fully initialized. */
     private final ReadOnlyBooleanWrapper initialized = new ReadOnlyBooleanWrapper(false);
-
-    /** property containing the map's center. */
-    private SimpleObjectProperty<Coordinate> center;
-
-    /**
-     * property containing the map's zoom; This is a Double so that the property might be bound to a slider, internally
-     * a rounded value is used.
-     */
-    private SimpleDoubleProperty zoom;
-
-    /** property containing the map's animation duration in ms. */
-    private SimpleIntegerProperty animationDuration;
-
     /** used to store the last coordinate that was reported by the map to prevent setting it again in the map. */
     private final AtomicReference<Coordinate> lastCoordinateFromMap = new AtomicReference<>();
-
     /** used to store the last zoom value that was reported by the map to prevent setting it again in the map. */
     private final AtomicReference<Double> lastZoomFromMap = new AtomicReference<>();
-
-    /** property containing the actual map style, defaults to {@link com.sothawo.mapjfx.MapType#OSM} */
-    private SimpleObjectProperty<MapType> mapType;
-
     /**
      * a map from the names of MapCoordinateELements in the map to WeakReferences of the Objects. When
      * mapCoordinateElements are gc'ed the keys in this map point to null and are used to clean up the internal
@@ -144,7 +122,6 @@ public final class MapView extends Region {
      * The listeners that are attached to the MapCoordinateElement objects.
      */
     private final Map<String, MapCoordinateElementListener> mapCoordinateElementListeners = new HashMap<>();
-
     /**
      * a map from the names of CoordinateLines in the map to WeakReferences of the CoordinateLines. When CoordianteLines
      * are gc'ed the keys in this map point to null and are used to clean up the internal structures.
@@ -154,32 +131,36 @@ public final class MapView extends Region {
      * the listeners that are attached to the CoordinateLine objects.
      */
     private final Map<String, CoordinateLineListener> coordinateLineListeners = new HashMap<>();
-
     /**
      * reference queue for the weak referenced objects. We don't need the objects themselves, so a list of Objects is
      * enough to handle Markers and CoordinateLines.
      */
     private final ReferenceQueue<Object> weakReferenceQueue = new ReferenceQueue<>();
-
     /** cache for loading images in base64 strings */
     private final ConcurrentHashMap<URL, String> imgCache = new ConcurrentHashMap<>();
-
+    /** the OfflineCache. */
+    private final OfflineCache offlineCache = new OfflineCache();
+    /** the WebEngine of the WebView containing the OpenLayers Map. */
+    private WebEngine webEngine;
+    /** property containing the map's center. */
+    private SimpleObjectProperty<Coordinate> center;
+    /**
+     * property containing the map's zoom; This is a Double so that the property might be bound to a slider, internally
+     * a rounded value is used.
+     */
+    private SimpleDoubleProperty zoom;
+    /** property containing the map's animation duration in ms. */
+    private SimpleIntegerProperty animationDuration;
+    /** property containing the actual map style, defaults to {@link com.sothawo.mapjfx.MapType#OSM} */
+    private SimpleObjectProperty<MapType> mapType;
     /** Connector object that is created in the web page and initialized when the page is fully loaded */
     private JSObject javascriptConnector;
-
     /** Pattern to find resources to include in the local html file. */
     private Pattern htmlIncludePattern = Pattern.compile("^#(.+)#$");
-
     /** Bing Maps API Key. */
     private Optional<String> bingMapsApiKey = Optional.empty();
-
     /** URL for custom mapview css. */
     private Optional<URL> customMapviewCssURL = Optional.empty();
-
-    /** the OfflineCache. */
-    private OfflineCache offlineCache = new OfflineCache();
-
-// --------------------------- CONSTRUCTORS ---------------------------
 
     /**
      * create a MapView with no initial center coordinate.
@@ -195,6 +176,8 @@ public final class MapView extends Region {
 
         startWeakRefCleaner();
     }
+
+// --------------------------- CONSTRUCTORS ---------------------------
 
     /**
      * initializes the JavaFX properties.
@@ -230,23 +213,6 @@ public final class MapView extends Region {
             }
             setMapTypeInMap();
         });
-    }
-
-    /**
-     * checks if the given map type needs an api key, and if so, if it is set.
-     *
-     * @param mapTypeToCheck
-     *         the map type
-     * @return true if either the map type does not need an api key or an api key was set.
-     */
-    private boolean checkApiKey(MapType mapTypeToCheck) {
-        switch (requireNonNull(mapTypeToCheck)) {
-            case BINGMAPS_ROAD:
-            case BINGMAPS_AERIAL:
-                return bingMapsApiKey.isPresent();
-            default:
-                return true;
-        }
     }
 
     /**
@@ -297,7 +263,136 @@ public final class MapView extends Region {
         thread.start();
     }
 
+    /**
+     * sets the value of the center property in the OL map.
+     */
+    private void setCenterInMap() {
+        Coordinate actCenter = getCenter();
+        if (getInitialized() && null != actCenter) {
+            logger.finer(
+                    () -> "setting center in OpenLayers map: " + actCenter + ", animation: " + animationDuration.get());
+            // using Double objects instead of primitives works here
+            javascriptConnector
+                    .call("setCenter", actCenter.getLatitude(), actCenter.getLongitude(), animationDuration.get());
+        }
+    }
+
+    /**
+     * sets the value of the actual zoom property in the OL map.
+     */
+    private void setZoomInMap() {
+        if (getInitialized()) {
+            int zoomInt = (int) getZoom();
+            logger.finer(
+                    () -> "setting zoom in OpenLayers map: " + zoomInt + ", animation: " + animationDuration.get());
+            javascriptConnector.call("setZoom", zoomInt, animationDuration.get());
+        }
+    }
+
 // -------------------------- OTHER METHODS --------------------------
+
+    /**
+     * checks if the given map type needs an api key, and if so, if it is set.
+     *
+     * @param mapTypeToCheck
+     *         the map type
+     * @return true if either the map type does not need an api key or an api key was set.
+     */
+    private boolean checkApiKey(MapType mapTypeToCheck) {
+        switch (requireNonNull(mapTypeToCheck)) {
+            case BINGMAPS_ROAD:
+            case BINGMAPS_AERIAL:
+                return bingMapsApiKey.isPresent();
+            default:
+                return true;
+        }
+    }
+
+    /**
+     * sets the value of the mapType property in the OL map.
+     */
+    private void setMapTypeInMap() {
+        if (getInitialized()) {
+            String mapTypeName = getMapType().toString();
+            logger.finer(() -> "setting map type in OpenLayers map: " + mapTypeName);
+            bingMapsApiKey.ifPresent(apiKey -> javascriptConnector.call("setBingMapsApiKey", apiKey));
+            javascriptConnector.call("setMapType", mapTypeName);
+        }
+    }
+
+    /**
+     * @return the current center of the map.
+     */
+    public Coordinate getCenter() {
+        return center.get();
+    }
+
+    /**
+     * sets the center of the map. The coordinate must be in EPSG:4326 coordinates (WGS)
+     *
+     * @param center
+     *         new center
+     * @return this object
+     */
+    public MapView setCenter(Coordinate center) {
+        this.center.set(center);
+        return this;
+    }
+
+    /**
+     * @return true if the MapView is initialized.
+     */
+    public boolean getInitialized() {
+        return initialized.get();
+    }
+
+    /**
+     * @return the current zoom value.
+     */
+    public double getZoom() {
+        return zoom.get();
+    }
+
+    /**
+     * @return the current MapType.
+     */
+    public MapType getMapType() {
+        return mapType.get();
+    }
+
+    /**
+     * sets the current MapType.
+     *
+     * @param mapType
+     *         the new MapType
+     * @return this object
+     */
+    public MapView setMapType(MapType mapType) {
+        this.mapType.set(mapType);
+        return this;
+    }
+
+    /**
+     * sets the zoom level. the zoom value is rounded to the next whole number using {@link Math#round(double)} and then
+     * checked to be in the range between {@link #MIN_ZOOM} and {@link #MAX_ZOOM }. If the value is not in this range,
+     * the call is ignored.
+     *
+     * @param zoom
+     *         new zoom level
+     * @return this object
+     */
+    public MapView setZoom(double zoom) {
+        double rounded = Math.round(zoom);
+        if (rounded < MIN_ZOOM || rounded > MAX_ZOOM) {
+            return this;
+        }
+        this.zoom.set(rounded);
+        return this;
+    }
+
+    public OfflineCache getOfflineCache() {
+        return offlineCache;
+    }
 
     /**
      * add a CoordinateLine to the map. If it was already added, nothing happens. The MapView only stores a weak
@@ -411,6 +506,74 @@ public final class MapView extends Region {
     }
 
     /**
+     * sets up the internal information about a MpaCoordinate Element.
+     *
+     * @param mapCoordinateElement
+     *         the MpaCooordinate Element
+     */
+    private void addMapCoordinateElement(MapCoordinateElement mapCoordinateElement) {
+        String id = mapCoordinateElement.getId();
+        // create change listeners for the coordinate and the visibility and store them with the
+        // marker's id.
+        ChangeListener<Coordinate> coordinateChangeListener =
+                (observable, oldValue, newValue) -> moveMapCoordinateElementInMap(id);
+        ChangeListener<Boolean> visibileChangeListener =
+                (observable, oldValue, newValue) -> setMarkerVisibleInMap(id);
+        mapCoordinateElementListeners.put(id, new MapCoordinateElementListener(coordinateChangeListener,
+                visibileChangeListener));
+
+        // observe the mapCoordinateElements position and visibility with the listsners
+        mapCoordinateElement.positionProperty().addListener(coordinateChangeListener);
+        mapCoordinateElement.visibleProperty().addListener(visibileChangeListener);
+
+        // keep a weak ref of the mapCoordinateELement
+        mapCoordinateElements.put(id, new WeakReference<>(mapCoordinateElement, weakReferenceQueue));
+    }
+
+    /**
+     * sets the visibility of a MapCoordinateElement in the map.
+     *
+     * @param id
+     *         the marker to show or hide
+     */
+    private void setMarkerVisibleInMap(String id) {
+        if (null != id) {
+            WeakReference<MapCoordinateElement> weakReference = mapCoordinateElements.get(id);
+            if (null != weakReference) {
+                MapCoordinateElement mapCoordinateElement = weakReference.get();
+                if (null != mapCoordinateElement) {
+                    if (mapCoordinateElement.getVisible()) {
+                        javascriptConnector.call("showMapObject", mapCoordinateElement.getId());
+                    } else {
+                        javascriptConnector.call("hideMapObject", mapCoordinateElement.getId());
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * adjusts the mapCoordinateElement's position in the map.
+     *
+     * @param id
+     *         the id of the element to move
+     */
+    private void moveMapCoordinateElementInMap(String id) {
+        if (getInitialized() && null != id) {
+            WeakReference<MapCoordinateElement> weakReference = mapCoordinateElements.get(id);
+            if (null != weakReference) {
+                MapCoordinateElement mapCoordinateElement = weakReference.get();
+                if (null != mapCoordinateElement) {
+                    logger.finer(() -> "move element in OpenLayers map to " + mapCoordinateElement.getPosition());
+                    javascriptConnector.call("moveMapObject", mapCoordinateElement.getId(),
+                            mapCoordinateElement.getPosition().getLatitude(),
+                            mapCoordinateElement.getPosition().getLongitude());
+                }
+            }
+        }
+    }
+
+    /**
      * adds a marker to the map. If it was already added, nothing is changed. If the MapView is not yet initialized, a
      * warning is logged and nothing changes. If the marker has no coordinate set, it is not added and a logging entry
      * is written.
@@ -448,74 +611,6 @@ public final class MapView extends Region {
             marker.getMapLabel().ifPresent(this::addLabel);
         }
         return this;
-    }
-
-    /**
-     * sets up the internal information about a MpaCoordinate Element.
-     *
-     * @param mapCoordinateElement
-     *         the MpaCooordinate Element
-     */
-    private void addMapCoordinateElement(MapCoordinateElement mapCoordinateElement) {
-        String id = mapCoordinateElement.getId();
-        // create change listeners for the coordinate and the visibility and store them with the
-        // marker's id.
-        ChangeListener<Coordinate> coordinateChangeListener =
-                (observable, oldValue, newValue) -> moveMapCoordinateElementInMap(id);
-        ChangeListener<Boolean> visibileChangeListener =
-                (observable, oldValue, newValue) -> setMarkerVisibleInMap(id);
-        mapCoordinateElementListeners.put(id, new MapCoordinateElementListener(coordinateChangeListener,
-                visibileChangeListener));
-
-        // observe the mapCoordinateElements position and visibility with the listsners
-        mapCoordinateElement.positionProperty().addListener(coordinateChangeListener);
-        mapCoordinateElement.visibleProperty().addListener(visibileChangeListener);
-
-        // keep a weak ref of the mapCoordinateELement
-        mapCoordinateElements.put(id, new WeakReference<>(mapCoordinateElement, weakReferenceQueue));
-    }
-
-    /**
-     * adjusts the mapCoordinateElement's position in the map.
-     *
-     * @param id
-     *         the id of the element to move
-     */
-    private void moveMapCoordinateElementInMap(String id) {
-        if (getInitialized() && null != id) {
-            WeakReference<MapCoordinateElement> weakReference = mapCoordinateElements.get(id);
-            if (null != weakReference) {
-                MapCoordinateElement mapCoordinateElement = weakReference.get();
-                if (null != mapCoordinateElement) {
-                    logger.finer(() -> "move element in OpenLayers map to " + mapCoordinateElement.getPosition());
-                    javascriptConnector.call("moveMapObject", mapCoordinateElement.getId(),
-                            mapCoordinateElement.getPosition().getLatitude(),
-                            mapCoordinateElement.getPosition().getLongitude());
-                }
-            }
-        }
-    }
-
-    /**
-     * sets the visibility of a MapCoordinateElement in the map.
-     *
-     * @param id
-     *         the marker to show or hide
-     */
-    private void setMarkerVisibleInMap(String id) {
-        if (null != id) {
-            WeakReference<MapCoordinateElement> weakReference = mapCoordinateElements.get(id);
-            if (null != weakReference) {
-                MapCoordinateElement mapCoordinateElement = weakReference.get();
-                if (null != mapCoordinateElement) {
-                    if (mapCoordinateElement.getVisible()) {
-                        javascriptConnector.call("showMapObject", mapCoordinateElement.getId());
-                    } else {
-                        javascriptConnector.call("hideMapObject", mapCoordinateElement.getId());
-                    }
-                }
-            }
-        }
     }
 
     public SimpleIntegerProperty animationDurationProperty() {
@@ -573,10 +668,17 @@ public final class MapView extends Region {
     }
 
     /**
-     * @return the current MapType.
+     * sets the animation duration in ms. If a value greater than 1 is set, then panning or zooming the map by setting
+     * the center or zoom property will be animated in the given time. Setting this to zero does not switch off the zoom
+     * animation shown when clicking the controls in the map.
+     *
+     * @param animationDuration
+     *         animation duration in ms
+     * @return this object
      */
-    public MapType getMapType() {
-        return mapType.get();
+    public MapView setAnimationDuration(int animationDuration) {
+        this.animationDuration.set(animationDuration);
+        return this;
     }
 
     /**
@@ -585,8 +687,6 @@ public final class MapView extends Region {
      */
     public void initialize() {
         logger.finer("initializing...");
-
-        setupCaching();
 
         // we could load the html via the URL, but then we run into problems loading local images or track files when
         // the mapView is embededded in a jar and loaded via jar: URI. If we load the page with loadContent, these
@@ -655,85 +755,6 @@ public final class MapView extends Region {
     }
 
     /**
-     * log Java, JavaFX , OS and WebKit version.
-     */
-    private void logVersions() {
-        logger.finer(() -> "Java Version:   " + System.getProperty("java.runtime.version"));
-        logger.finer(() -> "JavaFX Version: " + System.getProperty("javafx.runtime.version"));
-        logger.finer(() -> "OS:             " + System.getProperty("os.name") + ", " + System.getProperty("os.version")
-                + ", " + System.getProperty("os.arch"));
-        logger.finer(() -> "User Agent:     " + webEngine.getUserAgent());
-    }
-
-    /**
-     * sets the value of the center property in the OL map.
-     */
-    private void setCenterInMap() {
-        Coordinate actCenter = getCenter();
-        if (getInitialized() && null != actCenter) {
-            logger.finer(
-                    () -> "setting center in OpenLayers map: " + actCenter + ", animation: " + animationDuration.get());
-            // using Double objects instead of primitives works here
-            javascriptConnector
-                    .call("setCenter", actCenter.getLatitude(), actCenter.getLongitude(), animationDuration.get());
-        }
-    }
-
-    /**
-     * @return the current center of the map.
-     */
-    public Coordinate getCenter() {
-        return center.get();
-    }
-
-    /**
-     * sets the value of the mapType property in the OL map.
-     */
-    private void setMapTypeInMap() {
-        if (getInitialized()) {
-            String mapTypeName = getMapType().toString();
-            logger.finer(() -> "setting map type in OpenLayers map: " + mapTypeName);
-            bingMapsApiKey.ifPresent(apiKey -> javascriptConnector.call("setBingMapsApiKey", apiKey));
-            javascriptConnector.call("setMapType", mapTypeName);
-        }
-    }
-
-    /**
-     * sets the value of the actual zoom property in the OL map.
-     */
-    private void setZoomInMap() {
-        if (getInitialized()) {
-            int zoomInt = (int) getZoom();
-            logger.finer(
-                    () -> "setting zoom in OpenLayers map: " + zoomInt + ", animation: " + animationDuration.get());
-            javascriptConnector.call("setZoom", zoomInt, animationDuration.get());
-        }
-    }
-
-    /**
-     * @return the current zoom value.
-     */
-    public double getZoom() {
-        return zoom.get();
-    }
-
-    /**
-     * sets up the mechanisms to be able to implement caching of map images.
-     */
-    private void setupCaching() {
-        // todo: let app setup the cache
-        offlineCache.setCacheDirectory(FileSystems.getDefault().getPath("tmpdata/cache"));
-        offlineCache.setActive(true);
-    }
-
-    /**
-     * @return the readonly initialized property.
-     */
-    public ReadOnlyBooleanProperty initializedProperty() {
-        return initialized.getReadOnlyProperty();
-    }
-
-    /**
      * loads the mapview.html file from the classpath into a string. The file is utf-8 encoded. The URL of the
      * mapview.html file is injected as &lt;base&gt; element after the &lt;head&gt; opening tag, so that css and js
      * files can be found by the WebView.
@@ -767,10 +788,14 @@ public final class MapView extends Region {
     }
 
     /**
-     * @return the mapType property.
+     * log Java, JavaFX , OS and WebKit version.
      */
-    public SimpleObjectProperty<MapType> mapTypeProperty() {
-        return mapType;
+    private void logVersions() {
+        logger.finer(() -> "Java Version:   " + System.getProperty("java.runtime.version"));
+        logger.finer(() -> "JavaFX Version: " + System.getProperty("javafx.runtime.version"));
+        logger.finer(() -> "OS:             " + System.getProperty("os.name") + ", " + System.getProperty("os.version")
+                + ", " + System.getProperty("os.arch"));
+        logger.finer(() -> "User Agent:     " + webEngine.getUserAgent());
     }
 
     /**
@@ -822,6 +847,20 @@ public final class MapView extends Region {
 
         // return the line
         return Collections.singletonList(line);
+    }
+
+    /**
+     * @return the readonly initialized property.
+     */
+    public ReadOnlyBooleanProperty initializedProperty() {
+        return initialized.getReadOnlyProperty();
+    }
+
+    /**
+     * @return the mapType property.
+     */
+    public SimpleObjectProperty<MapType> mapTypeProperty() {
+        return mapType;
     }
 
     /**
@@ -893,26 +932,6 @@ public final class MapView extends Region {
     }
 
     /**
-     * removes the given marker from the map and deregisters the change listeners. If the marker was not in the map or
-     * the MapView is not yet initialized, nothing happens.
-     *
-     * @param marker
-     *         marker to remove
-     * @return this object
-     * @throws java.lang.NullPointerException
-     *         if marker is null
-     */
-    public MapView removeMarker(Marker marker) {
-        if (!getInitialized()) {
-            logger.warning(MAP_VIEW_NOT_YET_INITIALIZED);
-        } else {
-            requireNonNull(marker).getMapLabel().ifPresent(this::removeMapCoordinateElement);
-            removeMapCoordinateElement(marker);
-        }
-        return this;
-    }
-
-    /**
      * removes a MapCoordinateElement from the map. If no such element is found, nothing happens.
      *
      * @param mapCoordinateElement
@@ -954,16 +973,22 @@ public final class MapView extends Region {
     }
 
     /**
-     * sets the animation duration in ms. If a value greater than 1 is set, then panning or zooming the map by setting
-     * the center or zoom property will be animated in the given time. Setting this to zero does not switch off the zoom
-     * animation shown when clicking the controls in the map.
+     * removes the given marker from the map and deregisters the change listeners. If the marker was not in the map or
+     * the MapView is not yet initialized, nothing happens.
      *
-     * @param animationDuration
-     *         animation duration in ms
+     * @param marker
+     *         marker to remove
      * @return this object
+     * @throws java.lang.NullPointerException
+     *         if marker is null
      */
-    public MapView setAnimationDuration(int animationDuration) {
-        this.animationDuration.set(animationDuration);
+    public MapView removeMarker(Marker marker) {
+        if (!getInitialized()) {
+            logger.warning(MAP_VIEW_NOT_YET_INITIALIZED);
+        } else {
+            requireNonNull(marker).getMapLabel().ifPresent(this::removeMapCoordinateElement);
+            removeMapCoordinateElement(marker);
+        }
         return this;
     }
 
@@ -980,18 +1005,6 @@ public final class MapView extends Region {
         } else {
             bingMapsApiKey = Optional.empty();
         }
-        return this;
-    }
-
-    /**
-     * sets the center of the map. The coordinate must be in EPSG:4326 coordinates (WGS)
-     *
-     * @param center
-     *         new center
-     * @return this object
-     */
-    public MapView setCenter(Coordinate center) {
-        this.center.set(center);
         return this;
     }
 
@@ -1028,43 +1041,6 @@ public final class MapView extends Region {
             javascriptConnector.call("setExtent", extent.getMin().getLatitude(), extent.getMin().getLongitude(),
                     extent.getMax().getLatitude(), extent.getMax().getLongitude(), animationDuration.get());
         }
-        return this;
-    }
-
-    /**
-     * @return true if the MapView is initialized.
-     */
-    public boolean getInitialized() {
-        return initialized.get();
-    }
-
-    /**
-     * sets the current MapType.
-     *
-     * @param mapType
-     *         the new MapType
-     * @return this object
-     */
-    public MapView setMapType(MapType mapType) {
-        this.mapType.set(mapType);
-        return this;
-    }
-
-    /**
-     * sets the zoom level. the zoom value is rounded to the next whole number using {@link Math#round(double)} and then
-     * checked to be in the range between {@link #MIN_ZOOM} and {@link #MAX_ZOOM }. If the value is not in this range,
-     * the call is ignored.
-     *
-     * @param zoom
-     *         new zoom level
-     * @return this object
-     */
-    public MapView setZoom(double zoom) {
-        double rounded = Math.round(zoom);
-        if (rounded < MIN_ZOOM || rounded > MAX_ZOOM) {
-            return this;
-        }
-        this.zoom.set(rounded);
         return this;
     }
 
