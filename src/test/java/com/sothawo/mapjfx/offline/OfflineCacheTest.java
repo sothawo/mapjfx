@@ -22,7 +22,7 @@ public class OfflineCacheTest {
     @Before
     public void setUp() throws Exception {
         cache = new OfflineCache();
-        cache.setCacheDirectory(FileSystems.getDefault().getPath("tmpdata/cache"));
+        cache.setCacheDirectory(FileSystems.getDefault().getPath("."));
     }
 
     @Test
