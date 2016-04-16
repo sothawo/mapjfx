@@ -15,7 +15,6 @@
 */
 package com.sothawo.mapjfx;
 
-import com.sothawo.mapjfx.offline.CachingURLStreamHandlerFactory;
 import com.sothawo.mapjfx.offline.OfflineCache;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyBooleanProperty;
@@ -47,7 +46,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystems;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
