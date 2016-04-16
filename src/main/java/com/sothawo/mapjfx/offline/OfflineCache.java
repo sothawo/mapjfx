@@ -46,6 +46,9 @@ public class OfflineCache {
     /** Logger for the class */
     private static final Logger logger = Logger.getLogger(OfflineCache.class.getCanonicalName());
 
+    /** the url pattern to be mapped. */
+    private static final String TILE_OPENSTREETMAP_ORG = "[a-z]\\.tile\\.openstreetmap\\.org";
+
     /** flag if the cache is active. */
     private boolean active = false;
 
@@ -184,7 +187,25 @@ public class OfflineCache {
         if (null == cacheDirectory) {
             throw new IllegalStateException("cannot resolve filename for url");
         }
-        return cacheDirectory.resolve(URLEncoder.encode(Objects.requireNonNull(url.toExternalForm()), "UTF-8"));
+        return cacheDirectory
+                .resolve(URLEncoder.encode(Objects.requireNonNull(doMappings(url.toExternalForm())), "UTF-8"));
+    }
+
+    /**
+     * do some special mappings, i.e. map the openstreetmap ruls with [a,b,c].tile.openstreetmap.org to x.tile
+     * .openstreetmap.org.
+     *
+     * @param urlString
+     *         the string to map
+     * @return the mapped string
+     */
+    private String doMappings(String urlString) {
+        if (null == urlString || urlString.isEmpty()) {
+            return urlString;
+        }
+
+        String mappedString = urlString.replaceAll(TILE_OPENSTREETMAP_ORG, "x.tile.openstreetmap.org");
+        return mappedString;
     }
 
     /**
