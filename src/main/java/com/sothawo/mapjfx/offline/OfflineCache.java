@@ -14,9 +14,12 @@ import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.file.FileSystems;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Objects;
 import java.util.logging.Logger;
 
@@ -57,12 +60,8 @@ public class OfflineCache {
      * @throws IllegalArgumentException
      *         if cacheDirectory does not exist or is not writeable
      */
-    public void setCacheDirectory(Path cacheDirectory) {
-        Path dir = Objects.requireNonNull(cacheDirectory);
-        if (!Files.isDirectory(dir) || !Files.isWritable(dir)) {
-            throw new IllegalArgumentException("cacheDirectory");
-        }
-        this.cacheDirectory = dir;
+    public void setCacheDirectory(String cacheDirectory) {
+        setCacheDirectory(FileSystems.getDefault().getPath(Objects.requireNonNull(cacheDirectory)));
     }
 
     /**
@@ -75,8 +74,12 @@ public class OfflineCache {
      * @throws IllegalArgumentException
      *         if cacheDirectory does not exist or is not writeable
      */
-    public void setCacheDirectory(String cacheDirectory) {
-        setCacheDirectory(FileSystems.getDefault().getPath(Objects.requireNonNull(cacheDirectory)));
+    public void setCacheDirectory(Path cacheDirectory) {
+        Path dir = Objects.requireNonNull(cacheDirectory);
+        if (!Files.isDirectory(dir) || !Files.isWritable(dir)) {
+            throw new IllegalArgumentException("cacheDirectory");
+        }
+        this.cacheDirectory = dir;
     }
 
     /**
@@ -210,5 +213,53 @@ public class OfflineCache {
             cachedDataInfo = new CachedDataInfo();
         }
         return cachedDataInfo;
+    }
+
+
+    /**
+     * deletes all files from the cache directory. Make sure before calling this method, that the cache directory was
+     * set to a directory that only contains the cache's files and is not used for something else.
+     */
+    public void clear() throws IOException {
+        if (null != cacheDirectory) {
+            clearDirectory(cacheDirectory);
+        }
+    }
+
+    /**
+     * helper method to recursively delete all files in a directory and the directory itself.
+     *
+     * @param path
+     */
+    static void clearDirectory(Path path) throws IOException {
+        Files.walkFileTree(path, new DeletingFileVisitor(path));
+    }
+
+    /**
+     * class to recursivly delete files.
+     */
+    private static class DeletingFileVisitor extends SimpleFileVisitor<Path> {
+        /** the top directory, this will not be deleted. */
+        private final Path rootDir;
+
+        public DeletingFileVisitor(Path path) {
+            this.rootDir = path;
+        }
+
+        @Override
+        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+            if (!attrs.isDirectory()) {
+                Files.delete(file);
+            }
+            return FileVisitResult.CONTINUE;
+        }
+
+        @Override
+        public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+            if (!dir.equals(rootDir)) {
+                Files.delete(dir);
+            }
+            return FileVisitResult.CONTINUE;
+        }
     }
 }

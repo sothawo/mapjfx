@@ -1,28 +1,44 @@
 package com.sothawo.mapjfx.offline;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.file.DirectoryStream;
 import java.nio.file.FileSystems;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 
 /**
  * @author P.J. Meisch (pj.meisch@sothawo.com).
  */
 public class OfflineCacheTest {
 
+    private final static Path cacheDirectory = FileSystems.getDefault().getPath("./target/cache");
+
     private OfflineCache cache;
 
     @Before
     public void setUp() throws Exception {
         cache = new OfflineCache();
-        cache.setCacheDirectory(FileSystems.getDefault().getPath("."));
+        Files.createDirectories(cacheDirectory);
+        cache.setCacheDirectory(cacheDirectory);
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        OfflineCache.clearDirectory(cacheDirectory);
     }
 
     @Test
@@ -35,4 +51,25 @@ public class OfflineCacheTest {
 
         assertThat(filenamePath, is(equalTo(cache.filenameForURL(url))));
     }
+
+    @Test
+    public void clearCache() throws Exception {
+        for(int i = 1; i < 3; i++) {
+            Path p = cacheDirectory.resolve("file_" + i);
+            try(PrintWriter w= new PrintWriter(p.toFile())) {
+                w.println("42");
+                w.flush();
+            }
+        }
+
+        cache.clear();
+
+        boolean directoryIsEmpty = false;
+        try(DirectoryStream<Path> s = Files.newDirectoryStream(cacheDirectory)) {
+            directoryIsEmpty = !s.iterator().hasNext();
+        }
+
+        assertThat(directoryIsEmpty, is(true));
+    }
+
 }

@@ -34,6 +34,7 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.FileSystems;
+import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
@@ -333,6 +334,17 @@ public class TestApp extends Application {
         btn = new Button();
         btn.setText("remove label");
         btn.setOnAction(evt -> mapView.removeLabel(mapLabel));
+        hbox.getChildren().add(btn);
+
+        btn = new Button();
+        btn.setText("clear cache");
+        btn.setOnAction(evt -> {
+            try {
+                mapView.getOfflineCache().clear();
+            } catch (IOException e) {
+                logger.log(Level.WARNING, "could not clear cache", e);
+            }
+        });
         hbox.getChildren().add(btn);
 
         vbox.getChildren().add(hbox);
