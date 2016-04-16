@@ -37,11 +37,14 @@ The test application does not contain all the features, to have that, check
 
 ## version history
 
-### 1.7.1-SNAPSHOT
+### 1.7.2-SNAPSHOT
 
 current development version
 
+### 1.7.1
+
 * added possibility to clear the cache directory
+* improved handling of openstreetmap.org tiles
 
 ### 1.7.0
 
