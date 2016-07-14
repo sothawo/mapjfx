@@ -37,9 +37,13 @@ The test application does not contain all the features, to have that, check
 
 ## version history
 
-### 1.7.2-SNAPSHOT
+### 1.7.3-SNAPSHOT
 
 current development version
+
+### 1.7.2
+
+* fixed faulty implementation of Extent fields.
 
 ### 1.7.1
 
