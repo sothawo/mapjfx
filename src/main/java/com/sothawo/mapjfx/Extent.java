@@ -67,9 +67,9 @@ public final class Extent {
             throw new IllegalArgumentException();
         }
         double minLatitude = Double.MAX_VALUE;
-        double maxLatitude = Double.MIN_VALUE;
+        double maxLatitude = -Double.MAX_VALUE;
         double minLongitude = Double.MAX_VALUE;
-        double maxLongitude = Double.MIN_VALUE;
+        double maxLongitude = -Double.MAX_VALUE;
 
         for (Coordinate coordinate : coordinates) {
             minLatitude = Math.min(minLatitude, coordinate.getLatitude());
