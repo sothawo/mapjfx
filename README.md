@@ -37,9 +37,10 @@ The test application does not contain all the features, to have that, check
 
 ## version history
 
-### 1.7.3-SNAPSHOT
+### 1.7.3
 
-current development version
+* use OpenLayers 3.17.1
+* removed MapQuest see [ol issue #5484](https://github.com/openlayers/ol3/issues/5484)
 
 ### 1.7.2
 

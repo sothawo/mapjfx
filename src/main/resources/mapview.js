@@ -21,15 +21,6 @@ var layersOSM = new ol.layer.Group({
     ]
 });
 
-var layersMQ = new ol.layer.Group({
-    layers: [
-        new ol.layer.Tile({
-            source: new ol.source.MapQuest({layer: 'osm'})
-        }),
-        layerFeatures
-    ]
-});
-
 /*******************************************************************************************************************
  * global variables
  */
@@ -40,7 +31,7 @@ var coordinateLines = {};
 // to store the marker and label objects with a name
 var mapObjects = {};
 
-// the Bing Maps API KEy
+// the Bing Maps API Key
 var bingMapsApiKey = '';
 
 /*******************************************************************************************************************
@@ -174,8 +165,6 @@ var jsConnector = {
         anchorsPatched = false;
         if (newType == 'OSM') {
             map.setLayerGroup(layersOSM);
-        } else if (newType == 'MAPQUEST_OSM') {
-            map.setLayerGroup(layersMQ);
         } else if (newType == 'BINGMAPS_ROAD') {
             map.setLayerGroup(new ol.layer.Group({
                 layers: [
@@ -426,7 +415,7 @@ var jsConnector = {
     setBingMapsApiKey: function (apiKey) {
         bingMapsApiKey = apiKey;
     }
-}
+};
 
 /**
  * @return the one and only jsConnector object

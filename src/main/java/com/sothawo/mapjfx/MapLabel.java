@@ -163,7 +163,12 @@ public class MapLabel extends MapCoordinateElement {
 
     @Override
     public MapLabel setVisible(boolean visible) {
-        return (MapLabel) super.setVisible(visible);
+        if (!optMarker.isPresent()) {
+            return (MapLabel) super.setVisible(visible);
+        } else {
+            optMarker.get().setVisible(visible);
+            return this;
+        }
     }
 
 }

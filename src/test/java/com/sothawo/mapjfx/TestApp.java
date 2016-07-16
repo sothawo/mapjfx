@@ -257,11 +257,6 @@ public class TestApp extends Application {
         hbox.getChildren().add(btn);
 
         btn = new Button();
-        btn.setText("MQ");
-        btn.setOnAction(evt -> mapView.setMapType(MapType.MAPQUEST_OSM));
-        hbox.getChildren().add(btn);
-
-        btn = new Button();
         btn.setText("BR");
         btn.setOnAction(evt -> {
             mapView.setBingMapsApiKey(bingApiKey.getText());

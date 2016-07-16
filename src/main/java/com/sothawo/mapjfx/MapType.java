@@ -23,8 +23,6 @@ package com.sothawo.mapjfx;
 public enum MapType {
     /** OpenStreetMap. */
     OSM,
-    /** MapQuest with OSM Layer. */
-    MAPQUEST_OSM,
     /** BingMaps Road. */
     BINGMAPS_ROAD,
     /** BingMaps Aerial. */

@@ -717,8 +717,10 @@ public final class MapView extends Region {
                             // be ready, so prepare for an exception and retry
                             int numRetries = 0;
                             do {
+                                Object o = null;
                                 try {
-                                    javascriptConnector = (JSObject) webEngine.executeScript("getJsConnector()");
+                                    o = webEngine.executeScript("getJsConnector()");
+                                    javascriptConnector = (JSObject) o;
                                 } catch (JSException e) {
                                     logger.warning("JS not ready, retrying...");
                                     numRetries++;
@@ -727,6 +729,9 @@ public final class MapView extends Region {
                                     } catch (InterruptedException e1) {
                                         logger.warning("retry interrupted");
                                     }
+                                } catch (Exception e) {
+                                    logger.severe("getJsConnector: returned " + ((null == o) ? "(null)": o.toString()));
+                                    numRetries++;
                                 }
                             } while (null == javascriptConnector && numRetries < NUM_RETRIES_FOR_JS);
 
