@@ -900,6 +900,8 @@ public final class MapView extends Region {
                 javascriptConnector.call("hideCoordinateLine", id);
                 javascriptConnector.call("removeCoordinateLine", id);
 
+                logger.fine(() -> "removing coordinate line " + id + ", after JS calls");
+
                 // if the coordinateLine was not gc'ed we need to unregister the listeners
                 CoordinateLine coordinateLine = coordinateLines.get(id).get();
                 CoordinateLineListener coordinateLineListener = coordinateLineListeners.get(id);
@@ -1097,7 +1099,7 @@ public final class MapView extends Region {
          */
         public void showLink(String href) {
             if (null != href && !href.isEmpty()) {
-                logger.finer(() -> "JS aks to browse to " + href);
+                logger.finer(() -> "JS asks to browse to " + href);
                 if (!Desktop.isDesktopSupported()) {
                     logger.warning(() -> "no desktop support for displaying " + href);
                 } else {
@@ -1135,7 +1137,7 @@ public final class MapView extends Region {
          * @param lon
          *         longitude where the click occured.
          */
-        public void markerClicked(final String name) {
+        public void markerClicked(String name) {
             logger.finer(() -> "JS reports marker " + name + " clicked");
             fireEvent(new MapViewEvent(MapViewEvent.MARKER_CLICKED, name));
         }

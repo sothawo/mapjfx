@@ -15,6 +15,7 @@
 */
 package com.sothawo.mapjfx;
 
+import javafx.beans.NamedArg;
 import javafx.event.Event;
 import javafx.event.EventTarget;
 import javafx.event.EventType;

@@ -1,7 +1,3 @@
-console.log = function(msg) {
-  javaConnector.debug(msg);
-};
-
 /*******************************************************************************************************************
  * predefined map layers
  */
@@ -208,7 +204,7 @@ var jsConnector = {
         if (!coordinateLine) {
             coordinateLine = new CoordinateLine();
             coordinateLines[name] = coordinateLine;
-            javaConnector.debug("created CoordinateLine object named " + name);
+            window.javaConnector.debug("created CoordinateLine object named " + name);
         }
         return coordinateLine;
     },
@@ -220,10 +216,11 @@ var jsConnector = {
      * @param {string} the name of the coordinateLine
      */
     showCoordinateLine: function (name) {
+        window.javaConnector.debug("should show CoordinateLine object named " + name);
         var coordinateLine = coordinateLines[name];
         if (coordinateLine && !coordinateLine.getOnMap()) {
             sourceFeatures.addFeature(coordinateLine.getFeature());
-            javaConnector.debug("showed CoordinateLine object named " + name);
+            window.javaConnector.debug("showed CoordinateLine object named " + name);
             coordinateLine.setOnMap(true);
         }
     },
@@ -234,10 +231,11 @@ var jsConnector = {
      * @param {string} the name of the coordinateLine
      */
     hideCoordinateLine: function (name) {
+        window.javaConnector.debug("should hide CoordinateLine object named " + name);
         var coordinateLine = coordinateLines[name];
         if (coordinateLine && coordinateLine.getOnMap()) {
             sourceFeatures.removeFeature(coordinateLine.getFeature());
-            javaConnector.debug("hid CoordinateLine object named " + name);
+            window.javaConnector.debug("hid CoordinateLine object named " + name);
             coordinateLine.setOnMap(false);
         }
     },
@@ -248,10 +246,11 @@ var jsConnector = {
      * @param {string} the name of the coordinateLine
      */
     removeCoordinateLine: function (name) {
+        window.javaConnector.debug("should delete CoordinateLine object named " + name);
         if (coordinateLines[name]) {
             this.hideCoordinateLine(name);
             delete coordinateLines[name];
-            javaConnector.debug("deleted CoordinateLine object named " + name);
+            window.javaConnector.debug("deleted CoordinateLine object named " + name);
         }
     },
 
@@ -268,7 +267,7 @@ var jsConnector = {
         var marker = mapObjects[name];
         if (!marker) {
             marker = new MapObject(cFromWGS84([longitude, latitude]));
-            javaConnector.debug('created Marker object named ' + name);
+            window.javaConnector.debug('created Marker object named ' + name);
 
             // add a new <img> element to <div id='markers'>
             var markersElement = document.getElementById('markers');
@@ -290,9 +289,9 @@ var jsConnector = {
             imgElement.src = url;
             javaConnector.debug('started loading img from ' + url);
 
-            imgElement.onclick = function() {
-                window.javaConnector.markerClicked(name);
-            };
+            // imgElement.onclick = function() {
+            //     window.javaConnector.markerClicked(name);
+            // };
 
             var overlay = new ol.Overlay({
                 offset: [offsetX, offsetY],
@@ -320,7 +319,7 @@ var jsConnector = {
         var label = mapObjects[name];
         if (!label) {
             label = new MapObject(cFromWGS84([longitude, latitude]));
-            javaConnector.debug('created Label object named ' + name);
+            window.javaConnector.debug('created Label object named ' + name);
 
             // add a new <div> element to <div id='labels'>
             var labelsElement = document.getElementById('labels');
@@ -359,7 +358,7 @@ var jsConnector = {
                     overlay.setPosition(mapObject.getPosition());
                 }
             }
-            javaConnector.debug('moved ' + name);
+            window.javaConnector.debug('moved ' + name);
         }
     },
 
@@ -368,18 +367,21 @@ var jsConnector = {
      * @param {string} the name of the MapObject
      */
     removeMapObject: function (name) {
+        window.javaConnector.debug('should remove ' + name);
         var mapObject = mapObjects[name];
         if (mapObject) {
             this.hideMapObject(mapObject);
             var overlay = mapObject.getOverlay();
-            map.removeOverlay(overlay);
-            var element = overlay.getElement();
-            if (element) {
-                delete element;
+            if(overlay) {
+                map.removeOverlay(overlay);
+                var element = overlay.getElement();
+                if (element) {
+                    delete element;
+                }
+                delete overlay;
             }
-            delete overlay;
             delete mapObjects[name];
-            javaConnector.debug('removed ' + name);
+            window.javaConnector.debug('removed ' + name);
         }
     },
 
@@ -388,6 +390,7 @@ var jsConnector = {
      * @param {string} the name of the MapObject
      */
     hideMapObject: function (name) {
+        window.javaConnector.debug("should hide " + name);
         var mapObject = mapObjects[name];
         if (mapObject && mapObject.getOnMap()) {
             var overlay = mapObject.getOverlay();
@@ -395,7 +398,7 @@ var jsConnector = {
                 overlay.setPosition(undefined);
             }
             mapObject.setOnMap(false);
-            javaConnector.debug("hid " + name);
+            window.javaConnector.debug("hid " + name);
         }
     },
 
@@ -405,6 +408,7 @@ var jsConnector = {
      * @param the name of the MapObject to show
      */
     showMapObject: function (name) {
+        window.javaConnector.debug("should show " + name);
         var mapObject = mapObjects[name];
         if (mapObject && !mapObject.getOnMap()) {
             var overlay = mapObject.getOverlay();
@@ -412,7 +416,7 @@ var jsConnector = {
                 overlay.setPosition(mapObject.getPosition());
             }
             mapObject.setOnMap(true);
-            javaConnector.debug("showed " + name);
+            window.javaConnector.debug("showed " + name);
         }
     },
 
