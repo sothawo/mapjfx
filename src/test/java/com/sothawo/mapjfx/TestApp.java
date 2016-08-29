@@ -111,8 +111,8 @@ public class TestApp extends Application {
         // at the bottom some infos
         borderPane.setBottom(createBottomPane());
 
-        // listen to CoordinateEvent MAP_CLICKED
-        mapView.addEventHandler(CoordinateEvent.MAP_CLICKED, event -> {
+        // listen to MapViewEvent MAP_CLICKED
+        mapView.addEventHandler(MapViewEvent.MAP_CLICKED, event -> {
             logger.info("MAP_CLICKED event at " + event.getCoordinate());
             event.consume();
             if (marker.getVisible()) {
@@ -122,6 +122,14 @@ public class TestApp extends Application {
                 mapLabel.setPosition(event.getCoordinate());
             }
         });
+
+        // listen to MARKER_CLICKED event.
+        mapView.addEventHandler(MapViewEvent.MARKER_CLICKED, event -> {
+            logger.info("MARKER_CLICKED event: " + event.getName());
+            event.consume();
+        });
+
+
 
         final OfflineCache offlineCache = mapView.getOfflineCache();
         offlineCache.setCacheDirectory(FileSystems.getDefault().getPath("tmpdata/cache"));

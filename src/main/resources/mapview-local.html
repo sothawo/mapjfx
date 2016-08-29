@@ -100,6 +100,10 @@ Copyright 2015 Peter-Josef Meisch (pj.meisch@sothawo.com)
 
         debug: function (s) {
             console.log(s);
+        },
+
+        markerClicked: function (name) {
+            console.log("marker " + name + " clicked");
         }
     };
 
@@ -109,22 +113,22 @@ Copyright 2015 Peter-Josef Meisch (pj.meisch@sothawo.com)
     jsConnector.setZoom(18, 0);
     jsConnector.setCenter(49.013517, 8.404435, 0);
 
-    var addAll = function() {
+    var addAll = function () {
         jsConnector.addMarker('castle-marker', './markers/blue_map_marker.png', 49.013517, 8.404435, -32, -64);
         jsConnector.addLabel('castle-label', 'Das Schloss', 49.013517, 8.404435, 0, 0);
     };
 
-    var showAll = function() {
+    var showAll = function () {
         jsConnector.showMapObject('castle-marker');
         jsConnector.showMapObject('castle-label');
     };
 
-    var hideAll = function() {
+    var hideAll = function () {
         jsConnector.hideMapObject('castle-marker');
         jsConnector.hideMapObject('castle-label');
     };
 
-    var removeAll = function() {
+    var removeAll = function () {
         jsConnector.removeMapObject('castle-marker');
         jsConnector.removeMapObject('castle-label');
     };

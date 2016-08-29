@@ -1,5 +1,5 @@
 /*
- Copyright 2015 Peter-Josef Meisch (pj.meisch@sothawo.com)
+ Copyright 2015-2016 Peter-Josef Meisch (pj.meisch@sothawo.com)
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,11 +20,13 @@ import javafx.event.EventTarget;
 import javafx.event.EventType;
 
 /**
- * Event class for coordinate events. At the moment the only event that is defined is a clickin the map. This results
+ * Event class for coordinate events. At the moment the only event that is defined is a click in the map. This results
  * in a correspondign CoordinateEvent being fired.
  *
  * @author P.J. Meisch (pj.meisch@sothawo.com).
+ * @deprecated use MapViewEvent instead.
  */
+@Deprecated
 public class CoordinateEvent extends Event {
 // ------------------------------ FIELDS ------------------------------
 
@@ -73,7 +75,7 @@ public class CoordinateEvent extends Event {
 // --------------------- GETTER / SETTER METHODS ---------------------
 
     /**
-     * @return the ccordinate where the event happend.
+     * @return the coordinate where the event happend.
      */
     public Coordinate getCoordinate() {
         return coordinate;

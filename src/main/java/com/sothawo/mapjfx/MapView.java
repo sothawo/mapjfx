@@ -730,7 +730,7 @@ public final class MapView extends Region {
                                         logger.warning("retry interrupted");
                                     }
                                 } catch (Exception e) {
-                                    logger.severe("getJsConnector: returned " + ((null == o) ? "(null)": o.toString()));
+                                    logger.severe("getJsConnector: returned " + ((null == o) ? "(null)" : o.toString()));
                                     numRetries++;
                                 }
                             } while (null == javascriptConnector && numRetries < NUM_RETRIES_FOR_JS);
@@ -1122,7 +1122,22 @@ public final class MapView extends Region {
             Coordinate coordinate = new Coordinate(lat, lon);
             logger.finer(() -> "JS reports single click at " + coordinate);
             // fire a coordinate event to whom it may be of importance
-            fireEvent(new CoordinateEvent(CoordinateEvent.MAP_CLICKED, coordinate));
+            fireEvent(new MapViewEvent(MapViewEvent.MAP_CLICKED, coordinate));
+        }
+
+        /**
+         * called when a marker was clicked. the coordinates are EPSG:4326 (WGS) values.
+         *
+         * @param name
+         *         name of the marker
+         * @param lat
+         *         latitude where the click occured
+         * @param lon
+         *         longitude where the click occured.
+         */
+        public void markerClicked(final String name) {
+            logger.finer(() -> "JS reports marker " + name + " clicked");
+            fireEvent(new MapViewEvent(MapViewEvent.MARKER_CLICKED, name));
         }
 
         /**

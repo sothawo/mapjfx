@@ -1,3 +1,7 @@
+console.log = function(msg) {
+  javaConnector.debug(msg);
+};
+
 /*******************************************************************************************************************
  * predefined map layers
  */
@@ -278,13 +282,17 @@ var jsConnector = {
                 return false;
             };
             imgElement.onload = function () {
-                javaConnector.debug('image loaded from ' + url);
+                window.javaConnector.debug('image loaded from ' + url);
             };
             imgElement.onerror = function () {
-                javaConnector.debug('image load error from ' + url);
+                window.javaConnector.debug('image load error from ' + url);
             };
             imgElement.src = url;
             javaConnector.debug('started loading img from ' + url);
+
+            imgElement.onclick = function() {
+                window.javaConnector.markerClicked(name);
+            };
 
             var overlay = new ol.Overlay({
                 offset: [offsetX, offsetY],
