@@ -40,7 +40,7 @@ function MapObject(positionParam) {
  */
 MapObject.prototype.setOnMap = function (flag) {
     this.onMap = flag;
-}
+};
 
 /**
  * gets the flag wether the label is visible on the map

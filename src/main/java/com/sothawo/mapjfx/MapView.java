@@ -711,7 +711,7 @@ public final class MapView extends Region {
                         if (Worker.State.SUCCEEDED == newValue) {
                             // set an interface object named 'javaConnector' in the web engine
                             JSObject window = (JSObject) webEngine.executeScript("window");
-                            window.setMember("javaConnector", new JavaConnector());
+                            window.setMember("_javaConnector", new JavaConnector());
 
                             // get the Javascript connector object. Even if the html file is loaded, JS may not yet
                             // be ready, so prepare for an exception and retry
@@ -738,7 +738,22 @@ public final class MapView extends Region {
                             if (null == javascriptConnector) {
                                 logger.severe(() -> "error loading " + MAPVIEW_HTML + ", JavaScript not ready.");
                             } else {
-                                javascriptConnector.call("hello", "master");
+
+                                // todo: remove this check
+                                new Thread(() -> {
+                                    while (true) {
+                                        Platform.runLater(() -> {
+                                            logger.finer("checking javaConnector: ");
+                                            javascriptConnector.call("checkJavaConnector");
+                                        });
+                                        try {
+                                            Thread.sleep(10000);
+                                        } catch (InterruptedException e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                }
+                                ).start();
 
                                 initialized.set(true);
                                 setMapTypeInMap();

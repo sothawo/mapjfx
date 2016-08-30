@@ -143,6 +143,7 @@ public class TestApp extends Application {
                 mapView.setExtent(extentAll);
 //                mapView.setZoom(0);
 
+                /*
                 // add two markers without keeping a ref to them, they should disappear from the map when gc'ed
                 mapView.addMarker(Marker.createProvided(Marker.Provided.GREEN).setPosition(coordKarlsruheHarbour)
                         .setVisible(true));
@@ -159,7 +160,7 @@ public class TestApp extends Application {
                 // add a label to be gc'ed
                 mapView.addLabel(new MapLabel("clean me up").setPosition(coordKarlsruheStation)
                         .setVisible(true));
-
+*/
                 topPane.setDisable(false);
             }
         });
