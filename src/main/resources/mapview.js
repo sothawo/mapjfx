@@ -432,25 +432,13 @@ JSConnector.prototype.setBingMapsApiKey = function (apiKey) {
     this.bingMapsApiKey = apiKey;
 };
 
-JSConnector.prototype.checkJavaConnector = function () {
-    alert('checking JavaConnector, this: ' + this.toString());
-    var message = 'checking JSConnector, javaConnector: ' + this.javaConnector;
-    alert(message);
-    return message;
-};
-
 /**
  * @return JSConnector object
  */
-var _jsConnector = {};
 function getJsConnector() {
-    alert('JSConnector 1: ' + _jsConnector);
-    alert('initializing JSConnector, _javaConnector: ' + _javaConnector);
-    _jsConnector = new JSConnector(_javaConnector);
-    alert('JSConnector 2: ' + _jsConnector);
-    _jsConnector.init();
-    alert('JSConnector 3: ' + _jsConnector);
-    return _jsConnector;
+    var jsConnector = new JSConnector(_javaConnector);
+    jsConnector.init();
+    return jsConnector;
 }
 
 

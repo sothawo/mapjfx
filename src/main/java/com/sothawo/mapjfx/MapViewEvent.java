@@ -15,9 +15,7 @@
 */
 package com.sothawo.mapjfx;
 
-import javafx.beans.NamedArg;
 import javafx.event.Event;
-import javafx.event.EventTarget;
 import javafx.event.EventType;
 
 /**
@@ -27,13 +25,13 @@ import javafx.event.EventType;
  */
 public class MapViewEvent extends Event {
     /** base event type */
-    public static final EventType<MapViewEvent> ANY = new EventType<>("ANY");
+    public static final EventType<MapViewEvent> ANY_MAPVIEW_EVENT = new EventType<>("ANY_MAPVIEW_EVENT");
 
     /** coordinate clicked in map */
-    public static final EventType<MapViewEvent> MAP_CLICKED = new EventType<>(ANY, "MAP_CLICKED");
+    public static final EventType<MapViewEvent> MAP_CLICKED = new EventType<>(ANY_MAPVIEW_EVENT, "MAP_CLICKED");
 
     /** marker clicked in map */
-    public static final EventType<MapViewEvent> MARKER_CLICKED = new EventType<>(ANY, "MARKER_CLICKED");
+    public static final EventType<MapViewEvent> MARKER_CLICKED = new EventType<>(ANY_MAPVIEW_EVENT, "MARKER_CLICKED");
 
     /** the coordinate where the event happened, only set on MAP_CLICKED event */
     private final Coordinate coordinate;
