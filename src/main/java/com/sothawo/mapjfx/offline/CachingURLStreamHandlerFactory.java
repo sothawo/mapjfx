@@ -33,7 +33,7 @@ public class CachingURLStreamHandlerFactory implements URLStreamHandlerFactory {
     /** Logger for the class */
     private static final Logger logger = Logger.getLogger(CachingURLStreamHandlerFactory.class.getCanonicalName());
 
-    /** the cache this instance blegons to. */
+    /** the cache this instance belongs to. */
     private final OfflineCache cache;
 
     /** the map with the default handlers for different protocols. */

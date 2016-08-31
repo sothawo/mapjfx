@@ -37,6 +37,9 @@ The test application does not contain all the features, to have that, check
 
 ## version history
 
+* added events for clicks on markers and labels.
+* removed `CoordinateEvent`, replaced by the classes in the _com.sothawo.mapjfx.event_ package
+
 ### 1.7.3
 
 * use OpenLayers 3.17.1
