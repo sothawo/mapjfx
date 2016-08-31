@@ -3,7 +3,7 @@
 
     <groupId>com.sothawo</groupId>
     <artifactId>mapjfx</artifactId>
-    <version>1.7.3</version>
+    <version>1.8.0</version>
     <name>${project.groupId}:${project.artifactId}</name>
     <description>a JavaFX map component build by using OpenLayers</description>
     <url>http://www.sothawo.com/projects/mapjfx</url>
@@ -28,7 +28,6 @@
         <connection>scm:git:git@github.com:sothawo/mapjfx.git</connection>
         <developerConnection>scm:git:git@github.com:sothawo/mapjfx.git</developerConnection>
         <url>git@github.com:sothawo/mapjfx.git</url>
-        <tag>mapjfx-1.7.3</tag>
     </scm>
 
     <properties>
@@ -131,17 +130,6 @@
                     <serverId>ossrh</serverId>
                     <nexusUrl>https://oss.sonatype.org/</nexusUrl>
                     <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-release-plugin</artifactId>
-                <version>2.5.1</version>
-                <configuration>
-                    <autoVersionSubmodules>true</autoVersionSubmodules>
-                    <useReleaseProfile>false</useReleaseProfile>
-                    <releaseProfiles>release</releaseProfiles>
-                    <goals>deploy</goals>
                 </configuration>
             </plugin>
         </plugins>
