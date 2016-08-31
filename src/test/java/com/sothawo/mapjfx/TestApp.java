@@ -15,6 +15,9 @@
 */
 package com.sothawo.mapjfx;
 
+import com.sothawo.mapjfx.event.MapLabelEvent;
+import com.sothawo.mapjfx.event.MapViewEvent;
+import com.sothawo.mapjfx.event.MarkerEvent;
 import com.sothawo.mapjfx.offline.OfflineCache;
 import javafx.application.Application;
 import javafx.geometry.Insets;
@@ -124,8 +127,13 @@ public class TestApp extends Application {
         });
 
         // listen to MARKER_CLICKED event.
-        mapView.addEventHandler(MapViewEvent.MARKER_CLICKED, event -> {
-            logger.info("MARKER_CLICKED event: " + event.getName());
+        mapView.addEventHandler(MarkerEvent.MARKER_CLICKED, event -> {
+            logger.info("MARKER_CLICKED event: " + event.getMarker());
+            event.consume();
+        });
+        // listen to MAPLABEL_CLICKED event.
+        mapView.addEventHandler(MapLabelEvent.MAPLABEL_CLICKED, event -> {
+            logger.info("MAPLABEL_CLICKED event: " + event.getMapLabel());
             event.consume();
         });
 
@@ -143,7 +151,6 @@ public class TestApp extends Application {
                 mapView.setExtent(extentAll);
 //                mapView.setZoom(0);
 
-                /*
                 // add two markers without keeping a ref to them, they should disappear from the map when gc'ed
                 mapView.addMarker(Marker.createProvided(Marker.Provided.GREEN).setPosition(coordKarlsruheHarbour)
                         .setVisible(true));
@@ -160,7 +167,6 @@ public class TestApp extends Application {
                 // add a label to be gc'ed
                 mapView.addLabel(new MapLabel("clean me up").setPosition(coordKarlsruheStation)
                         .setVisible(true));
-*/
                 topPane.setDisable(false);
             }
         });

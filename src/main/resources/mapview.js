@@ -41,7 +41,7 @@ var _view = _map.getView();
  * @param javaConnector the javaConnector object
  */
 
-function JSConnector(javaConnector) {
+function JSMapView(javaConnector) {
     this.coordinateLines = {};
     this.mapObjects = {};
     this.javaConnector = javaConnector;
@@ -49,14 +49,14 @@ function JSConnector(javaConnector) {
     this.bingMapsApiKey = '';
 }
 
-JSConnector.prototype.toString = function () {
-    return 'JSConnector with javaConnector ' + this.javaConnector;
+JSMapView.prototype.toString = function () {
+    return 'JSMapView with javaConnector ' + this.javaConnector;
 };
 
 /**
- * initializes the JSConnector and the map.
+ * initializes the JSMapView and the map.
  */
-JSConnector.prototype.init = function () {
+JSMapView.prototype.init = function () {
     _map.on('singleclick', function (evt) {
         var coordinate = cToWGS84(evt.coordinate);
         // lat/lon reversion
@@ -100,7 +100,7 @@ JSConnector.prototype.init = function () {
  * @param {number} lon value in WGS84
  * @param {number} animationDuration duration in ms
  */
-JSConnector.prototype.setCenter = function (lat, lon, animationDuration) {
+JSMapView.prototype.setCenter = function (lat, lon, animationDuration) {
     // transform uses x/y coordinates, thats lon/lat
     var newCenter = cFromWGS84([lon, lat]);
     var oldCenter = _view.getCenter();
@@ -120,7 +120,7 @@ JSConnector.prototype.setCenter = function (lat, lon, animationDuration) {
  * @param {number} zoom level
  * @param {number} animationDuration duration in ms
  */
-JSConnector.prototype.setZoom = function (zoom, animationDuration) {
+JSMapView.prototype.setZoom = function (zoom, animationDuration) {
     if (zoom != _view.getZoom()) {
         var res = _view.getResolution();
         if (res && animationDuration > 1) {
@@ -143,7 +143,7 @@ JSConnector.prototype.setZoom = function (zoom, animationDuration) {
  * @param {number} maxLon longitude value in WGS84
  * @param {number} animationDuration duration in ms
  */
-JSConnector.prototype.setExtent = function (minLat, minLon, maxLat, maxLon, animationDuration) {
+JSMapView.prototype.setExtent = function (minLat, minLon, maxLat, maxLon, animationDuration) {
     // lat/lon reversion
     var extent = eFromWGS84([minLon, minLat, maxLon, maxLat]);
     if (animationDuration > 1) {
@@ -165,7 +165,7 @@ JSConnector.prototype.setExtent = function (minLat, minLon, maxLat, maxLon, anim
  *
  * @param {string} newType the new map type
  */
-JSConnector.prototype.setMapType = function (newType) {
+JSMapView.prototype.setMapType = function (newType) {
     // reset the patched flag; the new layer can have different attributions
     this.anchorsPatched = false;
     if (newType == 'OSM') {
@@ -204,7 +204,7 @@ JSConnector.prototype.setMapType = function (newType) {
  *
  * @return {CoordinateLine} the object
  */
-JSConnector.prototype.getCoordinateLine = function (name) {
+JSMapView.prototype.getCoordinateLine = function (name) {
     var coordinateLine = this.coordinateLines[name];
     if (!coordinateLine) {
         coordinateLine = new CoordinateLine();
@@ -220,7 +220,7 @@ JSConnector.prototype.getCoordinateLine = function (name) {
  *
  * @param {string} name the name of the coordinateLine
  */
-JSConnector.prototype.showCoordinateLine = function (name) {
+JSMapView.prototype.showCoordinateLine = function (name) {
     this.javaConnector.debug("should show CoordinateLine object named " + name);
     var coordinateLine = this.coordinateLines[name];
     if (coordinateLine && !coordinateLine.getOnMap()) {
@@ -235,7 +235,7 @@ JSConnector.prototype.showCoordinateLine = function (name) {
  *
  * @param {string} name the name of the coordinateLine
  */
-JSConnector.prototype.hideCoordinateLine = function (name) {
+JSMapView.prototype.hideCoordinateLine = function (name) {
     this.javaConnector.debug("should hide CoordinateLine object named " + name);
     var coordinateLine = this.coordinateLines[name];
     if (coordinateLine && coordinateLine.getOnMap()) {
@@ -250,7 +250,7 @@ JSConnector.prototype.hideCoordinateLine = function (name) {
  *
  * @param {string} name the name of the coordinateLine
  */
-JSConnector.prototype.removeCoordinateLine = function (name) {
+JSMapView.prototype.removeCoordinateLine = function (name) {
     this.javaConnector.debug("should delete CoordinateLine object named " + name);
     if (this.coordinateLines[name]) {
         this.hideCoordinateLine(name);
@@ -268,7 +268,7 @@ JSConnector.prototype.removeCoordinateLine = function (name) {
  * @param {number} offsetX x-offset of the top left point of the image to the coordinate
  * @param {number} offsetY y-offset of the top left point of the image to the coordinate
  */
-JSConnector.prototype.addMarker = function (name, url, latitude, longitude, offsetX, offsetY) {
+JSMapView.prototype.addMarker = function (name, url, latitude, longitude, offsetX, offsetY) {
     var marker = this.mapObjects[name];
     if (!marker) {
         marker = new MapObject(cFromWGS84([longitude, latitude]));
@@ -320,7 +320,7 @@ JSConnector.prototype.addMarker = function (name, url, latitude, longitude, offs
  * @param {number} offsetX x-offset of the top left point of the image to the coordinate
  * @param {number} offsetY y-offset of the top left point of the image to the coordinate
  */
-JSConnector.prototype.addLabel = function (name, text, cssClass, latitude, longitude, offsetX, offsetY) {
+JSMapView.prototype.addLabel = function (name, text, cssClass, latitude, longitude, offsetX, offsetY) {
     var label = this.mapObjects[name];
     if (!label) {
         label = new MapObject(cFromWGS84([longitude, latitude]));
@@ -334,6 +334,11 @@ JSConnector.prototype.addLabel = function (name, text, cssClass, latitude, longi
         labelElement.setAttribute('id', name);
         labelElement.setAttribute("class", "mapview-label " + cssClass);
         labelElement.innerHTML = text;
+
+        labelElement.onclick = (function () {
+            alert(name + ' clicked');
+            this.javaConnector.labelClicked(name);
+        }).bind(this);
 
         var overlay = new ol.Overlay({
             offset: [offsetX, offsetY],
@@ -352,7 +357,7 @@ JSConnector.prototype.addLabel = function (name, text, cssClass, latitude, longi
  * @param latitude new latitude
  * @param longitude new longitude
  */
-JSConnector.prototype.moveMapObject = function (name, latitude, longitude) {
+JSMapView.prototype.moveMapObject = function (name, latitude, longitude) {
     var mapObject = this.mapObjects[name];
     if (mapObject) {
         mapObject.setPosition(cFromWGS84([longitude, latitude]));
@@ -370,7 +375,7 @@ JSConnector.prototype.moveMapObject = function (name, latitude, longitude) {
  * removes a MapObject from the map
  * @param {string} name the name of the MapObject
  */
-JSConnector.prototype.removeMapObject = function (name) {
+JSMapView.prototype.removeMapObject = function (name) {
     this.javaConnector.debug('should remove ' + name);
     var mapObject = this.mapObjects[name];
     if (mapObject) {
@@ -393,7 +398,7 @@ JSConnector.prototype.removeMapObject = function (name) {
  * hides a MapObject from the map. the overlay is set to an undefined position which removes it from the map
  * @param {string} name the name of the MapObject
  */
-JSConnector.prototype.hideMapObject = function (name) {
+JSMapView.prototype.hideMapObject = function (name) {
     this.javaConnector.debug("should hide " + name);
     var mapObject = this.mapObjects[name];
     if (mapObject && mapObject.getOnMap()) {
@@ -411,7 +416,7 @@ JSConnector.prototype.hideMapObject = function (name) {
  * shows a MapObject.
  * @param name the name of the MapObject to show
  */
-JSConnector.prototype.showMapObject = function (name) {
+JSMapView.prototype.showMapObject = function (name) {
     this.javaConnector.debug("should show " + name);
     var mapObject = this.mapObjects[name];
     if (mapObject && !mapObject.getOnMap()) {
@@ -428,17 +433,17 @@ JSConnector.prototype.showMapObject = function (name) {
  * sets the bing maps api key
  * @param apiKey the api key
  */
-JSConnector.prototype.setBingMapsApiKey = function (apiKey) {
+JSMapView.prototype.setBingMapsApiKey = function (apiKey) {
     this.bingMapsApiKey = apiKey;
 };
 
 /**
- * @return JSConnector object
+ * @return JSMapView object
  */
-function getJsConnector() {
-    var jsConnector = new JSConnector(_javaConnector);
-    jsConnector.init();
-    return jsConnector;
+function getJSMapView() {
+    var jsMapView = new JSMapView(_javaConnector);
+    jsMapView.init();
+    return jsMapView;
 }
 
 

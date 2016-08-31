@@ -15,6 +15,9 @@
 */
 package com.sothawo.mapjfx;
 
+import com.sothawo.mapjfx.event.MapLabelEvent;
+import com.sothawo.mapjfx.event.MapViewEvent;
+import com.sothawo.mapjfx.event.MarkerEvent;
 import com.sothawo.mapjfx.offline.OfflineCache;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyBooleanProperty;
@@ -152,7 +155,7 @@ public final class MapView extends Region {
     /** property containing the actual map style, defaults to {@link com.sothawo.mapjfx.MapType#OSM} */
     private SimpleObjectProperty<MapType> mapType;
     /** Connector object that is created in the web page and initialized when the page is fully loaded */
-    private JSObject javascriptConnector;
+    private JSObject jsMapView;
     /** Pattern to find resources to include in the local html file. */
     private Pattern htmlIncludePattern = Pattern.compile("^#(.+)#$");
     /** Bing Maps API Key. */
@@ -273,7 +276,7 @@ public final class MapView extends Region {
             logger.finer(
                     () -> "setting center in OpenLayers map: " + actCenter + ", animation: " + animationDuration.get());
             // using Double objects instead of primitives works here
-            javascriptConnector
+            jsMapView
                     .call("setCenter", actCenter.getLatitude(), actCenter.getLongitude(), animationDuration.get());
         }
     }
@@ -286,7 +289,7 @@ public final class MapView extends Region {
             int zoomInt = (int) getZoom();
             logger.finer(
                     () -> "setting zoom in OpenLayers map: " + zoomInt + ", animation: " + animationDuration.get());
-            javascriptConnector.call("setZoom", zoomInt, animationDuration.get());
+            jsMapView.call("setZoom", zoomInt, animationDuration.get());
         }
     }
 
@@ -316,8 +319,8 @@ public final class MapView extends Region {
         if (getInitialized()) {
             String mapTypeName = getMapType().toString();
             logger.finer(() -> "setting map type in OpenLayers map: " + mapTypeName);
-            bingMapsApiKey.ifPresent(apiKey -> javascriptConnector.call("setBingMapsApiKey", apiKey));
-            javascriptConnector.call("setMapType", mapTypeName);
+            bingMapsApiKey.ifPresent(apiKey -> jsMapView.call("setBingMapsApiKey", apiKey));
+            jsMapView.call("setMapType", mapTypeName);
         }
     }
 
@@ -416,7 +419,7 @@ public final class MapView extends Region {
                 String id = requireNonNull(coordinateLine).getId();
                 if (!coordinateLines.containsKey(id)) {
                     logger.fine(() -> "adding coordinate line " + coordinateLine);
-                    JSObject jsCoordinateLine = (JSObject) javascriptConnector.call("getCoordinateLine", id);
+                    JSObject jsCoordinateLine = (JSObject) jsMapView.call("getCoordinateLine", id);
                     coordinateLine.getCoordinateStream().forEach(
                             (coord) -> jsCoordinateLine
                                     .call("addCoordinate", coord.getLatitude(), coord.getLongitude()));
@@ -453,9 +456,9 @@ public final class MapView extends Region {
                 CoordinateLine coordinateLine = coordinateLineWeakReference.get();
                 if (null != coordinateLine) {
                     if (coordinateLine.getVisible()) {
-                        javascriptConnector.call("showCoordinateLine", coordinateLineId);
+                        jsMapView.call("showCoordinateLine", coordinateLineId);
                     } else {
-                        javascriptConnector.call("hideCoordinateLine", coordinateLineId);
+                        jsMapView.call("hideCoordinateLine", coordinateLineId);
                     }
                 }
             }
@@ -494,7 +497,7 @@ public final class MapView extends Region {
                 }
                 if (!mapCoordinateElements.containsKey(id)) {
                     addMapCoordinateElement(mapLabel);
-                    javascriptConnector.call("addLabel", id, mapLabel.getText(), mapLabel.getCssClass(),
+                    jsMapView.call("addLabel", id, mapLabel.getText(), mapLabel.getCssClass(),
                             mapLabel.getPosition().getLatitude(), mapLabel.getPosition().getLongitude(),
                             mapLabel.getOffsetX(), mapLabel.getOffsetY());
 
@@ -544,9 +547,9 @@ public final class MapView extends Region {
                 MapCoordinateElement mapCoordinateElement = weakReference.get();
                 if (null != mapCoordinateElement) {
                     if (mapCoordinateElement.getVisible()) {
-                        javascriptConnector.call("showMapObject", mapCoordinateElement.getId());
+                        jsMapView.call("showMapObject", mapCoordinateElement.getId());
                     } else {
-                        javascriptConnector.call("hideMapObject", mapCoordinateElement.getId());
+                        jsMapView.call("hideMapObject", mapCoordinateElement.getId());
                     }
                 }
             }
@@ -566,7 +569,7 @@ public final class MapView extends Region {
                 MapCoordinateElement mapCoordinateElement = weakReference.get();
                 if (null != mapCoordinateElement) {
                     logger.finer(() -> "move element in OpenLayers map to " + mapCoordinateElement.getPosition());
-                    javascriptConnector.call("moveMapObject", mapCoordinateElement.getId(),
+                    jsMapView.call("moveMapObject", mapCoordinateElement.getId(),
                             mapCoordinateElement.getPosition().getLatitude(),
                             mapCoordinateElement.getPosition().getLongitude());
                 }
@@ -601,7 +604,7 @@ public final class MapView extends Region {
             synchronized (mapCoordinateElements) {
                 if (!mapCoordinateElements.containsKey(id)) {
                     addMapCoordinateElement(marker);
-                    javascriptConnector.call("addMarker", id, marker.getImageURL().toExternalForm(),
+                    jsMapView.call("addMarker", id, marker.getImageURL().toExternalForm(),
                             marker.getPosition().getLatitude(), marker.getPosition().getLongitude(),
                             marker.getOffsetX(), marker.getOffsetY());
 
@@ -722,8 +725,8 @@ public final class MapView extends Region {
                             do {
                                 Object o = null;
                                 try {
-                                    o = webEngine.executeScript("getJsConnector()");
-                                    javascriptConnector = (JSObject) o;
+                                    o = webEngine.executeScript("getJSMapView()");
+                                    jsMapView = (JSObject) o;
                                 } catch (JSException e) {
                                     logger.warning("JS not ready, retrying...");
                                     numRetries++;
@@ -733,12 +736,12 @@ public final class MapView extends Region {
                                         logger.warning("retry interrupted");
                                     }
                                 } catch (Exception e) {
-                                    logger.severe("getJsConnector: returned " + ((null == o) ? "(null)" : o.toString()));
+                                    logger.severe("getJSMapView: returned " + ((null == o) ? "(null)" : o.toString()));
                                     numRetries++;
                                 }
-                            } while (null == javascriptConnector && numRetries < NUM_RETRIES_FOR_JS);
+                            } while (null == jsMapView && numRetries < NUM_RETRIES_FOR_JS);
 
-                            if (null == javascriptConnector) {
+                            if (null == jsMapView) {
                                 logger.severe(() -> "error loading " + MAPVIEW_HTML + ", JavaScript not ready.");
                             } else {
                                 initialized.set(true);
@@ -898,8 +901,8 @@ public final class MapView extends Region {
             if (coordinateLines.containsKey(id)) {
                 logger.fine(() -> "removing coordinate line " + id);
 
-                javascriptConnector.call("hideCoordinateLine", id);
-                javascriptConnector.call("removeCoordinateLine", id);
+                jsMapView.call("hideCoordinateLine", id);
+                jsMapView.call("removeCoordinateLine", id);
 
                 logger.fine(() -> "removing coordinate line " + id + ", after JS calls");
 
@@ -959,8 +962,8 @@ public final class MapView extends Region {
             if (mapCoordinateElements.containsKey(id)) {
                 logger.fine(() -> "removing element " + id);
 
-                javascriptConnector.call("hideMapObject", id);
-                javascriptConnector.call("removeMapObject", id);
+                jsMapView.call("hideMapObject", id);
+                jsMapView.call("removeMapObject", id);
 
                 // if the element was not gc'ed we need to unregister the listeners so we dont' react to events from
                 // removed elements
@@ -1044,7 +1047,7 @@ public final class MapView extends Region {
             logger.finer(
                     () -> "setting extent in OpenLayers map: " + extent + ", animation: " +
                             animationDuration.get());
-            javascriptConnector.call("setExtent", extent.getMin().getLatitude(), extent.getMin().getLongitude(),
+            jsMapView.call("setExtent", extent.getMin().getLatitude(), extent.getMin().getLongitude(),
                     extent.getMax().getLatitude(), extent.getMax().getLongitude(), animationDuration.get());
         }
         return this;
@@ -1129,18 +1132,40 @@ public final class MapView extends Region {
         }
 
         /**
-         * called when a marker was clicked. the coordinates are EPSG:4326 (WGS) values.
+         * called when a marker was clicked.
          *
          * @param name
          *         name of the marker
-         * @param lat
-         *         latitude where the click occured
-         * @param lon
-         *         longitude where the click occured.
          */
         public void markerClicked(String name) {
             logger.finer(() -> "JS reports marker " + name + " clicked");
-            fireEvent(new MapViewEvent(MapViewEvent.MARKER_CLICKED, name));
+            synchronized (mapCoordinateElements) {
+                if (mapCoordinateElements.containsKey(name)) {
+                    final MapCoordinateElement mapCoordinateElement = mapCoordinateElements.get(name).get();
+                    if (mapCoordinateElement instanceof Marker) {
+                        Marker marker = (Marker) mapCoordinateElement;
+                        fireEvent(new MarkerEvent(MarkerEvent.MARKER_CLICKED, marker));
+                    }
+                }
+            }
+        }
+        /**
+         * called when a label was clicked.
+         *
+         * @param name
+         *         name of the lael
+         */
+        public void labelClicked(String name) {
+            logger.finer(() -> "JS reports label " + name + " clicked");
+            synchronized (mapCoordinateElements) {
+                if (mapCoordinateElements.containsKey(name)) {
+                    final MapCoordinateElement mapCoordinateElement = mapCoordinateElements.get(name).get();
+                    if (mapCoordinateElement instanceof MapLabel) {
+                        MapLabel label = (MapLabel) mapCoordinateElement;
+                        fireEvent(new MapLabelEvent(MapLabelEvent.MAPLABEL_CLICKED, label));
+                    }
+                }
+            }
         }
 
         /**
