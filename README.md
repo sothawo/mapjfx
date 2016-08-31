@@ -37,8 +37,11 @@ The test application does not contain all the features, to have that, check
 
 ## version history
 
+### 1.8.0
+
 * added events for clicks on markers and labels.
 * removed `CoordinateEvent`, replaced by the classes in the _com.sothawo.mapjfx.event_ package
+* bugfixes and improvements
 
 ### 1.7.3
 
