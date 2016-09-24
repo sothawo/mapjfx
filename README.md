@@ -37,6 +37,8 @@ The test application does not contain all the features, to have that, check
 
 ## version history
 
+* use OpenLayers 3.18.2
+
 ### 1.8.0
 
 * added events for clicks on markers and labels.
