@@ -33,6 +33,9 @@ public class MarkerEvent extends Event {
     /** marker clicked in map */
     public static final EventType<MarkerEvent> MARKER_CLICKED = new EventType<>(ANY, "MARKER_CLICKED");
 
+    /** marker doubleclicked in map */
+    public static final EventType<MarkerEvent> MARKER_DOUBLECLICKED = new EventType<>(ANY, "MARKER_DOUBLECLICKED");
+
     /** the marker for this event. */
     private final Marker marker;
 

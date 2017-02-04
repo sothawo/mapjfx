@@ -33,6 +33,10 @@ public class MapLabelEvent extends Event {
     /** label clicked in map */
     public static final EventType<MapLabelEvent> MAPLABEL_CLICKED = new EventType<>(ANY, "MAPLABEL_CLICKED");
 
+    /** label double clicked in map */
+    public static final EventType<MapLabelEvent> MAPLABEL_DOUBLECLICKED = new EventType<>(ANY,
+            "MAPLABEL_DOUBLECLICKED");
+
     /** the MapLabel for this event. */
     private final MapLabel mapLabel;
 

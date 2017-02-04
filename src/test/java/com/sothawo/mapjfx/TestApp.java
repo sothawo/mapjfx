@@ -131,9 +131,19 @@ public class TestApp extends Application {
             logger.info("MARKER_CLICKED event: " + event.getMarker());
             event.consume();
         });
+        // listen to MARKER_DOUBLECLICKED event.
+        mapView.addEventHandler(MarkerEvent.MARKER_DOUBLECLICKED, event -> {
+            logger.info("MARKER_DOUBLECLICKED event: " + event.getMarker());
+            event.consume();
+        });
         // listen to MAPLABEL_CLICKED event.
         mapView.addEventHandler(MapLabelEvent.MAPLABEL_CLICKED, event -> {
             logger.info("MAPLABEL_CLICKED event: " + event.getMapLabel());
+            event.consume();
+        });
+        // listen to MAPLABEL_DOUBLECLICKED event.
+        mapView.addEventHandler(MapLabelEvent.MAPLABEL_DOUBLECLICKED, event -> {
+            logger.info("MAPLABEL_DOUBLECLICKED event: " + event.getMapLabel());
             event.consume();
         });
 

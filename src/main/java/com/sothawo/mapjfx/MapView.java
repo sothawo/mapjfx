@@ -27,6 +27,7 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.concurrent.Worker;
+import javafx.event.EventType;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.Region;
@@ -141,6 +142,8 @@ public final class MapView extends Region {
     private final ConcurrentHashMap<URL, String> imgCache = new ConcurrentHashMap<>();
     /** the OfflineCache. */
     private final OfflineCache offlineCache = new OfflineCache();
+    /** the connector object in the web page; field to prevent it being gc'ed. */
+    private final JavaConnector javaConnector = new JavaConnector();
     /** the WebEngine of the WebView containing the OpenLayers Map. */
     private WebEngine webEngine;
     /** property containing the map's center. */
@@ -162,8 +165,6 @@ public final class MapView extends Region {
     private Optional<String> bingMapsApiKey = Optional.empty();
     /** URL for custom mapview css. */
     private Optional<URL> customMapviewCssURL = Optional.empty();
-    /** the connector object in the web page; field to prevent it being gc'ed. */
-    private final JavaConnector javaConnector = new JavaConnector();
 
 
     /**
@@ -359,6 +360,24 @@ public final class MapView extends Region {
     }
 
     /**
+     * sets the zoom level. the zoom value is rounded to the next whole number using {@link Math#round(double)} and then
+     * checked to be in the range between {@link #MIN_ZOOM} and {@link #MAX_ZOOM }. If the value is not in this range,
+     * the call is ignored.
+     *
+     * @param zoom
+     *         new zoom level
+     * @return this object
+     */
+    public MapView setZoom(double zoom) {
+        double rounded = Math.round(zoom);
+        if (rounded < MIN_ZOOM || rounded > MAX_ZOOM) {
+            return this;
+        }
+        this.zoom.set(rounded);
+        return this;
+    }
+
+    /**
      * @return the current MapType.
      */
     public MapType getMapType() {
@@ -374,24 +393,6 @@ public final class MapView extends Region {
      */
     public MapView setMapType(MapType mapType) {
         this.mapType.set(mapType);
-        return this;
-    }
-
-    /**
-     * sets the zoom level. the zoom value is rounded to the next whole number using {@link Math#round(double)} and then
-     * checked to be in the range between {@link #MIN_ZOOM} and {@link #MAX_ZOOM }. If the value is not in this range,
-     * the call is ignored.
-     *
-     * @param zoom
-     *         new zoom level
-     * @return this object
-     */
-    public MapView setZoom(double zoom) {
-        double rounded = Math.round(zoom);
-        if (rounded < MIN_ZOOM || rounded > MAX_ZOOM) {
-            return this;
-        }
-        this.zoom.set(rounded);
         return this;
     }
 
@@ -1139,31 +1140,78 @@ public final class MapView extends Region {
          *         name of the marker
          */
         public void markerClicked(String name) {
-            logger.finer(() -> "JS reports marker " + name + " clicked");
+            processMarkerClicked(name, 1);
+        }
+
+        /**
+         * called when a marker was doubleclicked.
+         *
+         * @param name
+         *         name of the marker
+         */
+        public void markerDoubleClicked(String name) {
+            processMarkerClicked(name, 2);
+        }
+
+        /**
+         * processes a marker click
+         *
+         * @param name
+         *         name of the marker
+         * @param count
+         *         single or double click
+         */
+        private void processMarkerClicked(String name, int count) {
+            logger.finer(() -> "JS reports marker " + name + " clicked " + count + " times");
             synchronized (mapCoordinateElements) {
                 if (mapCoordinateElements.containsKey(name)) {
                     final MapCoordinateElement mapCoordinateElement = mapCoordinateElements.get(name).get();
                     if (mapCoordinateElement instanceof Marker) {
-                        Marker marker = (Marker) mapCoordinateElement;
-                        fireEvent(new MarkerEvent(MarkerEvent.MARKER_CLICKED, marker));
+                        final EventType<MarkerEvent> eventType = (count == 2)
+                                ? MarkerEvent.MARKER_DOUBLECLICKED
+                                : MarkerEvent.MARKER_CLICKED;
+                        fireEvent(new MarkerEvent(eventType, (Marker) mapCoordinateElement));
                     }
                 }
             }
         }
+
+        /**
+         * called when a label was single clicked.
+         *
+         * @param name
+         *         name of the lael
+         */
+        public void labelClicked(String name) {
+            processLabelClicked(name, 1);
+        }
+
+        /**
+         * called when a label was double clicked.
+         *
+         * @param name
+         *         name of the lael
+         */
+        public void labelDoubleClicked(String name) {
+            processLabelClicked(name, 2);
+        }
+
         /**
          * called when a label was clicked.
          *
          * @param name
          *         name of the lael
          */
-        public void labelClicked(String name) {
-            logger.finer(() -> "JS reports label " + name + " clicked");
+        private void processLabelClicked(String name, int count) {
+            logger.finer(() -> "JS reports label " + name + " clicked " + count + " times");
             synchronized (mapCoordinateElements) {
                 if (mapCoordinateElements.containsKey(name)) {
                     final MapCoordinateElement mapCoordinateElement = mapCoordinateElements.get(name).get();
                     if (mapCoordinateElement instanceof MapLabel) {
-                        MapLabel label = (MapLabel) mapCoordinateElement;
-                        fireEvent(new MapLabelEvent(MapLabelEvent.MAPLABEL_CLICKED, label));
+                        final EventType<MapLabelEvent> eventType = (count == 2)
+                                ? MapLabelEvent.MAPLABEL_DOUBLECLICKED
+                                : MapLabelEvent.MAPLABEL_CLICKED;
+                        fireEvent(new MapLabelEvent(eventType, (MapLabel) mapCoordinateElement));
                     }
                 }
             }

@@ -306,6 +306,10 @@ JSMapView.prototype.addMarker = function (name, url, latitude, longitude, offset
             alert(name + ' clicked');
             this.javaConnector.markerClicked(name);
         }).bind(this);
+        imgElement.ondblclick = (function () {
+            alert(name + ' doucleclicked');
+            this.javaConnector.markerDoubleClicked(name);
+        }).bind(this);
 
         var overlay = new ol.Overlay({
             offset: [offsetX, offsetY],
@@ -346,6 +350,10 @@ JSMapView.prototype.addLabel = function (name, text, cssClass, latitude, longitu
         labelElement.onclick = (function () {
             alert(name + ' clicked');
             this.javaConnector.labelClicked(name);
+        }).bind(this);
+        labelElement.ondblclick = (function () {
+            alert(name + ' doucleclicked');
+            this.javaConnector.labelDoubleClicked(name);
         }).bind(this);
 
         var overlay = new ol.Overlay({
