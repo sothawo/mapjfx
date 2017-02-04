@@ -1,4 +1,20 @@
-/*******************************************************************************************************************
+/*
+ Copyright 2015-2017 Peter-Josef Meisch (pj.meisch@sothawo.com)
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+ http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+
+ /*******************************************************************************************************************
  * predefined map layers
  */
 
@@ -105,13 +121,13 @@ JSMapView.prototype.setCenter = function (lat, lon, animationDuration) {
     var newCenter = cFromWGS84([lon, lat]);
     var oldCenter = _view.getCenter();
     if (oldCenter && animationDuration > 1) {
-        var anim = ol.animation.pan({
-            duration: animationDuration,
-            source: oldCenter
+        _view.animate({
+            center: newCenter,
+            duration: animationDuration
         });
-        _map.beforeRender(anim);
+    } else {
+        _view.setCenter(newCenter);
     }
-    _view.setCenter(newCenter);
 };
 
 /**
@@ -122,15 +138,14 @@ JSMapView.prototype.setCenter = function (lat, lon, animationDuration) {
  */
 JSMapView.prototype.setZoom = function (zoom, animationDuration) {
     if (zoom != _view.getZoom()) {
-        var res = _view.getResolution();
-        if (res && animationDuration > 1) {
-            var anim = ol.animation.zoom({
-                resolution: res,
+        if (animationDuration > 1) {
+            _view.animate({
+                zoom: zoom,
                 duration: animationDuration
             });
-            _map.beforeRender(anim);
+        } else {
+            _view.setZoom(zoom);
         }
-        _view.setZoom(zoom);
     }
 };
 
@@ -147,17 +162,10 @@ JSMapView.prototype.setExtent = function (minLat, minLon, maxLat, maxLon, animat
     // lat/lon reversion
     var extent = eFromWGS84([minLon, minLat, maxLon, maxLat]);
     if (animationDuration > 1) {
-        var animPan = ol.animation.pan({
-            duration: animationDuration,
-            source: _view.getCenter()
-        });
-        var animZoom = ol.animation.zoom({
-            resolution: _view.getResolution(),
-            duration: animationDuration
-        });
-        _map.beforeRender(animPan, animZoom);
+        _view.fit(extent, _map.getSize(), {duration: animationDuration});
+    } else {
+        _view.fit(extent, _map.getSize());
     }
-    _view.fit(extent, _map.getSize());
 };
 
 /**

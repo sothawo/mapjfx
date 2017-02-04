@@ -1,5 +1,5 @@
 /*
- Copyright 2015 Peter-Josef Meisch (pj.meisch@sothawo.com)
+ Copyright 2015-2017 Peter-Josef Meisch (pj.meisch@sothawo.com)
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -112,7 +112,7 @@ public final class MapView extends Region {
     /** used to store the last coordinate that was reported by the map to prevent setting it again in the map. */
     private final AtomicReference<Coordinate> lastCoordinateFromMap = new AtomicReference<>();
     /** used to store the last zoom value that was reported by the map to prevent setting it again in the map. */
-    private final AtomicReference<Double> lastZoomFromMap = new AtomicReference<>();
+    private final AtomicReference<Long> lastZoomFromMap = new AtomicReference<>();
     /**
      * a map from the names of MapCoordinateELements in the map to WeakReferences of the Objects. When
      * mapCoordinateElements are gc'ed the keys in this map point to null and are used to clean up the internal
@@ -200,8 +200,9 @@ public final class MapView extends Region {
         zoom.addListener((observable, oldValue, newValue) -> {
             // check if this is the same value that was just reported from the map using object equality
             //noinspection NumberEquality
-            if (newValue != lastZoomFromMap.get()) {
-                logger.finer(() -> "zoom changed from " + oldValue + " to " + newValue);
+            final Long rounded = Math.round((Double) newValue);
+            if (rounded != lastZoomFromMap.get()) {
+                logger.finer(() -> "zoom changed from " + oldValue + " to " + rounded);
                 setZoomInMap();
             }
         });
@@ -1175,9 +1176,10 @@ public final class MapView extends Region {
          *         new zoom value
          */
         public void zoomChanged(double newZoom) {
-            logger.finer(() -> "JS reports zoom value " + newZoom);
-            lastZoomFromMap.set(newZoom);
-            setZoom(newZoom);
+            final long roundedZoom = Math.round(newZoom);
+            logger.finer(() -> "JS reports zoom value " + roundedZoom);
+            lastZoomFromMap.set(roundedZoom);
+            setZoom(roundedZoom);
         }
     }
 }
