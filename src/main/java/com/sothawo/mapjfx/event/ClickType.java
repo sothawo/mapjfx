@@ -23,5 +23,7 @@ package com.sothawo.mapjfx.event;
 public enum ClickType {
     LEFT,
     RIGHT,
-    DOUBLE
+    DOUBLE,
+    MOUSEDOWN,
+    MOUSEUP
 }

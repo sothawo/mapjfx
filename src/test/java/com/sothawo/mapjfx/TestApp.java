@@ -131,9 +131,29 @@ public class TestApp extends Application {
             logger.info("MARKER_CLICKED event: " + event.getMarker());
             event.consume();
         });
+        // listen to MARKER_MOUSEDOWN event.
+        mapView.addEventHandler(MarkerEvent.MARKER_MOUSEDOWN, event -> {
+            logger.info("MARKER_MOUSEDOWN event: " + event.getMarker());
+            event.consume();
+        });
+        // listen to MARKER_MOUSEUP event.
+        mapView.addEventHandler(MarkerEvent.MARKER_MOUSEUP, event -> {
+            logger.info("MARKER_MOUSEUP event: " + event.getMarker());
+            event.consume();
+        });
         // listen to MARKER_DOUBLECLICKED event.
         mapView.addEventHandler(MarkerEvent.MARKER_DOUBLECLICKED, event -> {
             logger.info("MARKER_DOUBLECLICKED event: " + event.getMarker());
+            event.consume();
+        });
+        // listen to MAPLABEL_MOUSEDOWN event.
+        mapView.addEventHandler(MapLabelEvent.MAPLABEL_MOUSEDOWN, event -> {
+            logger.info("MAPLABEL_MOUSEDOWN event: " + event.getMapLabel());
+            event.consume();
+        });
+        // listen to MAPLABEL_MOUSEUP event.
+        mapView.addEventHandler(MapLabelEvent.MAPLABEL_MOUSEUP, event -> {
+            logger.info("MAPLABEL_MOUSEUP event: " + event.getMapLabel());
             event.consume();
         });
         // listen to MAPLABEL_CLICKED event.

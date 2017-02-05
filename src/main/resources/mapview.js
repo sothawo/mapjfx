@@ -302,6 +302,14 @@ JSMapView.prototype.addMarker = function (name, url, latitude, longitude, offset
         imgElement.src = url;
         this.javaConnector.debug('started loading img from ' + url);
 
+        imgElement.onmousedown = (function () {
+            alert(name + ' mousedown');
+            this.javaConnector.markerMouseDown(name);
+        }).bind(this);
+        imgElement.onmouseup = (function () {
+            alert(name + ' mouseup');
+            this.javaConnector.markerMouseUp(name);
+        }).bind(this);
         imgElement.onclick = (function () {
             alert(name + ' clicked');
             this.javaConnector.markerClicked(name);
@@ -352,6 +360,14 @@ JSMapView.prototype.addLabel = function (name, text, cssClass, latitude, longitu
         labelElement.setAttribute("class", "mapview-label " + cssClass);
         labelElement.innerHTML = text;
 
+        labelElement.onmousedown = (function () {
+            alert(name + ' mousedown');
+            this.javaConnector.labelMouseDown(name);
+        }).bind(this);
+        labelElement.onmouseup = (function () {
+            alert(name + ' mouseup');
+            this.javaConnector.labelMouseUp(name);
+        }).bind(this);
         labelElement.onclick = (function () {
             alert(name + ' clicked');
             this.javaConnector.labelClicked(name);

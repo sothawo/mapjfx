@@ -1143,6 +1143,26 @@ public final class MapView extends Region {
         }
 
         /**
+         * calles when mouse is pressed on marker.
+         *
+         * @param name
+         *         name of the marker
+         */
+        public void markerMouseDown(String name) {
+            processMarkerClicked(name, ClickType.MOUSEDOWN);
+        }
+
+        /**
+         * calles when mouse is released on marker.
+         *
+         * @param name
+         *         name of the marker
+         */
+        public void markerMouseUp(String name) {
+            processMarkerClicked(name, ClickType.MOUSEUP);
+        }
+
+        /**
          * called when a marker was doubleclicked.
          *
          * @param name
@@ -1186,6 +1206,12 @@ public final class MapView extends Region {
                         case RIGHT:
                             eventType = MarkerEvent.MARKER_RIGHTCLICKED;
                             break;
+                        case MOUSEDOWN:
+                            eventType = MarkerEvent.MARKER_MOUSEDOWN;
+                            break;
+                        case MOUSEUP:
+                            eventType = MarkerEvent.MARKER_MOUSEUP;
+                            break;
                     }
                     if (null != eventType) {
                         fireEvent(new MarkerEvent(eventType, (Marker) mapCoordinateElement));
@@ -1202,6 +1228,26 @@ public final class MapView extends Region {
          */
         public void labelClicked(String name) {
             processLabelClicked(name, ClickType.LEFT);
+        }
+
+        /**
+         * called when mouse is pressed on label.
+         *
+         * @param name
+         *         name of the label
+         */
+        public void labelMouseDown(String name) {
+            processLabelClicked(name, ClickType.MOUSEDOWN);
+        }
+
+        /**
+         * called when mouse is released on label.
+         *
+         * @param name
+         *         name of the label
+         */
+        public void labelMouseUp(String name) {
+            processLabelClicked(name, ClickType.MOUSEUP);
         }
 
         /**
@@ -1248,6 +1294,12 @@ public final class MapView extends Region {
                                 break;
                             case RIGHT:
                                 eventType = MapLabelEvent.MAPLABEL_RIGHTCLICKED;
+                                break;
+                            case MOUSEDOWN:
+                                eventType = MapLabelEvent.MAPLABEL_MOUSEDOWN;
+                                break;
+                            case MOUSEUP:
+                                eventType = MapLabelEvent.MAPLABEL_MOUSEUP;
                                 break;
                         }
                         if (null != eventType) {

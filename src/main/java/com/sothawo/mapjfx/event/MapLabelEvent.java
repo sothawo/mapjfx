@@ -42,6 +42,14 @@ public class MapLabelEvent extends Event {
     public static final EventType<MapLabelEvent> MAPLABEL_RIGHTCLICKED = new EventType<>(ANY,
             "MAPLABEL_RIGHTCLICKED");
 
+    /** label mouse down in map */
+    public static final EventType<MapLabelEvent> MAPLABEL_MOUSEDOWN = new EventType<>(ANY,
+            "MAPLABEL_MOUSEDOWN");
+
+    /** label mouse up in map */
+    public static final EventType<MapLabelEvent> MAPLABEL_MOUSEUP = new EventType<>(ANY,
+            "MAPLABEL_MOUSEUP");
+
     /** the MapLabel for this event. */
     private final MapLabel mapLabel;
 
