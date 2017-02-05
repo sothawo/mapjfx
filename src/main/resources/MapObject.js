@@ -1,5 +1,5 @@
 /*
- Copyright 2015-2016 Peter-Josef Meisch (pj.meisch@sothawo.com)
+ Copyright 2015-2017 Peter-Josef Meisch (pj.meisch@sothawo.com)
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.

@@ -1,5 +1,5 @@
 /*
- Copyright 2016 Peter-Josef Meisch (pj.meisch@sothawo.com)
+ Copyright 2016-2017 Peter-Josef Meisch (pj.meisch@sothawo.com)
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -12,7 +12,8 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-*/package com.sothawo.mapjfx.event;
+*/
+package com.sothawo.mapjfx.event;
 
 import com.sothawo.mapjfx.Marker;
 import javafx.event.Event;
@@ -32,6 +33,18 @@ public class MarkerEvent extends Event {
 
     /** marker clicked in map */
     public static final EventType<MarkerEvent> MARKER_CLICKED = new EventType<>(ANY, "MARKER_CLICKED");
+
+    /** marker doubleclicked in map */
+    public static final EventType<MarkerEvent> MARKER_DOUBLECLICKED = new EventType<>(ANY, "MARKER_DOUBLECLICKED");
+
+    /** marker rightclicked in map */
+    public static final EventType<MarkerEvent> MARKER_RIGHTCLICKED = new EventType<>(ANY, "MARKER_RIGHTCLICKED");
+
+    /** marker mousedown in map */
+    public static final EventType<MarkerEvent> MARKER_MOUSEDOWN = new EventType<>(ANY, "MARKER_MOUSEDOWN");
+
+    /** marker mouseup in map */
+    public static final EventType<MarkerEvent> MARKER_MOUSEUP = new EventType<>(ANY, "MARKER_MOUSEUP");
 
     /** the marker for this event. */
     private final Marker marker;

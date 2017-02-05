@@ -38,6 +38,7 @@ The test application does not contain all the features, to have that, check
 ## version history
 
 * use OpenLayers 3.20.1
+* added mousedown, mouseup, doubleclick and rightclick events to labels and markers
 
 ### 1.8.2
 
