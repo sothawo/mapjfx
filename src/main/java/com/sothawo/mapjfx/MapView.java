@@ -15,6 +15,7 @@
 */
 package com.sothawo.mapjfx;
 
+import com.sothawo.mapjfx.event.ClickType;
 import com.sothawo.mapjfx.event.MapLabelEvent;
 import com.sothawo.mapjfx.event.MapViewEvent;
 import com.sothawo.mapjfx.event.MarkerEvent;
@@ -704,8 +705,6 @@ public final class MapView extends Region {
             webEngine = webView.getEngine();
             webView.prefWidthProperty().bind(widthProperty());
             webView.prefHeightProperty().bind(heightProperty());
-            // no context menu
-            webView.setContextMenuEnabled(false);
             getChildren().add(webView);
             // log versions after webEngine is available
             logVersions();
@@ -1140,7 +1139,7 @@ public final class MapView extends Region {
          *         name of the marker
          */
         public void markerClicked(String name) {
-            processMarkerClicked(name, 1);
+            processMarkerClicked(name, ClickType.LEFT);
         }
 
         /**
@@ -1150,7 +1149,17 @@ public final class MapView extends Region {
          *         name of the marker
          */
         public void markerDoubleClicked(String name) {
-            processMarkerClicked(name, 2);
+            processMarkerClicked(name, ClickType.DOUBLE);
+        }
+
+        /**
+         * called when a marker was doubleclicked.
+         *
+         * @param name
+         *         name of the marker
+         */
+        public void markerRightClicked(String name) {
+            processMarkerClicked(name, ClickType.RIGHT);
         }
 
         /**
@@ -1158,18 +1167,27 @@ public final class MapView extends Region {
          *
          * @param name
          *         name of the marker
-         * @param count
-         *         single or double click
+         * @param clickType
+         *         the type of click
          */
-        private void processMarkerClicked(String name, int count) {
-            logger.finer(() -> "JS reports marker " + name + " clicked " + count + " times");
+        private void processMarkerClicked(String name, ClickType clickType) {
+            logger.finer(() -> "JS reports marker " + name + " clicked " + clickType);
             synchronized (mapCoordinateElements) {
                 if (mapCoordinateElements.containsKey(name)) {
                     final MapCoordinateElement mapCoordinateElement = mapCoordinateElements.get(name).get();
-                    if (mapCoordinateElement instanceof Marker) {
-                        final EventType<MarkerEvent> eventType = (count == 2)
-                                ? MarkerEvent.MARKER_DOUBLECLICKED
-                                : MarkerEvent.MARKER_CLICKED;
+                    EventType<MarkerEvent> eventType = null;
+                    switch (clickType) {
+                        case LEFT:
+                            eventType = MarkerEvent.MARKER_CLICKED;
+                            break;
+                        case DOUBLE:
+                            eventType = MarkerEvent.MARKER_DOUBLECLICKED;
+                            break;
+                        case RIGHT:
+                            eventType = MarkerEvent.MARKER_RIGHTCLICKED;
+                            break;
+                    }
+                    if (null != eventType) {
                         fireEvent(new MarkerEvent(eventType, (Marker) mapCoordinateElement));
                     }
                 }
@@ -1183,7 +1201,7 @@ public final class MapView extends Region {
          *         name of the lael
          */
         public void labelClicked(String name) {
-            processLabelClicked(name, 1);
+            processLabelClicked(name, ClickType.LEFT);
         }
 
         /**
@@ -1193,7 +1211,17 @@ public final class MapView extends Region {
          *         name of the lael
          */
         public void labelDoubleClicked(String name) {
-            processLabelClicked(name, 2);
+            processLabelClicked(name, ClickType.DOUBLE);
+        }
+
+        /**
+         * called when a label was single clicked.
+         *
+         * @param name
+         *         name of the lael
+         */
+        public void labelRightClicked(String name) {
+            processLabelClicked(name, ClickType.RIGHT);
         }
 
         /**
@@ -1201,17 +1229,30 @@ public final class MapView extends Region {
          *
          * @param name
          *         name of the lael
+         * @param clickType
+         *         the type of click
          */
-        private void processLabelClicked(String name, int count) {
-            logger.finer(() -> "JS reports label " + name + " clicked " + count + " times");
+        private void processLabelClicked(String name, ClickType clickType) {
+            logger.finer(() -> "JS reports label " + name + " clicked " + clickType);
             synchronized (mapCoordinateElements) {
                 if (mapCoordinateElements.containsKey(name)) {
                     final MapCoordinateElement mapCoordinateElement = mapCoordinateElements.get(name).get();
                     if (mapCoordinateElement instanceof MapLabel) {
-                        final EventType<MapLabelEvent> eventType = (count == 2)
-                                ? MapLabelEvent.MAPLABEL_DOUBLECLICKED
-                                : MapLabelEvent.MAPLABEL_CLICKED;
-                        fireEvent(new MapLabelEvent(eventType, (MapLabel) mapCoordinateElement));
+                        EventType<MapLabelEvent> eventType = null;
+                        switch (clickType) {
+                            case LEFT:
+                                eventType = MapLabelEvent.MAPLABEL_CLICKED;
+                                break;
+                            case DOUBLE:
+                                eventType = MapLabelEvent.MAPLABEL_DOUBLECLICKED;
+                                break;
+                            case RIGHT:
+                                eventType = MapLabelEvent.MAPLABEL_RIGHTCLICKED;
+                                break;
+                        }
+                        if (null != eventType) {
+                            fireEvent(new MapLabelEvent(eventType, (MapLabel) mapCoordinateElement));
+                        }
                     }
                 }
             }

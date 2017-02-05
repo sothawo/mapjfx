@@ -1,6 +1,6 @@
 <!doctype html>
 <!--
-Copyright 2015 Peter-Josef Meisch (pj.meisch@sothawo.com)
+Copyright 2015-2017 Peter-Josef Meisch (pj.meisch@sothawo.com)
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -61,7 +61,13 @@ Copyright 2015 Peter-Josef Meisch (pj.meisch@sothawo.com)
             #MapObject.js#
             #coordinateline.js#
             #mapview.js#
-        </script>
+            // no browser context menu, markers and labels handle separately
+            document.getElementById('map').oncontextmenu = function(e){
+                e = e?e:window.event;
+                if (e.preventDefault) e.preventDefault(); // For non-IE browsers.
+                else return false; // For IE browsers.
+            };
+            </script>
 
     </body>
 </html>

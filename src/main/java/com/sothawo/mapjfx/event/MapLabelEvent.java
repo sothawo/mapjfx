@@ -1,5 +1,5 @@
 /*
- Copyright 2016 Peter-Josef Meisch (pj.meisch@sothawo.com)
+ Copyright 2016-2017 Peter-Josef Meisch (pj.meisch@sothawo.com)
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -12,7 +12,8 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-*/package com.sothawo.mapjfx.event;
+*/
+package com.sothawo.mapjfx.event;
 
 import com.sothawo.mapjfx.MapLabel;
 import javafx.event.Event;
@@ -36,6 +37,10 @@ public class MapLabelEvent extends Event {
     /** label double clicked in map */
     public static final EventType<MapLabelEvent> MAPLABEL_DOUBLECLICKED = new EventType<>(ANY,
             "MAPLABEL_DOUBLECLICKED");
+
+    /** label right clicked in map */
+    public static final EventType<MapLabelEvent> MAPLABEL_RIGHTCLICKED = new EventType<>(ANY,
+            "MAPLABEL_RIGHTCLICKED");
 
     /** the MapLabel for this event. */
     private final MapLabel mapLabel;
