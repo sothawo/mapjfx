@@ -1,5 +1,5 @@
 /*
- Copyright 2015 Peter-Josef Meisch (pj.meisch@sothawo.com)
+ Copyright 2015-2017 Peter-Josef Meisch (pj.meisch@sothawo.com)
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 */
 package com.sothawo.mapjfx;
 
+import com.sothawo.mapjfx.event.ClickType;
 import com.sothawo.mapjfx.event.MapLabelEvent;
 import com.sothawo.mapjfx.event.MapViewEvent;
 import com.sothawo.mapjfx.event.MarkerEvent;
@@ -27,6 +28,7 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.concurrent.Worker;
+import javafx.event.EventType;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.Region;
@@ -112,7 +114,7 @@ public final class MapView extends Region {
     /** used to store the last coordinate that was reported by the map to prevent setting it again in the map. */
     private final AtomicReference<Coordinate> lastCoordinateFromMap = new AtomicReference<>();
     /** used to store the last zoom value that was reported by the map to prevent setting it again in the map. */
-    private final AtomicReference<Double> lastZoomFromMap = new AtomicReference<>();
+    private final AtomicReference<Long> lastZoomFromMap = new AtomicReference<>();
     /**
      * a map from the names of MapCoordinateELements in the map to WeakReferences of the Objects. When
      * mapCoordinateElements are gc'ed the keys in this map point to null and are used to clean up the internal
@@ -141,6 +143,8 @@ public final class MapView extends Region {
     private final ConcurrentHashMap<URL, String> imgCache = new ConcurrentHashMap<>();
     /** the OfflineCache. */
     private final OfflineCache offlineCache = new OfflineCache();
+    /** the connector object in the web page; field to prevent it being gc'ed. */
+    private final JavaConnector javaConnector = new JavaConnector();
     /** the WebEngine of the WebView containing the OpenLayers Map. */
     private WebEngine webEngine;
     /** property containing the map's center. */
@@ -162,8 +166,6 @@ public final class MapView extends Region {
     private Optional<String> bingMapsApiKey = Optional.empty();
     /** URL for custom mapview css. */
     private Optional<URL> customMapviewCssURL = Optional.empty();
-    /** the connector object in the web page; field to prevent it being gc'ed. */
-    private final JavaConnector javaConnector = new JavaConnector();
 
 
     /**
@@ -200,8 +202,9 @@ public final class MapView extends Region {
         zoom.addListener((observable, oldValue, newValue) -> {
             // check if this is the same value that was just reported from the map using object equality
             //noinspection NumberEquality
-            if (newValue != lastZoomFromMap.get()) {
-                logger.finer(() -> "zoom changed from " + oldValue + " to " + newValue);
+            final Long rounded = Math.round((Double) newValue);
+            if (rounded != lastZoomFromMap.get()) {
+                logger.finer(() -> "zoom changed from " + oldValue + " to " + rounded);
                 setZoomInMap();
             }
         });
@@ -358,6 +361,24 @@ public final class MapView extends Region {
     }
 
     /**
+     * sets the zoom level. the zoom value is rounded to the next whole number using {@link Math#round(double)} and then
+     * checked to be in the range between {@link #MIN_ZOOM} and {@link #MAX_ZOOM }. If the value is not in this range,
+     * the call is ignored.
+     *
+     * @param zoom
+     *         new zoom level
+     * @return this object
+     */
+    public MapView setZoom(double zoom) {
+        double rounded = Math.round(zoom);
+        if (rounded < MIN_ZOOM || rounded > MAX_ZOOM) {
+            return this;
+        }
+        this.zoom.set(rounded);
+        return this;
+    }
+
+    /**
      * @return the current MapType.
      */
     public MapType getMapType() {
@@ -373,24 +394,6 @@ public final class MapView extends Region {
      */
     public MapView setMapType(MapType mapType) {
         this.mapType.set(mapType);
-        return this;
-    }
-
-    /**
-     * sets the zoom level. the zoom value is rounded to the next whole number using {@link Math#round(double)} and then
-     * checked to be in the range between {@link #MIN_ZOOM} and {@link #MAX_ZOOM }. If the value is not in this range,
-     * the call is ignored.
-     *
-     * @param zoom
-     *         new zoom level
-     * @return this object
-     */
-    public MapView setZoom(double zoom) {
-        double rounded = Math.round(zoom);
-        if (rounded < MIN_ZOOM || rounded > MAX_ZOOM) {
-            return this;
-        }
-        this.zoom.set(rounded);
         return this;
     }
 
@@ -702,8 +705,6 @@ public final class MapView extends Region {
             webEngine = webView.getEngine();
             webView.prefWidthProperty().bind(widthProperty());
             webView.prefHeightProperty().bind(heightProperty());
-            // no context menu
-            webView.setContextMenuEnabled(false);
             getChildren().add(webView);
             // log versions after webEngine is available
             logVersions();
@@ -1138,31 +1139,172 @@ public final class MapView extends Region {
          *         name of the marker
          */
         public void markerClicked(String name) {
-            logger.finer(() -> "JS reports marker " + name + " clicked");
+            processMarkerClicked(name, ClickType.LEFT);
+        }
+
+        /**
+         * calles when mouse is pressed on marker.
+         *
+         * @param name
+         *         name of the marker
+         */
+        public void markerMouseDown(String name) {
+            processMarkerClicked(name, ClickType.MOUSEDOWN);
+        }
+
+        /**
+         * calles when mouse is released on marker.
+         *
+         * @param name
+         *         name of the marker
+         */
+        public void markerMouseUp(String name) {
+            processMarkerClicked(name, ClickType.MOUSEUP);
+        }
+
+        /**
+         * called when a marker was doubleclicked.
+         *
+         * @param name
+         *         name of the marker
+         */
+        public void markerDoubleClicked(String name) {
+            processMarkerClicked(name, ClickType.DOUBLE);
+        }
+
+        /**
+         * called when a marker was doubleclicked.
+         *
+         * @param name
+         *         name of the marker
+         */
+        public void markerRightClicked(String name) {
+            processMarkerClicked(name, ClickType.RIGHT);
+        }
+
+        /**
+         * processes a marker click
+         *
+         * @param name
+         *         name of the marker
+         * @param clickType
+         *         the type of click
+         */
+        private void processMarkerClicked(String name, ClickType clickType) {
+            logger.finer(() -> "JS reports marker " + name + " clicked " + clickType);
             synchronized (mapCoordinateElements) {
                 if (mapCoordinateElements.containsKey(name)) {
                     final MapCoordinateElement mapCoordinateElement = mapCoordinateElements.get(name).get();
-                    if (mapCoordinateElement instanceof Marker) {
-                        Marker marker = (Marker) mapCoordinateElement;
-                        fireEvent(new MarkerEvent(MarkerEvent.MARKER_CLICKED, marker));
+                    EventType<MarkerEvent> eventType = null;
+                    switch (clickType) {
+                        case LEFT:
+                            eventType = MarkerEvent.MARKER_CLICKED;
+                            break;
+                        case DOUBLE:
+                            eventType = MarkerEvent.MARKER_DOUBLECLICKED;
+                            break;
+                        case RIGHT:
+                            eventType = MarkerEvent.MARKER_RIGHTCLICKED;
+                            break;
+                        case MOUSEDOWN:
+                            eventType = MarkerEvent.MARKER_MOUSEDOWN;
+                            break;
+                        case MOUSEUP:
+                            eventType = MarkerEvent.MARKER_MOUSEUP;
+                            break;
+                    }
+                    if (null != eventType) {
+                        fireEvent(new MarkerEvent(eventType, (Marker) mapCoordinateElement));
                     }
                 }
             }
         }
+
         /**
-         * called when a label was clicked.
+         * called when a label was single clicked.
          *
          * @param name
          *         name of the lael
          */
         public void labelClicked(String name) {
-            logger.finer(() -> "JS reports label " + name + " clicked");
+            processLabelClicked(name, ClickType.LEFT);
+        }
+
+        /**
+         * called when mouse is pressed on label.
+         *
+         * @param name
+         *         name of the label
+         */
+        public void labelMouseDown(String name) {
+            processLabelClicked(name, ClickType.MOUSEDOWN);
+        }
+
+        /**
+         * called when mouse is released on label.
+         *
+         * @param name
+         *         name of the label
+         */
+        public void labelMouseUp(String name) {
+            processLabelClicked(name, ClickType.MOUSEUP);
+        }
+
+        /**
+         * called when a label was double clicked.
+         *
+         * @param name
+         *         name of the lael
+         */
+        public void labelDoubleClicked(String name) {
+            processLabelClicked(name, ClickType.DOUBLE);
+        }
+
+        /**
+         * called when a label was single clicked.
+         *
+         * @param name
+         *         name of the lael
+         */
+        public void labelRightClicked(String name) {
+            processLabelClicked(name, ClickType.RIGHT);
+        }
+
+        /**
+         * called when a label was clicked.
+         *
+         * @param name
+         *         name of the lael
+         * @param clickType
+         *         the type of click
+         */
+        private void processLabelClicked(String name, ClickType clickType) {
+            logger.finer(() -> "JS reports label " + name + " clicked " + clickType);
             synchronized (mapCoordinateElements) {
                 if (mapCoordinateElements.containsKey(name)) {
                     final MapCoordinateElement mapCoordinateElement = mapCoordinateElements.get(name).get();
                     if (mapCoordinateElement instanceof MapLabel) {
-                        MapLabel label = (MapLabel) mapCoordinateElement;
-                        fireEvent(new MapLabelEvent(MapLabelEvent.MAPLABEL_CLICKED, label));
+                        EventType<MapLabelEvent> eventType = null;
+                        switch (clickType) {
+                            case LEFT:
+                                eventType = MapLabelEvent.MAPLABEL_CLICKED;
+                                break;
+                            case DOUBLE:
+                                eventType = MapLabelEvent.MAPLABEL_DOUBLECLICKED;
+                                break;
+                            case RIGHT:
+                                eventType = MapLabelEvent.MAPLABEL_RIGHTCLICKED;
+                                break;
+                            case MOUSEDOWN:
+                                eventType = MapLabelEvent.MAPLABEL_MOUSEDOWN;
+                                break;
+                            case MOUSEUP:
+                                eventType = MapLabelEvent.MAPLABEL_MOUSEUP;
+                                break;
+                        }
+                        if (null != eventType) {
+                            fireEvent(new MapLabelEvent(eventType, (MapLabel) mapCoordinateElement));
+                        }
                     }
                 }
             }
@@ -1175,9 +1317,10 @@ public final class MapView extends Region {
          *         new zoom value
          */
         public void zoomChanged(double newZoom) {
-            logger.finer(() -> "JS reports zoom value " + newZoom);
-            lastZoomFromMap.set(newZoom);
-            setZoom(newZoom);
+            final long roundedZoom = Math.round(newZoom);
+            logger.finer(() -> "JS reports zoom value " + roundedZoom);
+            lastZoomFromMap.set(roundedZoom);
+            setZoom(roundedZoom);
         }
     }
 }

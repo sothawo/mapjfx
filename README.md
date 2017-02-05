@@ -7,7 +7,7 @@ More Information about the project can be found at [the sothawo website](http://
 
 ## license
 
- Copyright 2014-2016 Peter-Josef Meisch (pj.meisch@sothawo.com)
+ Copyright 2014-2017 Peter-Josef Meisch (pj.meisch@sothawo.com)
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -36,6 +36,11 @@ The test application does not contain all the features, to have that, check
  [mapjfx-demo](http://www.sothawo.com/projects/mapjfx-demo/)
 
 ## version history
+
+### 1.9.0
+
+* use OpenLayers 3.20.1
+* added mousedown, mouseup, doubleclick and rightclick events to labels and markers
 
 ### 1.8.2
 
