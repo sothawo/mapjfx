@@ -26,5 +26,7 @@ public enum MapType {
     /** BingMaps Road. */
     BINGMAPS_ROAD,
     /** BingMaps Aerial. */
-    BINGMAPS_AERIAL
+    BINGMAPS_AERIAL,
+    /** custom WMS server. */
+    WMS
 }
