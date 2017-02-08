@@ -58,6 +58,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -166,6 +167,8 @@ public final class MapView extends Region {
     private Optional<String> bingMapsApiKey = Optional.empty();
     /** URL for custom mapview css. */
     private Optional<URL> customMapviewCssURL = Optional.empty();
+    /** optional WMS server parameters. */
+    private Optional<WMSParam> wmsParam = Optional.empty();
 
 
     /**
@@ -203,7 +206,7 @@ public final class MapView extends Region {
             // check if this is the same value that was just reported from the map using object equality
             //noinspection NumberEquality
             final Long rounded = Math.round((Double) newValue);
-            if (rounded != lastZoomFromMap.get()) {
+            if (!Objects.equals(rounded, lastZoomFromMap.get())) {
                 logger.finer(() -> "zoom changed from " + oldValue + " to " + rounded);
                 setZoomInMap();
             }
@@ -217,6 +220,19 @@ public final class MapView extends Region {
             if (!checkApiKey(newValue)) {
                 logger.warning("no api key defined for map type " + newValue);
                 mapType.set(oldValue);
+            }
+            if (MapType.WMS.equals(newValue)) {
+                boolean wmsValid = false;
+                if (wmsParam.isPresent()) {
+                    String url = wmsParam.get().getUrl();
+                    if (null != url && !url.isEmpty()) {
+                        wmsValid = true;
+                    }
+                }
+                if (!wmsValid) {
+                    logger.warning("no wms params defined for map type " + newValue);
+                    mapType.set(oldValue);
+                }
             }
             setMapTypeInMap();
         });
@@ -323,6 +339,11 @@ public final class MapView extends Region {
             String mapTypeName = getMapType().toString();
             logger.finer(() -> "setting map type in OpenLayers map: " + mapTypeName);
             bingMapsApiKey.ifPresent(apiKey -> jsMapView.call("setBingMapsApiKey", apiKey));
+            wmsParam.ifPresent(wmsParam -> {
+                jsMapView.call("newWMSParams");
+                jsMapView.call("setWMSParamsUrl", wmsParam.getUrl());
+                wmsParam.getParams().forEach((key, value) -> jsMapView.call("addWMSParamsParams", key, value));
+            });
             jsMapView.call("setMapType", mapTypeName);
         }
     }
@@ -724,7 +745,7 @@ public final class MapView extends Region {
                             // be ready, so prepare for an exception and retry
                             int numRetries = 0;
                             do {
-                                Object o = null;
+                                Object o;
                                 try {
                                     o = webEngine.executeScript("getJSMapView()");
                                     jsMapView = (JSObject) o;
@@ -737,7 +758,7 @@ public final class MapView extends Region {
                                         logger.warning("retry interrupted");
                                     }
                                 } catch (Exception e) {
-                                    logger.severe("getJSMapView: returned " + ((null == o) ? "(null)" : o.toString()));
+                                    logger.severe("getJSMapView: returned (null)");
                                     numRetries++;
                                 }
                             } while (null == jsMapView && numRetries < NUM_RETRIES_FOR_JS);
@@ -1015,6 +1036,18 @@ public final class MapView extends Region {
         } else {
             bingMapsApiKey = Optional.empty();
         }
+        return this;
+    }
+
+    /**
+     * setst the WMS parameters.
+     *
+     * @param wmsParam
+     *         WMS parameters
+     * @return this object
+     */
+    public MapView setWMSParam(final WMSParam wmsParam) {
+        this.wmsParam = Optional.ofNullable(wmsParam);
         return this;
     }
 

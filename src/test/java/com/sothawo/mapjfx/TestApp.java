@@ -68,13 +68,7 @@ public class TestApp extends Application {
 
     private static final MapLabel mapLabel;
 
-    /** the MapView */
-    private MapView mapView;
-
-    /** api keys for bing maps. */
-    private TextField bingApiKey;
-
-// -------------------------- STATIC METHODS --------------------------
+    private static final WMSParam wmsParam;
 
     static {
         // init the logging from the classpath logging.properties
@@ -91,9 +85,25 @@ public class TestApp extends Application {
         marker = Marker.createProvided(Marker.Provided.BLUE).setPosition(coordKarlsruheCastle).setVisible(true);
         mapLabel = new MapLabel("blau!").setCssClass("blue-label").setPosition(coordKarlsruheCastle).setVisible(true);
         marker.attachLabel(mapLabel);
+
+        wmsParam = new WMSParam()
+                .setUrl("http://irs.gis-lab.info/?")
+                .addParam("layers", "landsat")
+                .addParam("REQUEST", "GetTile");
     }
 
+    /** the MapView */
+    private MapView mapView;
+
+// -------------------------- STATIC METHODS --------------------------
+    /** api keys for bing maps. */
+    private TextField bingApiKey;
+
 // -------------------------- OTHER METHODS --------------------------
+
+    public static void main(String[] args) {
+        launch(args);
+    }
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -113,6 +123,9 @@ public class TestApp extends Application {
 
         // at the bottom some infos
         borderPane.setBottom(createBottomPane());
+
+        // add WMSParam
+        mapView.setWMSParam(wmsParam);
 
         // listen to MapViewEvent MAP_CLICKED
         mapView.addEventHandler(MapViewEvent.MAP_CLICKED, event -> {
@@ -168,10 +181,9 @@ public class TestApp extends Application {
         });
 
 
-
         final OfflineCache offlineCache = mapView.getOfflineCache();
         offlineCache.setCacheDirectory(FileSystems.getDefault().getPath("tmpdata/cache"));
-        offlineCache.setActive(true);
+//        offlineCache.setActive(true);
 
         // add listener for mapView initialization state
         mapView.initializedProperty().addListener((observable, oldValue, newValue) -> {
@@ -245,6 +257,8 @@ public class TestApp extends Application {
         return hbox;
     }
 
+// --------------------------- main() method ---------------------------
+
     /**
      * creates the top pane with the different location buttons.
      *
@@ -315,6 +329,11 @@ public class TestApp extends Application {
             mapView.setBingMapsApiKey(bingApiKey.getText());
             mapView.setMapType(MapType.BINGMAPS_AERIAL);
         });
+        hbox.getChildren().add(btn);
+
+        btn = new Button();
+        btn.setText("WMS");
+        btn.setOnAction(evt -> mapView.setMapType(MapType.WMS));
         hbox.getChildren().add(btn);
 
         btn = new Button();
@@ -392,11 +411,5 @@ public class TestApp extends Application {
         vbox.setDisable(true);
 
         return vbox;
-    }
-
-// --------------------------- main() method ---------------------------
-
-    public static void main(String[] args) {
-        launch(args);
     }
 }

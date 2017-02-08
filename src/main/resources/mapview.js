@@ -14,7 +14,7 @@
  limitations under the License.
  */
 
- /*******************************************************************************************************************
+/*******************************************************************************************************************
  * predefined map layers
  */
 
@@ -63,6 +63,7 @@ function JSMapView(javaConnector) {
     this.javaConnector = javaConnector;
     this.anchorsPatched = false;
     this.bingMapsApiKey = '';
+    this.wmsParams = {};
 }
 
 JSMapView.prototype.toString = function () {
@@ -200,6 +201,18 @@ JSMapView.prototype.setMapType = function (newType) {
                     })
                 }),
                 _layerFeatures
+            ]
+        }));
+    } else if (newType == 'WMS' && this.wmsParams.getUrl().length > 0) {
+        _map.setLayerGroup(new ol.layer.Group({
+            layers: [
+                new ol.layer.Tile({
+                    source: new ol.source.TileWMS({
+                        url: this.wmsParams.getUrl(),
+                        params: this.wmsParams.getParams(),
+                        serverType: 'geoserver'
+                    })
+                })
             ]
         }));
     }
@@ -478,6 +491,38 @@ JSMapView.prototype.showMapObject = function (name) {
 JSMapView.prototype.setBingMapsApiKey = function (apiKey) {
     this.bingMapsApiKey = apiKey;
 };
+
+/**
+ * sets the WMS Params object
+ * @param params the params object
+ */
+JSMapView.prototype.setWMSParams = function (params) {
+    this.wmsParams = params;
+};
+
+/**
+ * creates a new WMSParams object.
+ */
+JSMapView.prototype.newWMSParams = function () {
+    this.wmsParams = new WMSParams();
+};
+
+/**
+ * sets the url of the current wmsParams object.
+ * @param url {string} the new url
+ */
+JSMapView.prototype.setWMSParamsUrl = function (url) {
+    this.wmsParams.setUrl(url);
+};
+
+/**
+ * adds a key value pair to the current wmsParams object.
+ * @param key {string} the key
+ * @param value {string} the value
+ */
+JSMapView.prototype.addWMSParamsParams = function (key, value) {
+    this.wmsParams.addParam(key, value);
+} ;
 
 /**
  * @return JSMapView object
