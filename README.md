@@ -37,6 +37,10 @@ The test application does not contain all the features, to have that, check
 
 ## version history
 
+### 1.10.0
+
+* added support for WMS servers
+
 ### 1.9.0
 
 * use OpenLayers 3.20.1
