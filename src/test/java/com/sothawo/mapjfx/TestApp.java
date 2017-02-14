@@ -139,6 +139,12 @@ public class TestApp extends Application {
             }
         });
 
+        // listen to MapViewEvent MAP_RIGHT_CLICKED
+        mapView.addEventHandler(MapViewEvent.MAP_RIGHT_CLICKED, event -> {
+            logger.info("MAP_RIGHT_CLICKED event at " + event.getCoordinate());
+            event.consume();
+        });
+
         // listen to MARKER_CLICKED event.
         mapView.addEventHandler(MarkerEvent.MARKER_CLICKED, event -> {
             logger.info("MARKER_CLICKED event: " + event.getMarker());
@@ -159,6 +165,11 @@ public class TestApp extends Application {
             logger.info("MARKER_DOUBLECLICKED event: " + event.getMarker());
             event.consume();
         });
+        // listen to MARKER_RIGHTCLICKED event.
+        mapView.addEventHandler(MarkerEvent.MARKER_RIGHTCLICKED, event -> {
+            logger.info("MARKER_RIGHTCLICKED event: " + event.getMarker());
+            event.consume();
+        });
         // listen to MAPLABEL_MOUSEDOWN event.
         mapView.addEventHandler(MapLabelEvent.MAPLABEL_MOUSEDOWN, event -> {
             logger.info("MAPLABEL_MOUSEDOWN event: " + event.getMapLabel());
@@ -172,6 +183,11 @@ public class TestApp extends Application {
         // listen to MAPLABEL_CLICKED event.
         mapView.addEventHandler(MapLabelEvent.MAPLABEL_CLICKED, event -> {
             logger.info("MAPLABEL_CLICKED event: " + event.getMapLabel());
+            event.consume();
+        });
+        // listen to MAPLABEL_RIGHTCLICKED event.
+        mapView.addEventHandler(MapLabelEvent.MAPLABEL_RIGHTCLICKED, event -> {
+            logger.info("MAPLABEL_RIGHTCLICKED event: " + event.getMapLabel());
             event.consume();
         });
         // listen to MAPLABEL_DOUBLECLICKED event.

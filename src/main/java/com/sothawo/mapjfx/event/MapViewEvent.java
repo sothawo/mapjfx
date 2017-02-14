@@ -1,5 +1,5 @@
 /*
- Copyright 2016 Peter-Josef Meisch (pj.meisch@sothawo.com)
+ Copyright 2016-2017 Peter-Josef Meisch (pj.meisch@sothawo.com)
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,6 +32,9 @@ public class MapViewEvent extends Event {
 
     /** coordinate clicked in map */
     public static final EventType<MapViewEvent> MAP_CLICKED = new EventType<>(ANY, "MAP_CLICKED");
+
+    /** coordinate context clicked in map */
+    public static final EventType<MapViewEvent> MAP_RIGHT_CLICKED = new EventType<>(ANY, "MAP_RIGHT_CLICKED");
 
     /** the coordinate where the event happened, only set on MAP_CLICKED event */
     private final Coordinate coordinate;
