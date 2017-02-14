@@ -1166,6 +1166,21 @@ public final class MapView extends Region {
         }
 
         /**
+         * called when the user has context-clicked in the map. the coordinates are EPSG:4326 (WGS) values.
+         *
+         * @param lat
+         *         new latitude value
+         * @param lon
+         *         new longitude value
+         */
+        public void contextClickAt(double lat, double lon) {
+            Coordinate coordinate = new Coordinate(lat, lon);
+            logger.finer(() -> "JS reports context click at " + coordinate);
+            // fire a coordinate event to whom it may be of importance
+            fireEvent(new MapViewEvent(MapViewEvent.MAP_RIGHTCLICKED, coordinate));
+        }
+
+        /**
          * called when a marker was clicked.
          *
          * @param name

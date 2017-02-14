@@ -78,6 +78,10 @@ Copyright 2015-2017 Peter-Josef Meisch (pj.meisch@sothawo.com)
             jsMapView.moveMapObject('castle-label', lat, lon);
         },
 
+        contextClickAt: function (lat, lon) {
+            this.debug('context click at ' + lat + ', ' + lon);
+        },
+
         zoomChanged: function (zoom) {
             this.debug('zoom changed to ' + zoom);
         },
@@ -140,15 +144,25 @@ Copyright 2015-2017 Peter-Josef Meisch (pj.meisch@sothawo.com)
 <script>
     var jsMapView = getJSMapView();
 
+    // no browser context menu, markers and labels handle it separately, for the mapview itself
+    // it must be caught here as ol.Map has no context menu event.
+    document.getElementById('map').oncontextmenu = function (e) {
+        e = e ? e : window.event;
+        jsMapView.contextmenu(e);
+        if (e.preventDefault) e.preventDefault(); // For non-IE browsers.
+        else return false; // For IE browsers.
+    };
+
+
     var wmsParams = new WMSParams();
     wmsParams.setUrl('http://irs.gis-lab.info/?');
     wmsParams.addParam('layers', 'landsat');
     wmsParams.addParam('REQUEST', 'GetTile');
-//    wmsParams.setUrl('http://geonode.wfp.org:80/geoserver/ows');
-//    wmsParams.addParam('layers', 'geonode:admin_2_gaul_2015');
+    //    wmsParams.setUrl('http://geonode.wfp.org:80/geoserver/ows');
+    //    wmsParams.addParam('layers', 'geonode:admin_2_gaul_2015');
     jsMapView.setWMSParams(wmsParams);
 
-    jsMapView.setMapType('WMS');
+    jsMapView.setMapType('OSM');
     jsMapView.setZoom(18, 0);
     jsMapView.setCenter(49.013517, 8.404435, 0);
 
