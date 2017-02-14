@@ -1177,7 +1177,7 @@ public final class MapView extends Region {
             Coordinate coordinate = new Coordinate(lat, lon);
             logger.finer(() -> "JS reports context click at " + coordinate);
             // fire a coordinate event to whom it may be of importance
-            fireEvent(new MapViewEvent(MapViewEvent.MAP_RIGHT_CLICKED, coordinate));
+            fireEvent(new MapViewEvent(MapViewEvent.MAP_RIGHTCLICKED, coordinate));
         }
 
         /**

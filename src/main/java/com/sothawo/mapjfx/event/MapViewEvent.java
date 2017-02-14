@@ -34,7 +34,7 @@ public class MapViewEvent extends Event {
     public static final EventType<MapViewEvent> MAP_CLICKED = new EventType<>(ANY, "MAP_CLICKED");
 
     /** coordinate context clicked in map */
-    public static final EventType<MapViewEvent> MAP_RIGHT_CLICKED = new EventType<>(ANY, "MAP_RIGHT_CLICKED");
+    public static final EventType<MapViewEvent> MAP_RIGHTCLICKED = new EventType<>(ANY, "MAP_RIGHTCLICKED");
 
     /** the coordinate where the event happened, only set on MAP_CLICKED event */
     private final Coordinate coordinate;

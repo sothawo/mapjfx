@@ -139,9 +139,9 @@ public class TestApp extends Application {
             }
         });
 
-        // listen to MapViewEvent MAP_RIGHT_CLICKED
-        mapView.addEventHandler(MapViewEvent.MAP_RIGHT_CLICKED, event -> {
-            logger.info("MAP_RIGHT_CLICKED event at " + event.getCoordinate());
+        // listen to MapViewEvent MAP_RIGHTCLICKED
+        mapView.addEventHandler(MapViewEvent.MAP_RIGHTCLICKED, event -> {
+            logger.info("MAP_RIGHTCLICKED event at " + event.getCoordinate());
             event.consume();
         });
 
