@@ -315,26 +315,30 @@ JSMapView.prototype.addMarker = function (name, url, latitude, longitude, offset
         imgElement.src = url;
         this.javaConnector.debug('started loading img from ' + url);
 
-        imgElement.onmousedown = (function () {
-            alert(name + ' mousedown');
+        imgElement.onmousedown = (function (evt) {
             this.javaConnector.markerMouseDown(name);
+            evt.stopPropagation();
+            evt.preventDefault();
         }).bind(this);
-        imgElement.onmouseup = (function () {
-            alert(name + ' mouseup');
+        imgElement.onmouseup = (function (evt) {
             this.javaConnector.markerMouseUp(name);
+            evt.stopPropagation();
+            evt.preventDefault();
         }).bind(this);
-        imgElement.onclick = (function () {
-            alert(name + ' clicked');
+        imgElement.onclick = (function (evt) {
             this.javaConnector.markerClicked(name);
+            evt.stopPropagation();
+            evt.preventDefault();
         }).bind(this);
-        imgElement.ondblclick = (function () {
-            alert(name + ' doucleclicked');
+        imgElement.ondblclick = (function (evt) {
             this.javaConnector.markerDoubleClicked(name);
+            evt.stopPropagation();
+            evt.preventDefault();
         }).bind(this);
-        imgElement.oncontextmenu = (function () {
-            alert(name + ' rightclicked');
+        imgElement.oncontextmenu = (function (evt) {
             this.javaConnector.markerRightClicked(name);
-            return false;
+            evt.stopPropagation();
+            evt.preventDefault();
         }).bind(this);
 
         var overlay = new ol.Overlay({
@@ -373,26 +377,30 @@ JSMapView.prototype.addLabel = function (name, text, cssClass, latitude, longitu
         labelElement.setAttribute("class", "mapview-label " + cssClass);
         labelElement.innerHTML = text;
 
-        labelElement.onmousedown = (function () {
-            alert(name + ' mousedown');
+        labelElement.onmousedown = (function (evt) {
             this.javaConnector.labelMouseDown(name);
+            evt.stopPropagation();
+            evt.preventDefault();
         }).bind(this);
-        labelElement.onmouseup = (function () {
-            alert(name + ' mouseup');
+        labelElement.onmouseup = (function (evt) {
             this.javaConnector.labelMouseUp(name);
+            evt.stopPropagation();
+            evt.preventDefault();
         }).bind(this);
-        labelElement.onclick = (function () {
-            alert(name + ' clicked');
+        labelElement.onclick = (function (evt) {
             this.javaConnector.labelClicked(name);
+            evt.stopPropagation();
+            evt.preventDefault();
         }).bind(this);
-        labelElement.ondblclick = (function () {
-            alert(name + ' doucleclicked');
+        labelElement.ondblclick = (function (evt) {
             this.javaConnector.labelDoubleClicked(name);
+            evt.stopPropagation();
+            evt.preventDefault();
         }).bind(this);
-        labelElement.oncontextmenu = (function () {
-            alert(name + ' rightclicked');
+        labelElement.oncontextmenu = (function (evt) {
             this.javaConnector.labelRightClicked(name);
-            return false;
+            evt.stopPropagation();
+            evt.preventDefault();
         }).bind(this);
 
         var overlay = new ol.Overlay({
@@ -522,7 +530,17 @@ JSMapView.prototype.setWMSParamsUrl = function (url) {
  */
 JSMapView.prototype.addWMSParamsParams = function (key, value) {
     this.wmsParams.addParam(key, value);
-} ;
+};
+
+/**
+ * handle contextmenu click by converting the coordinate and passing it to Java.
+ * @param browserEvent the browser event
+ */
+JSMapView.prototype.contextmenu = function (browserEvent) {
+    var coordinate = cToWGS84(_map.getEventCoordinate(browserEvent));
+    // lat/lon reversion
+    this.javaConnector.contextClickAt(coordinate[1], coordinate[0]);
+};
 
 /**
  * @return JSMapView object
