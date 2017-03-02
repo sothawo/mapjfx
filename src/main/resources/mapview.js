@@ -163,9 +163,9 @@ JSMapView.prototype.setExtent = function (minLat, minLon, maxLat, maxLon, animat
     // lat/lon reversion
     var extent = eFromWGS84([minLon, minLat, maxLon, maxLat]);
     if (animationDuration > 1) {
-        _view.fit(extent, _map.getSize(), {duration: animationDuration});
+        _view.fit(extent, {duration: animationDuration});
     } else {
-        _view.fit(extent, _map.getSize());
+        _view.fit(extent);
     }
 };
 
