@@ -16,6 +16,7 @@
 package com.sothawo.mapjfx.event;
 
 import com.sothawo.mapjfx.Coordinate;
+import com.sothawo.mapjfx.Extent;
 import javafx.event.Event;
 import javafx.event.EventType;
 
@@ -36,8 +37,14 @@ public class MapViewEvent extends Event {
     /** coordinate context clicked in map */
     public static final EventType<MapViewEvent> MAP_RIGHTCLICKED = new EventType<>(ANY, "MAP_RIGHTCLICKED");
 
+    /** extent selected  in map */
+    public static final EventType<MapViewEvent> MAP_EXTENT = new EventType<>(ANY, "MAP_EXTENT");
+
     /** the coordinate where the event happened, only set on MAP_CLICKED event */
     private final Coordinate coordinate;
+
+    /** the extentthat was selected in the map, only set on MAP_EXTENT event. */
+    private final Extent extent;
 
     /**
      * creates an CoordinateEvent of the given type and name for a clicked object.
@@ -50,6 +57,28 @@ public class MapViewEvent extends Event {
     public MapViewEvent(EventType<? extends MapViewEvent> eventType, Coordinate coordinate) {
         super(eventType);
         this.coordinate = requireNonNull(coordinate);
+        this.extent = null;
+    }
+
+    /**
+     * creates an ExtentEvent.
+     *
+     * @param eventType
+     *         type
+     * @param extent
+     *         the extent
+     */
+    public MapViewEvent(EventType<? extends MapViewEvent> eventType, Extent extent) {
+        super(eventType);
+        this.extent = requireNonNull(extent);
+        this.coordinate = null;
+    }
+
+    /**
+     * @return the extent for a {@link #MAP_EXTENT} event.
+     */
+    public Extent getExtent() {
+        return extent;
     }
 
     /**
