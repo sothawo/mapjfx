@@ -145,6 +145,13 @@ public class TestApp extends Application {
             event.consume();
         });
 
+        // listen to MapViewEvent MAP_EXTENT
+        mapView.addEventHandler(MapViewEvent.MAP_EXTENT, event -> {
+            logger.info(() -> "MAP_EXTENT event: " + event.getExtent());
+            mapView.setExtent(event.getExtent());
+            event.consume();
+        });
+
         // listen to MARKER_CLICKED event.
         mapView.addEventHandler(MarkerEvent.MARKER_CLICKED, event -> {
             logger.info("MARKER_CLICKED event: " + event.getMarker());

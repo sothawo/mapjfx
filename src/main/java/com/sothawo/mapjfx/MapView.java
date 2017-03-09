@@ -1384,7 +1384,9 @@ public final class MapView extends Region {
          *         longitude of lower right corner
          */
         public void extentSelected(double latMin, double lonMin, double latMax, double lonMax) {
-
+            final Extent extent = Extent.forCoordinates(new Coordinate(latMin, lonMin), new Coordinate(latMax, lonMax));
+            logger.finer(() -> "JS reports extend selected: " + extent);
+            fireEvent(new MapViewEvent(MapViewEvent.MAP_EXTENT, extent));
         }
     }
 }
