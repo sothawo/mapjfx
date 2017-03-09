@@ -37,6 +37,10 @@ The test application does not contain all the features, to have that, check
 
 ## version history
 
+### 1.12.0
+
+added extent selection by cmd-drag (Mac OSX) / ctrl-drag  (Windows)
+
 ### 1.11.0
 
 * use OpenLayers 4.0.1
