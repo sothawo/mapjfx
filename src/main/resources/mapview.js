@@ -107,7 +107,17 @@ JSMapView.prototype.init = function () {
         this.javaConnector.zoomChanged(_view.getZoom());
     }, this);
 
+    // a DragBox interaction
+    var dragBox = new ol.interaction.DragBox({
+        condition: ol.events.condition.platformModifierKeyOnly
+    });
+    dragBox.on('boxend', function () {
+        var extend = eToWGS84(dragBox.getGeometry().getExtent());
+        console.log(extend);
+        this.javaConnector.extentSelected(extend[1], extend[0], extend[3], extend[2]);
+    }, this);
 
+    _map.addInteraction(dragBox);
 };
 
 /**

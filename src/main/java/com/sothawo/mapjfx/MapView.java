@@ -1370,5 +1370,21 @@ public final class MapView extends Region {
             lastZoomFromMap.set(roundedZoom);
             setZoom(roundedZoom);
         }
+
+        /**
+         * called when the user selected an extent by dragging the mouse with modifier pressed.
+         *
+         * @param latMin
+         *         latitude of upper left corner
+         * @param lonMin
+         *         longitude of upper left corner
+         * @param latMax
+         *         latitude of lower right corner
+         * @param lonMax
+         *         longitude of lower right corner
+         */
+        public void extentSelected(double latMin, double lonMin, double latMax, double lonMax) {
+
+        }
     }
 }
