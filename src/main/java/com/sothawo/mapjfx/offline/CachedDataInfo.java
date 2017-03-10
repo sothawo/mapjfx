@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * A class that keeps information about a cached object. When.
+ * A class that keeps information about a cached object.
  *
  * @author P.J. Meisch (pj.meisch@sothawo.com).
  */

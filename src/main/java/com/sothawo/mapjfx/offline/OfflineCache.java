@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.file.FileSystems;
@@ -30,6 +31,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
 import java.util.logging.Logger;
 
@@ -58,23 +61,17 @@ public class OfflineCache {
     /** the cache directory. */
     private Path cacheDirectory;
 
+    /**
+     * helper method to recursively delete all files in a directory and the directory itself.
+     *
+     * @param path
+     */
+    static void clearDirectory(Path path) throws IOException {
+        Files.walkFileTree(path, new DeletingFileVisitor(path));
+    }
 
     public Path getCacheDirectory() {
         return cacheDirectory;
-    }
-
-    /**
-     * sets the cacheDirectory.
-     *
-     * @param cacheDirectory
-     *         the new directory
-     * @throws NullPointerException
-     *         if cacheDirectory is null
-     * @throws IllegalArgumentException
-     *         if cacheDirectory does not exist or is not writeable
-     */
-    public void setCacheDirectory(String cacheDirectory) {
-        setCacheDirectory(FileSystems.getDefault().getPath(Objects.requireNonNull(cacheDirectory)));
     }
 
     /**
@@ -96,10 +93,24 @@ public class OfflineCache {
     }
 
     /**
+     * sets the cacheDirectory.
+     *
+     * @param cacheDirectory
+     *         the new directory
+     * @throws NullPointerException
+     *         if cacheDirectory is null
+     * @throws IllegalArgumentException
+     *         if cacheDirectory does not exist or is not writeable
+     */
+    public void setCacheDirectory(String cacheDirectory) {
+        setCacheDirectory(FileSystems.getDefault().getPath(Objects.requireNonNull(cacheDirectory)));
+    }
+
+    /**
      * checks wether a URL should be cached at all.
      *
      * @param u
-     *         the ULR to check
+     *         the URL to check
      * @return true if the URL should be cached.
      */
     boolean urlShouldBeCached(URL u) {
@@ -123,7 +134,7 @@ public class OfflineCache {
      */
     public void setActive(boolean active) {
         if (active && null == cacheDirectory) {
-            throw new IllegalArgumentException("cannot setactive when no cacheDirectory is set");
+            throw new IllegalArgumentException("cannot setActive when no cacheDirectory is set");
         }
         if (active) {
             setupURLStreamHandlerFactory();
@@ -166,8 +177,8 @@ public class OfflineCache {
         try {
             Path cacheFile = filenameForURL(url);
             return (Files.exists(cacheFile) && Files.isReadable(cacheFile) && Files.size(cacheFile) > 0);
-        } catch (IOException ignored) {
-            // ignore
+        } catch (IOException e) {
+            logger.warning(e.getMessage());
         }
         return false;
     }
@@ -181,18 +192,33 @@ public class OfflineCache {
      * @throws IllegalStateException
      *         if no cacheDirectory is set.
      * @throws UnsupportedEncodingException
-     *         if the url cannot be UTF-8 encoded
+     *         if the url cannot be UTF-8
+     * @throws NullPointerException
+     *         if url or it's external form is null
      */
     Path filenameForURL(URL url) throws UnsupportedEncodingException {
         if (null == cacheDirectory) {
             throw new IllegalStateException("cannot resolve filename for url");
         }
-        return cacheDirectory
-                .resolve(URLEncoder.encode(Objects.requireNonNull(doMappings(url.toExternalForm())), "UTF-8"));
+        final String mappedString = Objects.requireNonNull(doMappings(url.toExternalForm()));
+        String encodedString;
+
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-512");
+            md.update(mappedString.getBytes("UTF-8"), 0, mappedString.length());
+            byte[] hash = md.digest();
+            BigInteger number = new BigInteger(1, hash);
+            encodedString = number.toString(16);
+        } catch (NoSuchAlgorithmException e) {
+            logger.warning("no SHA-512, fall back to URLencoding the filename");
+            encodedString = URLEncoder.encode(mappedString, "UTF-8");
+        }
+
+        return cacheDirectory.resolve(encodedString);
     }
 
     /**
-     * do some special mappings, i.e. map the openstreetmap ruls with [a,b,c].tile.openstreetmap.org to x.tile
+     * do some special mappings, i.e. map the openstreetmap urls with [a,b,c].tile.openstreetmap.org to x.tile
      * .openstreetmap.org.
      *
      * @param urlString
@@ -221,7 +247,7 @@ public class OfflineCache {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(cacheDataFile.toFile()))) {
             oos.writeObject(cachedDataInfo);
             oos.flush();
-            logger.finer("save dataInfo " + cacheDataFile);
+            logger.finer("saved dataInfo " + cacheDataFile);
         } catch (Exception e) {
             logger.severe("could not save dataInfo " + cacheDataFile);
         }
@@ -232,20 +258,20 @@ public class OfflineCache {
      *
      * @param cacheFile
      *         the cache file
-     * @return the cached data info. If not found an new created object is returned
+     * @return the cached data info.
      */
     CachedDataInfo readCachedDataInfo(Path cacheFile) {
+        CachedDataInfo cachedDataInfo = null;
         Path cacheDataFile = Paths.get(cacheFile.toString() + ".dataInfo");
-        CachedDataInfo cachedDataInfo;
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(cacheDataFile.toFile()))) {
-            cachedDataInfo = (CachedDataInfo) ois.readObject();
-        } catch (Exception e) {
-            logger.severe("could not read dataInfo from " + cacheDataFile);
-            cachedDataInfo = new CachedDataInfo();
+        if (Files.exists(cacheDataFile)) {
+            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(cacheDataFile.toFile()))) {
+                cachedDataInfo = (CachedDataInfo) ois.readObject();
+            } catch (Exception e) {
+                logger.severe("could not read dataInfo from " + cacheDataFile + ", " + e.getMessage());
+            }
         }
         return cachedDataInfo;
     }
-
 
     /**
      * deletes all files from the cache directory. Make sure before calling this method, that the cache directory was
@@ -255,15 +281,6 @@ public class OfflineCache {
         if (null != cacheDirectory) {
             clearDirectory(cacheDirectory);
         }
-    }
-
-    /**
-     * helper method to recursively delete all files in a directory and the directory itself.
-     *
-     * @param path
-     */
-    static void clearDirectory(Path path) throws IOException {
-        Files.walkFileTree(path, new DeletingFileVisitor(path));
     }
 
     /**

@@ -13,16 +13,10 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
 import java.io.OutputStream;
-import java.net.ContentHandlerFactory;
-import java.net.FileNameMap;
-import java.net.HttpURLConnection;
 import java.net.ProtocolException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.Permission;
 import java.security.Principal;
 import java.security.cert.Certificate;
@@ -88,15 +82,15 @@ public class CachingHttpsURLConnection extends HttpsURLConnection {
         this.delegate = delegate;
         this.cacheFile = cache.filenameForURL(delegate.getURL());
 
-        readFromCache = cache.isCached(delegate.getURL());
         cachedDataInfo = cache.readCachedDataInfo(cacheFile);
+        readFromCache = cache.isCached(delegate.getURL()) && null != cachedDataInfo;
+        if (!readFromCache) {
+            cachedDataInfo = new CachedDataInfo();
+        }
 
-        logger.finer(MessageFormat.format("URL: {0}, cache file: {1}, read from cache: {2}", delegate.getURL()
-                .toExternalForm(), cacheFile, readFromCache));
-    }
-
-    public void addRequestProperty(String key, String value) {
-        delegate.addRequestProperty(key, value);
+        logger.finer(MessageFormat
+                .format("in cache: {2}, URL: {0}, cache file: {1}", delegate.getURL().toExternalForm(),
+                        cacheFile, readFromCache));
     }
 
     public void connect() throws IOException {
@@ -106,31 +100,75 @@ public class CachingHttpsURLConnection extends HttpsURLConnection {
         }
     }
 
-    public void disconnect() {
+    public String getCipherSuite() {
+        return delegate.getCipherSuite();
+    }
+
+    public Certificate[] getLocalCertificates() {
+        return delegate.getLocalCertificates();
+    }
+
+    public Certificate[] getServerCertificates() throws SSLPeerUnverifiedException {
+        return delegate.getServerCertificates();
+    }    public void addRequestProperty(String key, String value) {
+        delegate.addRequestProperty(key, value);
+    }
+
+    public Principal getPeerPrincipal() throws SSLPeerUnverifiedException {
+        return delegate.getPeerPrincipal();
+    }
+
+    public Principal getLocalPrincipal() {
+        return delegate.getLocalPrincipal();
+    }
+
+    public String getHeaderFieldKey(int n) {
+        return delegate.getHeaderFieldKey(n);
+    }
+
+    public void setFixedLengthStreamingMode(int contentLength) {
+        delegate.setFixedLengthStreamingMode(contentLength);
+    }
+
+    public void setFixedLengthStreamingMode(long contentLength) {
+        delegate.setFixedLengthStreamingMode(contentLength);
+    }    public void disconnect() {
         if (!readFromCache) {
             delegate.disconnect();
         }
     }
 
+    public void setChunkedStreamingMode(int chunklen) {
+        delegate.setChunkedStreamingMode(chunklen);
+    }
+
+    public String getHeaderField(int n) {
+        return delegate.getHeaderField(n);
+    }
+
+
+
     public boolean getAllowUserInteraction() {
         return delegate.getAllowUserInteraction();
     }
 
-    public String getCipherSuite() {
-        return delegate.getCipherSuite();
-    }
+
+
 
     public int getConnectTimeout() {
         return readFromCache ? 10 : delegate.getConnectTimeout();
     }
 
+
     public Object getContent() throws IOException {
         return delegate.getContent();
     }
 
+
     public Object getContent(Class[] classes) throws IOException {
         return delegate.getContent(classes);
     }
+
 
     public String getContentEncoding() {
         if (!readFromCache) {
@@ -139,9 +177,11 @@ public class CachingHttpsURLConnection extends HttpsURLConnection {
         return cachedDataInfo.getContentEncoding();
     }
 
+
     public int getContentLength() {
         return readFromCache ? -1 : delegate.getContentLength();
     }
+
 
     public long getContentLengthLong() {
         return readFromCache ? -1 : delegate.getContentLengthLong();
@@ -178,9 +218,6 @@ public class CachingHttpsURLConnection extends HttpsURLConnection {
         return readFromCache ? 0 : delegate.getExpiration();
     }
 
-    public String getHeaderField(int n) {
-        return delegate.getHeaderField(n);
-    }
 
     public String getHeaderField(String name) {
         return delegate.getHeaderField(name);
@@ -194,9 +231,6 @@ public class CachingHttpsURLConnection extends HttpsURLConnection {
         return delegate.getHeaderFieldInt(name, Default);
     }
 
-    public String getHeaderFieldKey(int n) {
-        return delegate.getHeaderFieldKey(n);
-    }
 
     public long getHeaderFieldLong(String name, long Default) {
         return delegate.getHeaderFieldLong(name, Default);
@@ -231,7 +265,19 @@ public class CachingHttpsURLConnection extends HttpsURLConnection {
             } else {
                 WriteCacheFileInputStream wis = new WriteCacheFileInputStream(delegate.getInputStream(),
                         new FileOutputStream(cacheFile.toFile()));
-                wis.onInputStreamClose(() -> cache.saveCachedDataInfo(cacheFile, cachedDataInfo));
+                wis.onInputStreamClose(() -> {
+                    try {
+                        final int responseCode = delegate.getResponseCode();
+                        if (responseCode == HTTP_OK) {
+                            cache.saveCachedDataInfo(cacheFile, cachedDataInfo);
+                        } else {
+                            logger.warning(
+                                    () -> "not caching because of response code " + responseCode + ": " + getURL());
+                        }
+                    } catch (IOException e) {
+                        logger.warning("cannot retrieve response code");
+                    }
+                });
                 inputStream = wis;
             }
         }
@@ -246,21 +292,11 @@ public class CachingHttpsURLConnection extends HttpsURLConnection {
         return readFromCache ? 0 : delegate.getLastModified();
     }
 
-    public Certificate[] getLocalCertificates() {
-        return delegate.getLocalCertificates();
-    }
-
-    public Principal getLocalPrincipal() {
-        return delegate.getLocalPrincipal();
-    }
 
     public OutputStream getOutputStream() throws IOException {
         return delegate.getOutputStream();
     }
 
-    public Principal getPeerPrincipal() throws SSLPeerUnverifiedException {
-        return delegate.getPeerPrincipal();
-    }
 
     public Permission getPermission() throws IOException {
         return delegate.getPermission();
@@ -294,9 +330,6 @@ public class CachingHttpsURLConnection extends HttpsURLConnection {
         return delegate.getSSLSocketFactory();
     }
 
-    public Certificate[] getServerCertificates() throws SSLPeerUnverifiedException {
-        return delegate.getServerCertificates();
-    }
 
     public URL getURL() {
         return delegate.getURL();
@@ -310,9 +343,6 @@ public class CachingHttpsURLConnection extends HttpsURLConnection {
         delegate.setAllowUserInteraction(allowuserinteraction);
     }
 
-    public void setChunkedStreamingMode(int chunklen) {
-        delegate.setChunkedStreamingMode(chunklen);
-    }
 
     public void setConnectTimeout(int timeout) {
         delegate.setConnectTimeout(timeout);
@@ -330,13 +360,6 @@ public class CachingHttpsURLConnection extends HttpsURLConnection {
         delegate.setDoOutput(dooutput);
     }
 
-    public void setFixedLengthStreamingMode(long contentLength) {
-        delegate.setFixedLengthStreamingMode(contentLength);
-    }
-
-    public void setFixedLengthStreamingMode(int contentLength) {
-        delegate.setFixedLengthStreamingMode(contentLength);
-    }
 
     public void setHostnameVerifier(HostnameVerifier hostnameVerifier) {
         delegate.setHostnameVerifier(hostnameVerifier);

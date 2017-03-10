@@ -20,7 +20,7 @@ public class WriteCacheFileInputStream extends FilterInputStream {
 
     private static final Logger logger = Logger.getLogger(WriteCacheFileInputStream.class.getCanonicalName());
 
-    /** the output stream where th data is stored. */
+    /** the output stream where the data is stored. */
     private final OutputStream out;
 
     /** a Runnable to be called when the inputstream is closed. */
