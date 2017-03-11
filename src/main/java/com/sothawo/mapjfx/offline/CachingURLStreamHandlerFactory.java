@@ -20,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 /**
- * Custom URLStreamHandlerFactory that is used to implement caching. sThe factory creates CachingHttpUrlConnection (and
+ * Custom URLStreamHandlerFactory that is used to implement caching. The factory creates CachingHttpUrlConnection (and
  * https) instances that wrap the original URLConnection elements.
  *
  * @author P.J. Meisch (pj.meisch@sothawo.com).
@@ -71,7 +71,7 @@ public class CachingURLStreamHandlerFactory implements URLStreamHandlerFactory {
     }
 
 
-    /** default Handler for http. */
+    /** default Handler for http and https. */
     @Override
     public URLStreamHandler createURLStreamHandler(String protocol) {
         if (null == protocol) {
@@ -111,8 +111,6 @@ public class CachingURLStreamHandlerFactory implements URLStreamHandlerFactory {
                         }
                     }
                     throw new IOException("no matching handler");
-
-
                 }
 
                 @Override

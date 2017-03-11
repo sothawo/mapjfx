@@ -37,9 +37,13 @@ The test application does not contain all the features, to have that, check
 
 ## version history
 
+### 1.12.1
+
+* fixes to the caching code
+
 ### 1.12.0
 
-added extent selection by cmd-drag (Mac OSX) / ctrl-drag  (Windows)
+* added extent selection by cmd-drag (Mac OSX) / ctrl-drag  (Windows)
 
 ### 1.11.0
 
@@ -83,6 +87,7 @@ added extent selection by cmd-drag (Mac OSX) / ctrl-drag  (Windows)
 * improved handling of openstreetmap.org tiles
 
 ### 1.7.0
+
 
 * implemented caching of the files loaded from the web (map images) for faster access and offline usage.
 

@@ -86,10 +86,14 @@ public class TestApp extends Application {
         mapLabel = new MapLabel("blau!").setCssClass("blue-label").setPosition(coordKarlsruheCastle).setVisible(true);
         marker.attachLabel(mapLabel);
 
+//        wmsParam = new WMSParam()
+//                .setUrl("http://irs.gis-lab.info/?")
+//                .addParam("layers", "landsat")
+//                .addParam("REQUEST", "GetTile");
+
         wmsParam = new WMSParam()
-                .setUrl("http://irs.gis-lab.info/?")
-                .addParam("layers", "landsat")
-                .addParam("REQUEST", "GetTile");
+                .setUrl("http://geonode.wfp.org:80/geoserver/ows")
+                .addParam("layers", "geonode:admin_2_gaul_2015");
     }
 
     /** the MapView */
@@ -206,7 +210,7 @@ public class TestApp extends Application {
 
         final OfflineCache offlineCache = mapView.getOfflineCache();
         offlineCache.setCacheDirectory(FileSystems.getDefault().getPath("tmpdata/cache"));
-//        offlineCache.setActive(true);
+        offlineCache.setActive(true);
 
         // add listener for mapView initialization state
         mapView.initializedProperty().addListener((observable, oldValue, newValue) -> {

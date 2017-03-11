@@ -9,18 +9,11 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-import java.net.ContentHandlerFactory;
-import java.net.FileNameMap;
 import java.net.HttpURLConnection;
 import java.net.ProtocolException;
 import java.net.URL;
-import java.net.URLConnection;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.Permission;
 import java.text.MessageFormat;
 import java.util.List;
@@ -83,15 +76,15 @@ public class CachingHttpURLConnection extends HttpURLConnection {
         this.delegate = delegate;
         this.cacheFile = cache.filenameForURL(delegate.getURL());
 
-        readFromCache = cache.isCached(delegate.getURL());
         cachedDataInfo = cache.readCachedDataInfo(cacheFile);
+        readFromCache = cache.isCached(delegate.getURL()) && null != cachedDataInfo;
+        if (!readFromCache) {
+            cachedDataInfo = new CachedDataInfo();
+        }
 
-        logger.finer(MessageFormat.format("URL: {0}, cache file: {1}, read from cache: {2}", delegate.getURL()
-                .toExternalForm(), cacheFile, readFromCache));
-    }
-
-    public void addRequestProperty(String key, String value) {
-        delegate.addRequestProperty(key, value);
+        logger.finer(MessageFormat
+                .format("in cache: {2}, URL: {0}, cache file: {1}", delegate.getURL().toExternalForm(),
+                        cacheFile, readFromCache));
     }
 
     public void connect() throws IOException {
@@ -99,23 +92,37 @@ public class CachingHttpURLConnection extends HttpURLConnection {
             logger.finer("connect to " + delegate.getURL().toExternalForm());
             delegate.connect();
         }
+    }    public void addRequestProperty(String key, String value) {
+        delegate.addRequestProperty(key, value);
     }
 
-    public void disconnect() {
+    public String getHeaderFieldKey(int n) {
+        return delegate.getHeaderFieldKey(n);
+    }
+
+    public void setFixedLengthStreamingMode(int contentLength) {
+        delegate.setFixedLengthStreamingMode(contentLength);
+    }    public void disconnect() {
         if (!readFromCache) {
             delegate.disconnect();
         }
     }
 
-    public boolean getAllowUserInteraction() {
+    public void setFixedLengthStreamingMode(long contentLength) {
+        delegate.setFixedLengthStreamingMode(contentLength);
+    }    public boolean getAllowUserInteraction() {
         return delegate.getAllowUserInteraction();
     }
 
-    public int getConnectTimeout() {
+    public void setChunkedStreamingMode(int chunklen) {
+        delegate.setChunkedStreamingMode(chunklen);
+    }    public int getConnectTimeout() {
         return readFromCache ? 10 : delegate.getConnectTimeout();
     }
 
-    public Object getContent() throws IOException {
+    public String getHeaderField(int n) {
+        return delegate.getHeaderField(n);
+    }    public Object getContent() throws IOException {
         return delegate.getContent();
     }
 
@@ -144,6 +151,7 @@ public class CachingHttpURLConnection extends HttpURLConnection {
         }
         return cachedDataInfo.getContentType();
     }
+
     public long getDate() {
         return readFromCache ? 0 : delegate.getDate();
     }
@@ -169,9 +177,7 @@ public class CachingHttpURLConnection extends HttpURLConnection {
         return readFromCache ? 0 : delegate.getExpiration();
     }
 
-    public String getHeaderField(int n) {
-        return delegate.getHeaderField(n);
-    }
+
 
     public String getHeaderField(String name) {
         return delegate.getHeaderField(name);
@@ -185,9 +191,7 @@ public class CachingHttpURLConnection extends HttpURLConnection {
         return delegate.getHeaderFieldInt(name, Default);
     }
 
-    public String getHeaderFieldKey(int n) {
-        return delegate.getHeaderFieldKey(n);
-    }
+
 
     public long getHeaderFieldLong(String name, long Default) {
         return delegate.getHeaderFieldLong(name, Default);
@@ -218,7 +222,19 @@ public class CachingHttpURLConnection extends HttpURLConnection {
             } else {
                 WriteCacheFileInputStream wis = new WriteCacheFileInputStream(delegate.getInputStream(),
                         new FileOutputStream(cacheFile.toFile()));
-                wis.onInputStreamClose(() -> cache.saveCachedDataInfo(cacheFile, cachedDataInfo));
+                wis.onInputStreamClose(() -> {
+                    try {
+                        final int responseCode = delegate.getResponseCode();
+                        if (responseCode == HTTP_OK) {
+                            cache.saveCachedDataInfo(cacheFile, cachedDataInfo);
+                        } else {
+                            logger.warning(
+                                    () -> "not caching because of response code " + responseCode + ": " + getURL());
+                        }
+                    } catch (IOException e) {
+                        logger.warning("cannot retrieve response code");
+                    }
+                });
                 inputStream = wis;
             }
         }
@@ -278,9 +294,7 @@ public class CachingHttpURLConnection extends HttpURLConnection {
         delegate.setAllowUserInteraction(allowuserinteraction);
     }
 
-    public void setChunkedStreamingMode(int chunklen) {
-        delegate.setChunkedStreamingMode(chunklen);
-    }
+
 
     public void setConnectTimeout(int timeout) {
         delegate.setConnectTimeout(timeout);
@@ -298,13 +312,9 @@ public class CachingHttpURLConnection extends HttpURLConnection {
         delegate.setDoOutput(dooutput);
     }
 
-    public void setFixedLengthStreamingMode(long contentLength) {
-        delegate.setFixedLengthStreamingMode(contentLength);
-    }
 
-    public void setFixedLengthStreamingMode(int contentLength) {
-        delegate.setFixedLengthStreamingMode(contentLength);
-    }
+
+
 
     public void setIfModifiedSince(long ifmodifiedsince) {
         delegate.setIfModifiedSince(ifmodifiedsince);
