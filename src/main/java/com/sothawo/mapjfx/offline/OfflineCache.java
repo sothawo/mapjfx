@@ -201,19 +201,7 @@ public class OfflineCache {
             throw new IllegalStateException("cannot resolve filename for url");
         }
         final String mappedString = Objects.requireNonNull(doMappings(url.toExternalForm()));
-        String encodedString;
-
-        try {
-            MessageDigest md = MessageDigest.getInstance("SHA-512");
-            md.update(mappedString.getBytes("UTF-8"), 0, mappedString.length());
-            byte[] hash = md.digest();
-            BigInteger number = new BigInteger(1, hash);
-            encodedString = number.toString(16);
-        } catch (NoSuchAlgorithmException e) {
-            logger.warning("no SHA-512, fall back to URLencoding the filename");
-            encodedString = URLEncoder.encode(mappedString, "UTF-8");
-        }
-
+        String encodedString= URLEncoder.encode(mappedString, "UTF-8");
         return cacheDirectory.resolve(encodedString);
     }
 

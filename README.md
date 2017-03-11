@@ -84,6 +84,7 @@ added extent selection by cmd-drag (Mac OSX) / ctrl-drag  (Windows)
 
 ### 1.7.0
 
+
 * implemented caching of the files loaded from the web (map images) for faster access and offline usage.
 
 ### 1.6.2
