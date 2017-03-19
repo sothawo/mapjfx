@@ -37,6 +37,10 @@ The test application does not contain all the features, to have that, check
 
 ## version history
 
+### 1.12.2
+
+* don not use offline cache as default.
+
 ### 1.12.1
 
 * fixes to the caching code
