@@ -63,13 +63,8 @@ public class OfflineCacheTest {
     }
 
     @Test
-    public void setCacheActive() throws Exception {
-        cache.setActive(true);
-        assertThat(cache.isActive(), is(true));
-    }
-
-    @Test
     public void urlFilter() throws Exception {
+        // NOTE: setActive(true) can only be done once in a VM!
         cache.setActive(true);
         cache.setNoCacheFilters(Arrays.asList("https?://www\\.sothawo\\.com.*"));
         assertThat(cache.urlShouldBeCached(new URL("http://www.sothawo.com/")), is(false));
