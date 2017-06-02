@@ -30,6 +30,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Arrays;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -40,7 +41,7 @@ import static org.junit.Assert.assertThat;
  */
 public class OfflineCacheTest {
 
-    private final static Path cacheDirectory = FileSystems.getDefault().getPath("./target/cache");
+    private static final Path cacheDirectory = FileSystems.getDefault().getPath("./target/cache");
 
     private OfflineCache cache;
 
@@ -54,6 +55,26 @@ public class OfflineCacheTest {
     @After
     public void tearDown() throws Exception {
         OfflineCache.clearDirectory(cacheDirectory);
+    }
+
+    @Test
+    public void cacheIsInactive() throws Exception {
+        assertThat(cache.isActive(), is(false));
+    }
+
+    @Test
+    public void setCacheActive() throws Exception {
+        cache.setActive(true);
+        assertThat(cache.isActive(), is(true));
+    }
+
+    @Test
+    public void urlFilter() throws Exception {
+        cache.setActive(true);
+        cache.setNoCacheFilters(Arrays.asList("https?://www\\.sothawo\\.com.*"));
+        assertThat(cache.urlShouldBeCached(new URL("http://www.sothawo.com/")), is(false));
+        assertThat(cache.urlShouldBeCached(new URL("https://www.sothawo.com/")), is(false));
+        assertThat(cache.urlShouldBeCached(new URL("http://www.github.com/")), is(true));
     }
 
     @Test
@@ -86,5 +107,6 @@ public class OfflineCacheTest {
 
         assertThat(directoryIsEmpty, is(true));
     }
+
 
 }
