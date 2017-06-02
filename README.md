@@ -37,6 +37,10 @@ The test application does not contain all the features, to have that, check
 
 ## version history
 
+### 1.13.0
+
+* add possibility to defined filters for excluding URLs from caching
+
 ### 1.12.2
 
 * don not use offline cache as default.
