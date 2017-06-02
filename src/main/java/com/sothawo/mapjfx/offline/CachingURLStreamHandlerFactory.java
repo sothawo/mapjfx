@@ -73,7 +73,7 @@ public class CachingURLStreamHandlerFactory implements URLStreamHandlerFactory {
 
     /** default Handler for http and https. */
     @Override
-    public URLStreamHandler createURLStreamHandler(String protocol) {
+    public URLStreamHandler createURLStreamHandler(final String protocol) {
         if (null == protocol) {
             throw new IllegalArgumentException("null protocol not allowed");
         }
@@ -83,7 +83,7 @@ public class CachingURLStreamHandlerFactory implements URLStreamHandlerFactory {
         if (PROTO_HTTP.equals(proto) || PROTO_HTTPS.equals(proto)) {
             return new URLStreamHandler() {
                 @Override
-                protected URLConnection openConnection(URL url) throws IOException {
+                protected URLConnection openConnection(final URL url) throws IOException {
                     logger.finer("should open connection to " + url.toExternalForm());
 
                     // URLConnection only has a protected ctor, so we need to go through the URL ctor with the matching handler
@@ -93,6 +93,7 @@ public class CachingURLStreamHandlerFactory implements URLStreamHandlerFactory {
 
 
                     if (!cache.urlShouldBeCached(url)) {
+                        logger.finer("not using cache for " + url);
                         return defaultUrlConnection;
                     }
 
@@ -114,7 +115,7 @@ public class CachingURLStreamHandlerFactory implements URLStreamHandlerFactory {
                 }
 
                 @Override
-                protected URLConnection openConnection(URL u, Proxy p) throws IOException {
+                protected URLConnection openConnection(final URL u, final Proxy p) throws IOException {
                     logger.finer("should open connection to " + u.toExternalForm() + " via " + p.toString());
                     // URLConnection only has a protected ctor, so we need to go through the URL ctor with the
                     // matching handler to get a default implementation of the needed URLStreamHandler
