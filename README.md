@@ -37,6 +37,12 @@ The test application does not contain all the features, to have that, check
 
 ## version history
 
+## current
+
+### 1.13.2
+
+* use OpenLayers 4.3.2
+
 ### 1.13.1
 
 * use OpenLayers 4.2.0
