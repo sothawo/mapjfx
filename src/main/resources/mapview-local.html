@@ -114,6 +114,14 @@ Copyright 2015-2017 Peter-Josef Meisch (pj.meisch@sothawo.com)
             console.log("marker " + name + " rightclicked");
         },
 
+        markerEntered: function (name) {
+            console.log("marker " + name + " entered");
+        },
+
+        markerExited: function (name) {
+            console.log("marker " + name + " exited");
+        },
+
         labelMouseDown: function (name) {
             console.log("label " + name + " mousedown");
         },
@@ -132,6 +140,14 @@ Copyright 2015-2017 Peter-Josef Meisch (pj.meisch@sothawo.com)
 
         labelRightClicked: function (name) {
             console.log("label " + name + " rightclicked");
+        },
+
+        labelEntered: function (name) {
+            console.log("marker " + name + " entered");
+        },
+
+        labelExited: function (name) {
+            console.log("marker " + name + " exited");
         },
 
         extentSelected: function (minLat, minLon, maxLat, maxLon) {

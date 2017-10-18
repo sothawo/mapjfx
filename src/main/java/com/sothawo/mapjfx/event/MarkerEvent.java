@@ -46,6 +46,12 @@ public class MarkerEvent extends Event {
     /** marker mouseup in map */
     public static final EventType<MarkerEvent> MARKER_MOUSEUP = new EventType<>(ANY, "MARKER_MOUSEUP");
 
+    /** marker entered in map */
+    public static final EventType<MarkerEvent> MARKER_ENTERED = new EventType<>(ANY, "MARKER_ENTERED");
+
+    /** marker exited in map */
+    public static final EventType<MarkerEvent> MARKER_EXITED = new EventType<>(ANY, "MARKER_EXITED");
+
     /** the marker for this event. */
     private final Marker marker;
 
