@@ -50,6 +50,14 @@ public class MapLabelEvent extends Event {
     public static final EventType<MapLabelEvent> MAPLABEL_MOUSEUP = new EventType<>(ANY,
             "MAPLABEL_MOUSEUP");
 
+    /** label entered in map */
+    public static final EventType<MapLabelEvent> MAPLABEL_ENTERED = new EventType<>(ANY,
+            "MAPLABEL_ENTERED");
+
+    /** label exited in map */
+    public static final EventType<MapLabelEvent> MAPLABEL_EXITED = new EventType<>(ANY,
+            "MAPLABEL_EXITED");
+
     /** the MapLabel for this event. */
     private final MapLabel mapLabel;
 
