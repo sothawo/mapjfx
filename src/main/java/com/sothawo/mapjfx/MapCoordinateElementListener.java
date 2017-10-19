@@ -25,31 +25,36 @@ import java.util.Objects;
  * @author P.J. Meisch (pj.meisch@sothawo.com).
  */
 public final class MapCoordinateElementListener {
-// ------------------------------ FIELDS ------------------------------
 
     /** listener for coordinate changes */
     private final ChangeListener<Coordinate> coordinateChangeListener;
 
     /** listener for visibility changes */
     private final ChangeListener<Boolean> visibileChangeListener;
-
-// --------------------------- CONSTRUCTORS ---------------------------
+    /** listener for css changes */
+    private final ChangeListener<String> cssChangeListener;
 
     /**
      * @param coordinateChangeListener
      *         coordinate change listener
      * @param visibileChangeListener
      *         visibility change listener
+     * @param cssChangeListener
+     *         css change listener
      * @throws java.lang.NullPointerException
      *         if either argument is null
      */
-    public MapCoordinateElementListener(ChangeListener<Coordinate> coordinateChangeListener,
-                                        ChangeListener<Boolean> visibileChangeListener) {
+    public MapCoordinateElementListener(final ChangeListener<Coordinate> coordinateChangeListener,
+                                        final ChangeListener<Boolean> visibileChangeListener,
+                                        final ChangeListener<String> cssChangeListener) {
         this.coordinateChangeListener = Objects.requireNonNull(coordinateChangeListener);
         this.visibileChangeListener = Objects.requireNonNull(visibileChangeListener);
+        this.cssChangeListener = Objects.requireNonNull(cssChangeListener);
     }
 
-// --------------------- GETTER / SETTER METHODS ---------------------
+    public ChangeListener<String> getCssChangeListener() {
+        return cssChangeListener;
+    }
 
     public ChangeListener<Coordinate> getCoordinateChangeListener() {
         return coordinateChangeListener;

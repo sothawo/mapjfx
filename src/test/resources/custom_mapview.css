@@ -6,3 +6,8 @@
     color: #cccccc;
     background: #95b9e6 linear-gradient(#95b9e6, #0000ff);
 }
+
+.green-label {
+    color: #cccccc;
+    background: #7ce68c linear-gradient(#7ce68c, #076d13);
+}

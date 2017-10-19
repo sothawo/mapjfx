@@ -85,7 +85,11 @@ public class TestApp extends Application {
         logger = Logger.getLogger(TestApp.class.getCanonicalName());
 
         marker = Marker.createProvided(Marker.Provided.BLUE).setPosition(coordKarlsruheCastle).setVisible(true);
-        mapLabel = new MapLabel("blau!").setCssClass("blue-label").setPosition(coordKarlsruheCastle).setVisible(true);
+        mapLabel = new MapLabel("blau!")
+                .setCssClass("blue-label")
+                .setPosition(coordKarlsruheCastle)
+                .setVisible(true);
+
         marker.attachLabel(mapLabel);
 
 //        wmsParam = new WMSParam()
@@ -222,11 +226,13 @@ public class TestApp extends Application {
         mapView.addEventHandler(MapLabelEvent.MAPLABEL_ENTERED, event -> {
             logger.info("MAPLABEL_ENTERED event: " + event.getMapLabel());
             event.consume();
+            event.getMapLabel().setCssClass("green-label");
         });
         // listen to MAPLABEL_EXITED event.
         mapView.addEventHandler(MapLabelEvent.MAPLABEL_EXITED, event -> {
             logger.info("MAPLABEL_EXITED event: " + event.getMapLabel());
             event.consume();
+            event.getMapLabel().setCssClass("blue-label");
         });
 
 
