@@ -183,6 +183,16 @@ public class TestApp extends Application {
             logger.info("MARKER_RIGHTCLICKED event: " + event.getMarker());
             event.consume();
         });
+        // listen to MARKER_ENTERED event.
+        mapView.addEventHandler(MarkerEvent.MARKER_ENTERED, event -> {
+            logger.info("MARKER_ENTERED event: " + event.getMarker());
+            event.consume();
+        });
+        // listen to MARKER_EXITED event.
+        mapView.addEventHandler(MarkerEvent.MARKER_EXITED, event -> {
+            logger.info("MARKER_EXITED event: " + event.getMarker());
+            event.consume();
+        });
         // listen to MAPLABEL_MOUSEDOWN event.
         mapView.addEventHandler(MapLabelEvent.MAPLABEL_MOUSEDOWN, event -> {
             logger.info("MAPLABEL_MOUSEDOWN event: " + event.getMapLabel());
@@ -206,6 +216,16 @@ public class TestApp extends Application {
         // listen to MAPLABEL_DOUBLECLICKED event.
         mapView.addEventHandler(MapLabelEvent.MAPLABEL_DOUBLECLICKED, event -> {
             logger.info("MAPLABEL_DOUBLECLICKED event: " + event.getMapLabel());
+            event.consume();
+        });
+        // listen to MAPLABEL_ENTERED event.
+        mapView.addEventHandler(MapLabelEvent.MAPLABEL_ENTERED, event -> {
+            logger.info("MAPLABEL_ENTERED event: " + event.getMapLabel());
+            event.consume();
+        });
+        // listen to MAPLABEL_EXITED event.
+        mapView.addEventHandler(MapLabelEvent.MAPLABEL_EXITED, event -> {
+            logger.info("MAPLABEL_EXITED event: " + event.getMapLabel());
             event.consume();
         });
 
