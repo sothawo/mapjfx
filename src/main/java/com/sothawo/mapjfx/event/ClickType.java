@@ -25,5 +25,7 @@ public enum ClickType {
     RIGHT,
     DOUBLE,
     MOUSEDOWN,
-    MOUSEUP
+    MOUSEUP,
+    ENTERED,
+    EXITED
 }

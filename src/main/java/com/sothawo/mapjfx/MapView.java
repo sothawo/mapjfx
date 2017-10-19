@@ -1231,6 +1231,26 @@ public final class MapView extends Region {
         }
 
         /**
+         * called when a marker was entered.
+         *
+         * @param name
+         *         name of the marker
+         */
+        public void markerEntered(String name) {
+            processMarkerClicked(name, ClickType.ENTERED);
+        }
+
+        /**
+         * called when a marker was exited.
+         *
+         * @param name
+         *         name of the marker
+         */
+        public void markerExited(String name) {
+            processMarkerClicked(name, ClickType.EXITED);
+        }
+
+        /**
          * processes a marker click
          *
          * @param name
@@ -1259,6 +1279,12 @@ public final class MapView extends Region {
                             break;
                         case MOUSEUP:
                             eventType = MarkerEvent.MARKER_MOUSEUP;
+                            break;
+                        case ENTERED:
+                            eventType = MarkerEvent.MARKER_ENTERED;
+                            break;
+                        case EXITED:
+                            eventType = MarkerEvent.MARKER_EXITED;
                             break;
                     }
                     if (null != eventType) {
@@ -1319,6 +1345,26 @@ public final class MapView extends Region {
         }
 
         /**
+         * called when a label was entered.
+         *
+         * @param name
+         *         name of the lael
+         */
+        public void labelEntered(String name) {
+            processLabelClicked(name, ClickType.ENTERED);
+        }
+
+        /**
+         * called when a label was exited.
+         *
+         * @param name
+         *         name of the lael
+         */
+        public void labelExited(String name) {
+            processLabelClicked(name, ClickType.EXITED);
+        }
+
+        /**
          * called when a label was clicked.
          *
          * @param name
@@ -1348,6 +1394,12 @@ public final class MapView extends Region {
                                 break;
                             case MOUSEUP:
                                 eventType = MapLabelEvent.MAPLABEL_MOUSEUP;
+                                break;
+                            case ENTERED:
+                                eventType = MapLabelEvent.MAPLABEL_ENTERED;
+                                break;
+                            case EXITED:
+                                eventType = MapLabelEvent.MAPLABEL_EXITED;
                                 break;
                         }
                         if (null != eventType) {
