@@ -39,6 +39,8 @@ The test application does not contain all the features, to have that, check
 
 ## current
 
+* added MARKER_ENTERED, MARKER_EXITED, MAPLABEL_ENTERED, MAPLABEL_EXITED events
+
 ### 1.13.2
 
 * use OpenLayers 4.3.2
