@@ -117,7 +117,7 @@ public final class MapView extends Region {
     /** used to store the last zoom value that was reported by the map to prevent setting it again in the map. */
     private final AtomicReference<Long> lastZoomFromMap = new AtomicReference<>();
     /**
-     * a map from the names of MapCoordinateELements in the map to WeakReferences of the Objects. When
+     * a map from the names of MapCoordinateElements in the map to WeakReferences of the Objects. When
      * mapCoordinateElements are gc'ed the keys in this map point to null and are used to clean up the internal
      * structures.
      */
@@ -534,10 +534,10 @@ public final class MapView extends Region {
     }
 
     /**
-     * sets up the internal information about a MpaCoordinate Element.
+     * sets up the internal information about a MapCoordinate Element.
      *
      * @param mapCoordinateElement
-     *         the MpaCooordinate Element
+     *         the MapCooordinate Element
      */
     private void addMapCoordinateElement(MapCoordinateElement mapCoordinateElement) {
         String id = mapCoordinateElement.getId();
@@ -547,15 +547,31 @@ public final class MapView extends Region {
                 (observable, oldValue, newValue) -> moveMapCoordinateElementInMap(id);
         ChangeListener<Boolean> visibileChangeListener =
                 (observable, oldValue, newValue) -> setMarkerVisibleInMap(id);
-        mapCoordinateElementListeners.put(id, new MapCoordinateElementListener(coordinateChangeListener,
-                visibileChangeListener));
+        ChangeListener<String> cssChangeListener = (observable, oldValue, newValue) -> setMapCoordinateElementCss(id,
+                newValue);
 
-        // observe the mapCoordinateElements position and visibility with the listsners
+        mapCoordinateElementListeners.put(id, new MapCoordinateElementListener(coordinateChangeListener,
+                visibileChangeListener, cssChangeListener));
+
+        // observe the mapCoordinateElements position, visibility and cssClass with the listeners
         mapCoordinateElement.positionProperty().addListener(coordinateChangeListener);
         mapCoordinateElement.visibleProperty().addListener(visibileChangeListener);
+        mapCoordinateElement.cssClassProperty().addListener(cssChangeListener);
 
         // keep a weak ref of the mapCoordinateELement
         mapCoordinateElements.put(id, new WeakReference<>(mapCoordinateElement, weakReferenceQueue));
+    }
+
+    /**
+     * sets the css class for a MapCoordinateElement. Currently supported only for MapLabels.
+     *
+     * @param id
+     *         the id of the element
+     * @param cssclass
+     *         the css class
+     */
+    private void setMapCoordinateElementCss(final String id, final String cssclass) {
+        jsMapView.call("setLabelCss", id, cssclass);
     }
 
     /**
@@ -989,11 +1005,12 @@ public final class MapView extends Region {
 
                 // if the element was not gc'ed we need to unregister the listeners so we dont' react to events from
                 // removed elements
-                MapCoordinateElement element = mapCoordinateElements.get(id).get();
-                MapCoordinateElementListener markerListener = mapCoordinateElementListeners.get(id);
+                final MapCoordinateElement element = mapCoordinateElements.get(id).get();
+                final MapCoordinateElementListener markerListener = mapCoordinateElementListeners.get(id);
                 if (null != element && null != markerListener) {
                     element.positionProperty().removeListener(markerListener.getCoordinateChangeListener());
                     element.visibleProperty().removeListener(markerListener.getVisibileChangeListener());
+                    element.cssClassProperty().removeListener(markerListener.getCssChangeListener());
                 }
 
                 mapCoordinateElementListeners.remove(id);

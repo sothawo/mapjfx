@@ -522,6 +522,20 @@ JSMapView.prototype.showMapObject = function (name) {
     }
 };
 
+JSMapView.prototype.setLabelCss = function (name, cssClass) {
+    this.javaConnector.debug("should css of " + name + " to " + cssClass);
+    var mapLabel = this.mapObjects[name];
+    if(mapLabel) {
+        var overlay = mapLabel.getOverlay();
+        if(overlay) {
+            var element = overlay.getElement();
+            if(element) {
+                element.setAttribute("class", "mapview-label " + cssClass);
+            }
+        }
+    }
+};
+
 /**
  * sets the bing maps api key
  * @param apiKey the api key
