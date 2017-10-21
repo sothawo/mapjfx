@@ -238,7 +238,7 @@ public class TestApp extends Application {
 
         final OfflineCache offlineCache = mapView.getOfflineCache();
         offlineCache.setCacheDirectory(FileSystems.getDefault().getPath("tmpdata/cache"));
-        offlineCache.setActive(true);
+        offlineCache.setActive(false);
         offlineCache.setNoCacheFilters(Collections.singletonList(".*\\.sothawo\\.com/.*"));
         // add listener for mapView initialization state
         mapView.initializedProperty().addListener((observable, oldValue, newValue) -> {
