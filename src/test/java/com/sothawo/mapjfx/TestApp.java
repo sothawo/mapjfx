@@ -74,7 +74,7 @@ public class TestApp extends Application {
 
     static {
         // init the logging from the classpath logging.properties
-        InputStream inputStream = TestApp.class.getResourceAsStream("/logging.properties");
+        final InputStream inputStream = TestApp.class.getResourceAsStream("/logging.properties");
         if (null != inputStream) {
             try {
                 LogManager.getLogManager().readConfiguration(inputStream);
@@ -118,7 +118,7 @@ public class TestApp extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         logger.info("starting devtest program...");
-        BorderPane borderPane = new BorderPane();
+        final BorderPane borderPane = new BorderPane();
 
         // MapView in the center with an initial coordinate (optional)
         // the MapView is created first as the other elements reference it
@@ -239,7 +239,7 @@ public class TestApp extends Application {
         final OfflineCache offlineCache = mapView.getOfflineCache();
         offlineCache.setCacheDirectory(FileSystems.getDefault().getPath("tmpdata/cache"));
         offlineCache.setActive(true);
-        offlineCache.setNoCacheFilters(Collections.singletonList(".*\\.sothawo\\.com/.*"));
+        offlineCache.setNoCacheFilters(Collections.singletonList(".*"));
         // add listener for mapView initialization state
         mapView.initializedProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue) {

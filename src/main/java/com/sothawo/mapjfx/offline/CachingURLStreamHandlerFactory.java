@@ -14,7 +14,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.net.URLStreamHandlerFactory;
-import java.nio.file.Path;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
@@ -86,6 +85,7 @@ public class CachingURLStreamHandlerFactory implements URLStreamHandlerFactory {
                 protected URLConnection openConnection(final URL url) throws IOException {
                     logger.finer("should open connection to " + url.toExternalForm());
 
+                    URLConnection urlConnection = null;
                     // URLConnection only has a protected ctor, so we need to go through the URL ctor with the matching handler
                     final URLConnection defaultUrlConnection =
                             new URL(protocol, url.getHost(), url.getPort(), url.getFile(), handlers.get(protocol))
@@ -94,24 +94,34 @@ public class CachingURLStreamHandlerFactory implements URLStreamHandlerFactory {
 
                     if (!cache.urlShouldBeCached(url)) {
                         logger.finer("not using cache for " + url);
-                        return defaultUrlConnection;
-                    }
-
-                    final Path cacheFile = cache.filenameForURL(url);
-                    // now wrap the defaultUrlConnection
-                    if (cache.isCached(url)) {
-                        // if cached, always use http connection to prevent ssl handshake. As we are reading from the
-                        // cache, this is enough
-                        return new CachingHttpURLConnection(cache, (HttpURLConnection) defaultUrlConnection);
+                        urlConnection = defaultUrlConnection;
                     } else {
-                        switch (proto) {
-                            case PROTO_HTTP:
-                                return new CachingHttpURLConnection(cache, (HttpURLConnection) defaultUrlConnection);
-                            case PROTO_HTTPS:
-                                return new CachingHttpsURLConnection(cache, (HttpsURLConnection) defaultUrlConnection);
+
+                        // now wrap the defaultUrlConnection
+                        if (cache.isCached(url)) {
+                            // if cached, always use http connection to prevent ssl handshake. As we are reading from the
+                            // cache, this is enough
+                            return new CachingHttpURLConnection(cache, (HttpURLConnection) defaultUrlConnection);
+                        } else {
+                            switch (proto) {
+                                case PROTO_HTTP:
+                                    urlConnection = new CachingHttpURLConnection(cache,
+                                            (HttpURLConnection) defaultUrlConnection);
+                                    break;
+                                case PROTO_HTTPS:
+                                    urlConnection = new CachingHttpsURLConnection(cache,
+                                            (HttpsURLConnection) defaultUrlConnection);
+                                    break;
+                            }
                         }
                     }
-                    throw new IOException("no matching handler");
+                    if (null == urlConnection) {
+                        throw new IOException("no matching handler");
+                    }
+                    urlConnection.setConnectTimeout(5_000);
+                    urlConnection.setReadTimeout(5_000);
+                    logger.finer("read timeout for connection: " + urlConnection.getReadTimeout());
+                    return urlConnection;
                 }
 
                 @Override
