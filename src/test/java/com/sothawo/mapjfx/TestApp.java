@@ -85,7 +85,11 @@ public class TestApp extends Application {
         logger = Logger.getLogger(TestApp.class.getCanonicalName());
 
         marker = Marker.createProvided(Marker.Provided.BLUE).setPosition(coordKarlsruheCastle).setVisible(true);
-        mapLabel = new MapLabel("blau!").setCssClass("blue-label").setPosition(coordKarlsruheCastle).setVisible(true);
+        mapLabel = new MapLabel("blau!")
+                .setCssClass("blue-label")
+                .setPosition(coordKarlsruheCastle)
+                .setVisible(true);
+
         marker.attachLabel(mapLabel);
 
 //        wmsParam = new WMSParam()
@@ -183,6 +187,16 @@ public class TestApp extends Application {
             logger.info("MARKER_RIGHTCLICKED event: " + event.getMarker());
             event.consume();
         });
+        // listen to MARKER_ENTERED event.
+        mapView.addEventHandler(MarkerEvent.MARKER_ENTERED, event -> {
+            logger.info("MARKER_ENTERED event: " + event.getMarker());
+            event.consume();
+        });
+        // listen to MARKER_EXITED event.
+        mapView.addEventHandler(MarkerEvent.MARKER_EXITED, event -> {
+            logger.info("MARKER_EXITED event: " + event.getMarker());
+            event.consume();
+        });
         // listen to MAPLABEL_MOUSEDOWN event.
         mapView.addEventHandler(MapLabelEvent.MAPLABEL_MOUSEDOWN, event -> {
             logger.info("MAPLABEL_MOUSEDOWN event: " + event.getMapLabel());
@@ -208,11 +222,23 @@ public class TestApp extends Application {
             logger.info("MAPLABEL_DOUBLECLICKED event: " + event.getMapLabel());
             event.consume();
         });
+        // listen to MAPLABEL_ENTERED event.
+        mapView.addEventHandler(MapLabelEvent.MAPLABEL_ENTERED, event -> {
+            logger.info("MAPLABEL_ENTERED event: " + event.getMapLabel());
+            event.consume();
+            event.getMapLabel().setCssClass("green-label");
+        });
+        // listen to MAPLABEL_EXITED event.
+        mapView.addEventHandler(MapLabelEvent.MAPLABEL_EXITED, event -> {
+            logger.info("MAPLABEL_EXITED event: " + event.getMapLabel());
+            event.consume();
+            event.getMapLabel().setCssClass("blue-label");
+        });
 
 
         final OfflineCache offlineCache = mapView.getOfflineCache();
         offlineCache.setCacheDirectory(FileSystems.getDefault().getPath("tmpdata/cache"));
-        offlineCache.setActive(true);
+        offlineCache.setActive(false);
         offlineCache.setNoCacheFilters(Collections.singletonList(".*\\.sothawo\\.com/.*"));
         // add listener for mapView initialization state
         mapView.initializedProperty().addListener((observable, oldValue, newValue) -> {

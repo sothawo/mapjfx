@@ -16,6 +16,7 @@
 package com.sothawo.mapjfx;
 
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
 
 /**
  * Common base class for elements on the map that have a defined position on the map.
@@ -31,6 +32,8 @@ public abstract class MapCoordinateElement extends MapElement {
     protected final int offsetX;
     /** the vertical offset */
     protected final int offsetY;
+    /** custom css style name. */
+    protected SimpleStringProperty cssClass = new SimpleStringProperty("");
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
@@ -54,6 +57,26 @@ public abstract class MapCoordinateElement extends MapElement {
     }
 
 // ------------------------ CANONICAL METHODS ------------------------
+
+    public String getCssClass() {
+        return cssClass.get();
+    }
+
+    /**
+     * sets the cssClass for the Label
+     *
+     * @param cssClass
+     *         class name
+     * @return this object
+     */
+    public MapCoordinateElement setCssClass(final String cssClass) {
+        this.cssClass.set((null == cssClass) ? "" : cssClass);
+        return this;
+    }
+
+    public SimpleStringProperty cssClassProperty() {
+        return cssClass;
+    }
 
     /**
      * @return the marker's id

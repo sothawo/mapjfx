@@ -350,6 +350,16 @@ JSMapView.prototype.addMarker = function (name, url, latitude, longitude, offset
             evt.stopPropagation();
             evt.preventDefault();
         }).bind(this);
+        imgElement.onmouseover = (function (evt) {
+            this.javaConnector.markerEntered(name);
+            evt.stopPropagation();
+            evt.preventDefault();
+        }).bind(this);
+        imgElement.onmouseout = (function (evt) {
+            this.javaConnector.markerExited(name);
+            evt.stopPropagation();
+            evt.preventDefault();
+        }).bind(this);
 
         var overlay = new ol.Overlay({
             offset: [offsetX, offsetY],
@@ -412,7 +422,17 @@ JSMapView.prototype.addLabel = function (name, text, cssClass, latitude, longitu
             evt.stopPropagation();
             evt.preventDefault();
         }).bind(this);
-
+        labelElement.onmouseover = (function (evt) {
+            this.javaConnector.labelEntered(name);
+            evt.stopPropagation();
+            evt.preventDefault();
+        }).bind(this);
+        labelElement.onmouseout = (function (evt) {
+            this.javaConnector.labelExited(name);
+            evt.stopPropagation();
+            evt.preventDefault();
+        }).bind(this);
+ 
         var overlay = new ol.Overlay({
             offset: [offsetX, offsetY],
             position: undefined,
@@ -499,6 +519,20 @@ JSMapView.prototype.showMapObject = function (name) {
         }
         mapObject.setOnMap(true);
         this.javaConnector.debug("showed " + name);
+    }
+};
+
+JSMapView.prototype.setLabelCss = function (name, cssClass) {
+    this.javaConnector.debug("should css of " + name + " to " + cssClass);
+    var mapLabel = this.mapObjects[name];
+    if(mapLabel) {
+        var overlay = mapLabel.getOverlay();
+        if(overlay) {
+            var element = overlay.getElement();
+            if(element) {
+                element.setAttribute("class", "mapview-label " + cssClass);
+            }
+        }
     }
 };
 
