@@ -39,12 +39,16 @@ The test application does not contain all the features, to have that, check
 
 ## current
 
+### 1.15.0
+
+* use OpenLayers 4.6.4
+
 ### 1.14.0
 
 * added MARKER_ENTERED, MARKER_EXITED, MAPLABEL_ENTERED, MAPLABEL_EXITED events 
 (thanks to [skinkie](https://github.com/skinkie))
 * MapLabel.setCssClass(String) now is observed and changes a MapLabel's style directly on the map. 
-* use OpenLayers to 4.4.0
+* use OpenLayers 4.4.0
 
 ### 1.13.2
 
