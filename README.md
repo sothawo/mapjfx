@@ -39,6 +39,8 @@ The test application does not contain all the features, to have that, check
 
 ## current
 
+### 1.15.0
+
 * use OpenLayers 4.6.4
 
 ### 1.14.0
