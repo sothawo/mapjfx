@@ -336,7 +336,7 @@ public final class MapView extends Region {
      */
     private void setMapTypeInMap() {
         if (getInitialized()) {
-            String mapTypeName = getMapType().toString();
+            final String mapTypeName = getMapType().toString();
             logger.finer(() -> "setting map type in OpenLayers map: " + mapTypeName);
             bingMapsApiKey.ifPresent(apiKey -> jsMapView.call("setBingMapsApiKey", apiKey));
             wmsParam.ifPresent(wmsParam -> {

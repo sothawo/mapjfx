@@ -37,6 +37,20 @@ var _layersOSM = new ol.layer.Group({
     ]
 });
 
+var _layersStamenWC = new ol.layer.Group({
+    layers: [
+        new ol.layer.Tile({
+            source: new ol.source.Stamen({
+                layer: 'watercolor'
+            })
+        }),
+        new ol.layer.Tile({
+            source: new ol.source.Stamen({
+                layer: 'terrain-labels'
+            })
+        })
+    ]
+});
 
 /*******************************************************************************************************************
  global variables
@@ -213,6 +227,8 @@ JSMapView.prototype.setMapType = function (newType) {
                 _layerFeatures
             ]
         }));
+    } else if (newType == 'STAMEN_WC') {
+        _map.setLayerGroup(_layersStamenWC);
     } else if (newType == 'WMS' && this.wmsParams.getUrl().length > 0) {
         _map.setLayerGroup(new ol.layer.Group({
             layers: [
@@ -432,7 +448,7 @@ JSMapView.prototype.addLabel = function (name, text, cssClass, latitude, longitu
             evt.stopPropagation();
             evt.preventDefault();
         }).bind(this);
- 
+
         var overlay = new ol.Overlay({
             offset: [offsetX, offsetY],
             position: undefined,
@@ -525,11 +541,11 @@ JSMapView.prototype.showMapObject = function (name) {
 JSMapView.prototype.setLabelCss = function (name, cssClass) {
     this.javaConnector.debug("should css of " + name + " to " + cssClass);
     var mapLabel = this.mapObjects[name];
-    if(mapLabel) {
+    if (mapLabel) {
         var overlay = mapLabel.getOverlay();
-        if(overlay) {
+        if (overlay) {
             var element = overlay.getElement();
-            if(element) {
+            if (element) {
                 element.setAttribute("class", "mapview-label " + cssClass);
             }
         }

@@ -371,6 +371,11 @@ public class TestApp extends Application {
         hbox.getChildren().add(btn);
 
         btn = new Button();
+        btn.setText("ST");
+        btn.setOnAction(evt -> mapView.setMapType(MapType.STAMEN_WC));
+        hbox.getChildren().add(btn);
+
+        btn = new Button();
         btn.setText("BR");
         btn.setOnAction(evt -> {
             mapView.setBingMapsApiKey(bingApiKey.getText());

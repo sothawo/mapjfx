@@ -23,6 +23,8 @@ package com.sothawo.mapjfx;
 public enum MapType {
     /** OpenStreetMap. */
     OSM,
+    /** Stamen Watercolor. */
+    STAMEN_WC,
     /** BingMaps Road. */
     BINGMAPS_ROAD,
     /** BingMaps Aerial. */
