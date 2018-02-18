@@ -43,7 +43,10 @@ The test application does not contain all the features, to have that, check
 
 ## current
 
+### 1.16.0
+
 * added stamen watercolor type as additional map type
+* moved deployment to travis build
 
 ### 1.15.0
 
