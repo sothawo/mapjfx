@@ -25,6 +25,10 @@ More Information about the project can be found at [the sothawo website](http://
 
 this project is built using mvn. The library jar is created by running `mvn package`
 
+## build status on travis-ci
+
+[![Build Status](https://travis-ci.org/sothawo/mapjfx.svg?branch=master)](https://travis-ci.org/sothawo/mapjfx)
+
 ## running the test application
 
 the project contains a test application which is mostly used during development. The source is found in the test
