@@ -5,3 +5,14 @@ jdk:
 
 os:
   - linux
+
+before_install:
+  - echo $GPG_SECRET_KEYS | base64 --decode | $GPG_EXECUTABLE --import
+  - echo $GPG_OWNERTRUST | base64 --decode | $GPG_EXECUTABLE --import-ownertrust
+
+install:
+  mvn --settings .travis-mvn.xml install -DskipTests=true -Dgpg.skip -Dmaven.javadoc.skip=true -B -V
+
+script:
+  - if [ "$TRAVIS_BRANCH" = "develop" ]; then mvn clean package --settings .travis-mvn.xml -B -U
+  - if [ "$TRAVIS_BRANCH" = "master" ]; then mvn clean deploy --settings .travis-mvn.xml -B -U -Prelease
