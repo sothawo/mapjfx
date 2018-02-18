@@ -7,7 +7,7 @@ More Information about the project can be found at [the sothawo website](http://
 
 ## license
 
- Copyright 2014-2017 Peter-Josef Meisch (pj.meisch@sothawo.com)
+ Copyright 2014-2018 Peter-Josef Meisch (pj.meisch@sothawo.com)
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,6 +25,10 @@ More Information about the project can be found at [the sothawo website](http://
 
 this project is built using mvn. The library jar is created by running `mvn package`
 
+## build status on travis-ci
+
+[![Build Status](https://travis-ci.org/sothawo/mapjfx.svg?branch=master)](https://travis-ci.org/sothawo/mapjfx)
+
 ## running the test application
 
 the project contains a test application which is mostly used during development. The source is found in the test
@@ -38,6 +42,11 @@ The test application does not contain all the features, to have that, check
 ## version history
 
 ## current
+
+### 1.16.0
+
+* added stamen watercolor type as additional map type
+* moved deployment to travis build
 
 ### 1.15.0
 
