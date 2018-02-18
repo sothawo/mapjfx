@@ -7,7 +7,7 @@ More Information about the project can be found at [the sothawo website](http://
 
 ## license
 
- Copyright 2014-2017 Peter-Josef Meisch (pj.meisch@sothawo.com)
+ Copyright 2014-2018 Peter-Josef Meisch (pj.meisch@sothawo.com)
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -42,6 +42,8 @@ The test application does not contain all the features, to have that, check
 ## version history
 
 ## current
+
+* added stamen watercolor type as additional map type
 
 ### 1.15.0
 
