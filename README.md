@@ -43,6 +43,11 @@ The test application does not contain all the features, to have that, check
 
 ## current
 
+### 1.16.1
+
+* use java 9 on travis for building (source and target class version is still set to 1.8)
+* add Automatic-Module-Name to generated manifest
+
 ### 1.16.0
 
 * added stamen watercolor type as additional map type
