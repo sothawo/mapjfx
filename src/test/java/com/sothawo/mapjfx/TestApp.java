@@ -162,6 +162,12 @@ public class TestApp extends Application {
             event.consume();
         });
 
+        // listen to MapViewEvent MAP_BOUNDING_EXTENT
+        mapView.addEventHandler(MapViewEvent.MAP_BOUNDING_EXTENT, event -> {
+            logger.info(() -> "MAP_BOUNDING_EXTENT event: " + event.getExtent());
+            event.consume();
+        });
+
         // listen to MARKER_CLICKED event.
         mapView.addEventHandler(MarkerEvent.MARKER_CLICKED, event -> {
             logger.info("MARKER_CLICKED event: " + event.getMarker());

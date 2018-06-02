@@ -153,6 +153,9 @@ Copyright 2015-2017 Peter-Josef Meisch (pj.meisch@sothawo.com)
         extentSelected: function (minLat, minLon, maxLat, maxLon) {
             console.log("extend: " + minLat + ", " + minLon + ", " + maxLat + ", " + maxLon);
         },
+        extentChanged: function (minLat, minLon, maxLat, maxLon) {
+            console.log("extent: " + minLat + ", " + minLon + ", " + maxLat + ", " + maxLon);
+        }
     };
 
 </script>
@@ -178,8 +181,8 @@ Copyright 2015-2017 Peter-Josef Meisch (pj.meisch@sothawo.com)
     wmsParams.setUrl('http://irs.gis-lab.info/?');
     wmsParams.addParam('layers', 'landsat');
     wmsParams.addParam('REQUEST', 'GetTile');
-//        wmsParams.setUrl('http://geonode.wfp.org:80/geoserver/ows');
-//        wmsParams.addParam('layers', 'geonode:admin_2_gaul_2015');
+    //        wmsParams.setUrl('http://geonode.wfp.org:80/geoserver/ows');
+    //        wmsParams.addParam('layers', 'geonode:admin_2_gaul_2015');
     jsMapView.setWMSParams(wmsParams);
 
     jsMapView.setMapType('OSM');
