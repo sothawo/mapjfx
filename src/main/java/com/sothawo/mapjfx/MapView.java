@@ -1457,5 +1457,23 @@ public final class MapView extends Region {
             logger.finer(() -> "JS reports extend selected: " + extent);
             fireEvent(new MapViewEvent(MapViewEvent.MAP_EXTENT, extent));
         }
+
+        /**
+         * called when the map extent changed by changing the center or zoom of the map.
+         *
+         * @param latMin
+         *         latitude of upper left corner
+         * @param lonMin
+         *         longitude of upper left corner
+         * @param latMax
+         *         latitude of lower right corner
+         * @param lonMax
+         *         longitude of lower right corner
+         */
+        public void extentChanged(double latMin, double lonMin, double latMax, double lonMax) {
+            final Extent extent = Extent.forCoordinates(new Coordinate(latMin, lonMin), new Coordinate(latMax, lonMax));
+            logger.finer(() -> "JS reports extend change: " + extent);
+            fireEvent(new MapViewEvent(MapViewEvent.MAP_BOUNDING_EXTENT, extent));
+        }
     }
 }

@@ -1,5 +1,5 @@
 /*
- Copyright 2016-2017 Peter-Josef Meisch (pj.meisch@sothawo.com)
+ Copyright 2016-2018 Peter-Josef Meisch (pj.meisch@sothawo.com)
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -40,10 +40,13 @@ public class MapViewEvent extends Event {
     /** extent selected  in map */
     public static final EventType<MapViewEvent> MAP_EXTENT = new EventType<>(ANY, "MAP_EXTENT");
 
+    /** vounding extent changed  in map */
+    public static final EventType<MapViewEvent> MAP_BOUNDING_EXTENT = new EventType<>(ANY, "MAP_BOUNDING_EXTENT");
+
     /** the coordinate where the event happened, only set on MAP_CLICKED event */
     private final Coordinate coordinate;
 
-    /** the extentthat was selected in the map, only set on MAP_EXTENT event. */
+    /** the extent that was selected in the map, only set on MAP_EXTENT and MAP_BOUNDING_EXTENT events. */
     private final Extent extent;
 
     /**
