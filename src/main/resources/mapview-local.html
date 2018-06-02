@@ -26,10 +26,10 @@ Copyright 2015-2017 Peter-Josef Meisch (pj.meisch@sothawo.com)
 <head>
     <meta charset="UTF-8">
     <title>sothawo MapView</title>
-    <link rel="stylesheet" href="ol/4.6.4/ol.css" type="text/css">
+    <link rel="stylesheet" href="ol/4.6.5/ol.css" type="text/css">
     <!-- replaced by: -->
     <!--<style>-->
-    <!--#ol/4.6.4/ol.css#-->
+    <!--#ol/4.6.5/ol.css#-->
     <!--</style>-->
     <style>
         html, body {
@@ -49,11 +49,11 @@ Copyright 2015-2017 Peter-Josef Meisch (pj.meisch@sothawo.com)
         }
     </style>
     <script src="polyfill.js" type="text/javascript"></script>
-    <script src="ol/4.6.4/ol.js" type="text/javascript"></script>
+    <script src="ol/4.6.5/ol.js" type="text/javascript"></script>
     <!-- replaced by: -->
     <!--<script type="text/javascript">-->
     <!--#polyfill.js#-->
-    <!--#ol/4.6.4/ol.js#-->
+    <!--#ol/4.6.5/ol.js#-->
     <!--</script>-->
 
     <link rel="stylesheet" href="mapview.css"/>
@@ -153,6 +153,9 @@ Copyright 2015-2017 Peter-Josef Meisch (pj.meisch@sothawo.com)
         extentSelected: function (minLat, minLon, maxLat, maxLon) {
             console.log("extend: " + minLat + ", " + minLon + ", " + maxLat + ", " + maxLon);
         },
+        extentChanged: function (minLat, minLon, maxLat, maxLon) {
+            console.log("extent: " + minLat + ", " + minLon + ", " + maxLat + ", " + maxLon);
+        }
     };
 
 </script>
@@ -178,8 +181,8 @@ Copyright 2015-2017 Peter-Josef Meisch (pj.meisch@sothawo.com)
     wmsParams.setUrl('http://irs.gis-lab.info/?');
     wmsParams.addParam('layers', 'landsat');
     wmsParams.addParam('REQUEST', 'GetTile');
-//        wmsParams.setUrl('http://geonode.wfp.org:80/geoserver/ows');
-//        wmsParams.addParam('layers', 'geonode:admin_2_gaul_2015');
+    //        wmsParams.setUrl('http://geonode.wfp.org:80/geoserver/ows');
+    //        wmsParams.addParam('layers', 'geonode:admin_2_gaul_2015');
     jsMapView.setWMSParams(wmsParams);
 
     jsMapView.setMapType('OSM');

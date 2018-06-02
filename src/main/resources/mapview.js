@@ -115,10 +115,16 @@ JSMapView.prototype.init = function () {
         var center = cToWGS84(evt.target.get('center'));
         // lat/lon reversion
         this.javaConnector.centerMovedTo(center[1], center[0]);
+        this.reportExtent();
     }, this);
 
     _view.on('change:resolution', function (evt) {
         this.javaConnector.zoomChanged(_view.getZoom());
+        this.reportExtent();
+    }, this);
+
+    _map.on('change:size', function(evt) {
+        this.reportExtent();
     }, this);
 
     // a DragBox interaction
@@ -126,9 +132,8 @@ JSMapView.prototype.init = function () {
         condition: ol.events.condition.platformModifierKeyOnly
     });
     dragBox.on('boxend', function () {
-        var extend = eToWGS84(dragBox.getGeometry().getExtent());
-        console.log(extend);
-        this.javaConnector.extentSelected(extend[1], extend[0], extend[3], extend[2]);
+        var extent = eToWGS84(dragBox.getGeometry().getExtent());
+        this.javaConnector.extentSelected(extent[1], extent[0], extent[3], extent[2]);
     }, this);
 
     _map.addInteraction(dragBox);
@@ -600,6 +605,15 @@ JSMapView.prototype.contextmenu = function (browserEvent) {
     var coordinate = cToWGS84(_map.getEventCoordinate(browserEvent));
     // lat/lon reversion
     this.javaConnector.contextClickAt(coordinate[1], coordinate[0]);
+};
+
+JSMapView.prototype.reportExtent = function() {
+    try {
+        var extent = eToWGS84(_view.calculateExtent(_map.getSize()));
+        this.javaConnector.extentChanged(extent[1], extent[0], extent[3], extent[2]);
+    } catch (e) {
+        // ignore
+    }
 };
 
 /**

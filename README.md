@@ -43,6 +43,11 @@ The test application does not contain all the features, to have that, check
 
 ## current
 
+## 1.17.0
+
+* report changes in the map's extent
+* use OpenLayers 4.6.5
+
 ### 1.16.1
 
 * use java 9 on travis for building (source and target class version is still set to 1.8)
