@@ -52,15 +52,17 @@ public class OfflineCache {
 
     /** Logger for the class */
     private static final Logger logger = Logger.getLogger(OfflineCache.class.getCanonicalName());
-
     /** the url pattern to be mapped. */
     private static final String TILE_OPENSTREETMAP_ORG = "[a-z]\\.tile\\.openstreetmap\\.org";
+    /**
+     * flag if the URLStreamHandlerfactory is initialized. static to have the possibility of multiple Maps in the
+     * app.
+     */
+    private static boolean urlStreamHandlerFactoryIsInitialized = false;
     /** list of Patterns which are used to match against urls to prevent caching. */
     private final Collection<Pattern> noCachePatterns = new ArrayList<>();
     /** flag if the cache is active. */
     private boolean active = false;
-    /** flag if the URLStreamHandlerfactory is initialized. */
-    private boolean urlStreamHandlerFactoryIsInitialized = false;
     /** the cache directory. */
     private Path cacheDirectory;
 
@@ -99,12 +101,8 @@ public class OfflineCache {
      * @throws IllegalArgumentException
      *         if cacheDirectory does not exist or is not writeable
      */
-    public void setCacheDirectory(final Path cacheDirectory) {
-        final Path dir = Objects.requireNonNull(cacheDirectory);
-        if (!Files.isDirectory(dir) || !Files.isWritable(dir)) {
-            throw new IllegalArgumentException("cacheDirectory");
-        }
-        this.cacheDirectory = dir;
+    public void setCacheDirectory(final String cacheDirectory) {
+        setCacheDirectory(FileSystems.getDefault().getPath(Objects.requireNonNull(cacheDirectory)));
     }
 
     /**
@@ -117,8 +115,12 @@ public class OfflineCache {
      * @throws IllegalArgumentException
      *         if cacheDirectory does not exist or is not writeable
      */
-    public void setCacheDirectory(final String cacheDirectory) {
-        setCacheDirectory(FileSystems.getDefault().getPath(Objects.requireNonNull(cacheDirectory)));
+    public void setCacheDirectory(final Path cacheDirectory) {
+        final Path dir = Objects.requireNonNull(cacheDirectory);
+        if (!Files.isDirectory(dir) || !Files.isWritable(dir)) {
+            throw new IllegalArgumentException("cacheDirectory");
+        }
+        this.cacheDirectory = dir;
     }
 
     /**
