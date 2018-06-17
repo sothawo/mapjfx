@@ -240,7 +240,11 @@ public class TestApp extends Application {
             event.consume();
             event.getMapLabel().setCssClass("blue-label");
         });
-
+        // listen to MAP_POINTER_MOVED event
+        mapView.addEventHandler(MapViewEvent.MAP_POINTER_MOVED, event -> {
+            logger.info("MAP_POINTER_MOVED event: " + event.getCoordinate());
+            event.consume();
+        });
 
         initOfflineCache();
         // add listener for mapView initialization state

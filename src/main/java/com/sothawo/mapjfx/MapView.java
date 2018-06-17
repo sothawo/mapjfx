@@ -1114,11 +1114,8 @@ public final class MapView extends Region {
      * Connector object. Methods of an object of this class are called from JS code in the web page.
      */
     public class JavaConnector {
-// ------------------------------ FIELDS ------------------------------
 
         private final Logger logger = Logger.getLogger(JavaConnector.class.getCanonicalName());
-
-// -------------------------- OTHER METHODS --------------------------
 
         /**
          * called when the user has moved the map. the coordinates are EPSG:4326 (WGS) values. The arguments are double
@@ -1134,6 +1131,21 @@ public final class MapView extends Region {
             logger.finer(() -> "JS reports center value " + newCenter);
             lastCoordinateFromMap.set(newCenter);
             setCenter(newCenter);
+        }
+
+        /**
+         * called when the user has moved the pointer (mouse).
+         *
+         * @param lat
+         *         new latitude value
+         * @param lon
+         *         new longitude value
+         */
+        public void pointerMovedTo(double lat, double lon) {
+            final Coordinate coordinate = new Coordinate(lat, lon);
+            logger.finer(() -> "JS reports pointer move " + coordinate);
+            // fire a coordinate event to whom it may be of importance
+            fireEvent(new MapViewEvent(MapViewEvent.MAP_POINTER_MOVED, coordinate));
         }
 
         /**
