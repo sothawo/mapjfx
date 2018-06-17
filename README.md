@@ -43,6 +43,11 @@ The test application does not contain all the features, to have that, check
 
 ## current
 
+## 1.18.0
+
+* add MAP_POINTER_MOVED event
+* OfflineCache is now a Singleton, so one aplication can have multiple maps and have them use a common cache.
+
 ## 1.17.0
 
 * report changes in the map's extent

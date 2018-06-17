@@ -72,6 +72,10 @@ Copyright 2015-2017 Peter-Josef Meisch (pj.meisch@sothawo.com)
             this.debug('center moved to ' + lat + ', ' + lon);
         },
 
+        pointerMovedTo: function (lat, lon) {
+            this.debug('pointer moved to ' + lat + ', ' + lon);
+        },
+
         singleClickAt: function (lat, lon) {
             this.debug('single click at ' + lat + ', ' + lon);
             jsMapView.moveMapObject('castle-marker', lat, lon);

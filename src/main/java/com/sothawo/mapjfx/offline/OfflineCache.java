@@ -43,24 +43,26 @@ import java.util.stream.Collectors;
  * returned without a further connect to the network. If it is not in the cache directory, a network request is made and
  * the returned data is stored in the local cache directory.
  *
+ * The cache is implemented as singleton.
+ *
  * A list of regexp string s can be set with {@link #setNoCacheFilters(Collection)}. URLs that match any of these
  * patterns will not be cached.
  *
  * @author P.J. Meisch (pj.meisch@sothawo.com).
  */
-public class OfflineCache {
+public enum OfflineCache {
+    INSTANCE;
 
     /** Logger for the class */
     private static final Logger logger = Logger.getLogger(OfflineCache.class.getCanonicalName());
-
     /** the url pattern to be mapped. */
     private static final String TILE_OPENSTREETMAP_ORG = "[a-z]\\.tile\\.openstreetmap\\.org";
     /** list of Patterns which are used to match against urls to prevent caching. */
     private final Collection<Pattern> noCachePatterns = new ArrayList<>();
+    /** flag if the URLStreamHandlerfactory is initialized */
+    private boolean urlStreamHandlerFactoryIsInitialized = false;
     /** flag if the cache is active. */
     private boolean active = false;
-    /** flag if the URLStreamHandlerfactory is initialized. */
-    private boolean urlStreamHandlerFactoryIsInitialized = false;
     /** the cache directory. */
     private Path cacheDirectory;
 
@@ -78,7 +80,7 @@ public class OfflineCache {
         return noCachePatterns.stream().map(Pattern::toString).collect(Collectors.toList());
     }
 
-    public void setNoCacheFilters(Collection<String> noCacheFilters) {
+    public void setNoCacheFilters(final Collection<String> noCacheFilters) {
         this.noCachePatterns.clear();
         if (null != noCacheFilters) {
             noCacheFilters.stream().map(Pattern::compile).forEach(this.noCachePatterns::add);

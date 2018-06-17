@@ -88,6 +88,12 @@ JSMapView.prototype.toString = function () {
  * initializes the JSMapView and the map.
  */
 JSMapView.prototype.init = function () {
+    _map.on('pointermove', function (evt) {
+        var coordinate = cToWGS84(evt.coordinate);
+        // lat/lon reversion
+        this.javaConnector.pointerMovedTo(coordinate[1], coordinate[0]);
+    }, this);
+
     _map.on('singleclick', function (evt) {
         var coordinate = cToWGS84(evt.coordinate);
         // lat/lon reversion
@@ -123,7 +129,7 @@ JSMapView.prototype.init = function () {
         this.reportExtent();
     }, this);
 
-    _map.on('change:size', function(evt) {
+    _map.on('change:size', function (evt) {
         this.reportExtent();
     }, this);
 
@@ -607,7 +613,7 @@ JSMapView.prototype.contextmenu = function (browserEvent) {
     this.javaConnector.contextClickAt(coordinate[1], coordinate[0]);
 };
 
-JSMapView.prototype.reportExtent = function() {
+JSMapView.prototype.reportExtent = function () {
     try {
         var extent = eToWGS84(_view.calculateExtent(_map.getSize()));
         this.javaConnector.extentChanged(extent[1], extent[0], extent[3], extent[2]);

@@ -37,7 +37,6 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.FileSystems;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -104,6 +103,7 @@ public class TestApp extends Application {
 
     /** the MapView */
     private MapView mapView;
+    private MapView mapView2;
 
 // -------------------------- STATIC METHODS --------------------------
     /** api keys for bing maps. */
@@ -116,9 +116,9 @@ public class TestApp extends Application {
     }
 
     @Override
-    public void start(Stage primaryStage) throws Exception {
+    public void start(final Stage primaryStage) throws Exception {
         logger.info("starting devtest program...");
-        BorderPane borderPane = new BorderPane();
+        final BorderPane borderPane = new BorderPane();
 
         // MapView in the center with an initial coordinate (optional)
         // the MapView is created first as the other elements reference it
@@ -128,7 +128,7 @@ public class TestApp extends Application {
         borderPane.setCenter(mapView);
 
         // at the top some buttons
-        Pane topPane = createTopPane();
+        final Pane topPane = createTopPane();
         borderPane.setTop(topPane);
 
         // at the bottom some infos
@@ -240,12 +240,13 @@ public class TestApp extends Application {
             event.consume();
             event.getMapLabel().setCssClass("blue-label");
         });
+        // listen to MAP_POINTER_MOVED event
+        mapView.addEventHandler(MapViewEvent.MAP_POINTER_MOVED, event -> {
+            logger.info("MAP_POINTER_MOVED event: " + event.getCoordinate());
+            event.consume();
+        });
 
-
-        final OfflineCache offlineCache = mapView.getOfflineCache();
-        offlineCache.setCacheDirectory(FileSystems.getDefault().getPath("tmpdata/cache"));
-        offlineCache.setActive(false);
-        offlineCache.setNoCacheFilters(Collections.singletonList(".*\\.sothawo\\.com/.*"));
+        initOfflineCache();
         // add listener for mapView initialization state
         mapView.initializedProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue) {
@@ -280,14 +281,32 @@ public class TestApp extends Application {
         // now initialize the mapView
         mapView.initialize();
 
+        mapView2 = new MapView();
+        mapView2.setMinWidth(200);
+        borderPane.setRight(mapView2);
+        mapView2.initializedProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue) {
+                mapView2.setCenter(coordKarlsruheHarbour);
+                mapView2.setZoom(10);
+            }
+        });
+        mapView2.initialize();
+
         // show the whole thing
-        Scene scene = new Scene(borderPane, 1200, 800);
+        final Scene scene = new Scene(borderPane, 1200, 800);
 
         primaryStage.setTitle("sothawo mapjfx devtest program");
         primaryStage.setScene(scene);
         primaryStage.show();
 
         logger.finer(() -> "application started.");
+    }
+
+    private void initOfflineCache() {
+        final OfflineCache offlineCache = OfflineCache.INSTANCE;
+        offlineCache.setCacheDirectory(FileSystems.getDefault().getPath("tmpdata/cache"));
+        offlineCache.setActive(true);
+        offlineCache.setNoCacheFilters(Collections.singletonList(".*\\.sothawo\\.com/.*"));
     }
 
     /**
