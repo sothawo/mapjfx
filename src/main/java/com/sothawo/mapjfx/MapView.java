@@ -143,7 +143,7 @@ public final class MapView extends Region {
     /** cache for loading images in base64 strings */
     private final ConcurrentHashMap<URL, String> imgCache = new ConcurrentHashMap<>();
     /** the OfflineCache. */
-    private final OfflineCache offlineCache = new OfflineCache();
+    private final OfflineCache offlineCache = OfflineCache.INSTANCE;
     /** the connector object in the web page; field to prevent it being gc'ed. */
     private final JavaConnector javaConnector = new JavaConnector();
     /** the WebEngine of the WebView containing the OpenLayers Map. */

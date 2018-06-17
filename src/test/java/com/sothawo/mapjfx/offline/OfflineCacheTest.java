@@ -43,11 +43,10 @@ public class OfflineCacheTest {
 
     private static final Path cacheDirectory = FileSystems.getDefault().getPath("./target/cache");
 
-    private OfflineCache cache;
+    private final OfflineCache cache = OfflineCache.INSTANCE;
 
     @Before
     public void setUp() throws Exception {
-        cache = new OfflineCache();
         Files.createDirectories(cacheDirectory);
         cache.setCacheDirectory(cacheDirectory);
     }

@@ -242,7 +242,7 @@ public class TestApp extends Application {
         });
 
 
-        initOfflineCache(mapView);
+        initOfflineCache();
         // add listener for mapView initialization state
         mapView.initializedProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue) {
@@ -286,8 +286,6 @@ public class TestApp extends Application {
                 mapView2.setZoom(10);
             }
         });
-
-        initOfflineCache(mapView2);
         mapView2.initialize();
 
         // show the whole thing
@@ -300,8 +298,8 @@ public class TestApp extends Application {
         logger.finer(() -> "application started.");
     }
 
-    private void initOfflineCache(final MapView m) {
-        final OfflineCache offlineCache = m.getOfflineCache();
+    private void initOfflineCache() {
+        final OfflineCache offlineCache = OfflineCache.INSTANCE;
         offlineCache.setCacheDirectory(FileSystems.getDefault().getPath("tmpdata/cache"));
         offlineCache.setActive(true);
         offlineCache.setNoCacheFilters(Collections.singletonList(".*\\.sothawo\\.com/.*"));
