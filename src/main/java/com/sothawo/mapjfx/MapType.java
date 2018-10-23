@@ -30,5 +30,7 @@ public enum MapType {
     /** BingMaps Aerial. */
     BINGMAPS_AERIAL,
     /** custom WMS server. */
-    WMS
+    WMS,
+    /** custom Map server with XYZ support. */
+    XYZ
 }
