@@ -19,6 +19,6 @@ matrix:
   - jdk: oraclejdk9
     script:
       - if [ "$TRAVIS_BRANCH" = "develop" ]; then mvn clean package --settings .travis-mvn.xml -B -U; fi
-  - jdk: oraclejdk10
+  - jdk: openjdk10
     script:
       - if [ "$TRAVIS_BRANCH" = "develop" ]; then mvn clean package --settings .travis-mvn.xml -B -U; fi
