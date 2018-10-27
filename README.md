@@ -43,6 +43,8 @@ The test application does not contain all the features, to have that, check
 
 ## current
 
+* add XYZ map source (contribution from [Erik Jaehne](https://github.com/s3erjaeh))
+
 ## 1.18.0
 
 * add MAP_POINTER_MOVED event

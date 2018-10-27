@@ -104,7 +104,7 @@ public enum OfflineCache {
     public void setCacheDirectory(final Path cacheDirectory) {
         final Path dir = Objects.requireNonNull(cacheDirectory);
         if (!Files.isDirectory(dir) || !Files.isWritable(dir)) {
-            throw new IllegalArgumentException("cacheDirectory");
+            throw new IllegalArgumentException("cacheDirectory: " + dir);
         }
         this.cacheDirectory = dir;
     }
