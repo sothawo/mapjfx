@@ -71,6 +71,8 @@ public class TestApp extends Application {
 
     private static final WMSParam wmsParam;
 
+    private static final XYZParam xyzParam;
+
     static {
         // init the logging from the classpath logging.properties
         InputStream inputStream = TestApp.class.getResourceAsStream("/logging.properties");
@@ -99,11 +101,14 @@ public class TestApp extends Application {
         wmsParam = new WMSParam()
                 .setUrl("http://geonode.wfp.org:80/geoserver/ows")
                 .addParam("layers", "geonode:admin_2_gaul_2015");
+
+        xyzParam = new XYZParam()
+                .withUrl("https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x})")
+                .withAttributions("'Tiles &copy; <a href=\"https://services.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer\">ArcGIS</a>'");
     }
 
     /** the MapView */
     private MapView mapView;
-    private MapView mapView2;
 
 // -------------------------- STATIC METHODS --------------------------
     /** api keys for bing maps. */
@@ -136,6 +141,9 @@ public class TestApp extends Application {
 
         // add WMSParam
         mapView.setWMSParam(wmsParam);
+
+        //add XYZParam
+        mapView.setXYZParam(xyzParam);
 
         // listen to MapViewEvent MAP_CLICKED
         mapView.addEventHandler(MapViewEvent.MAP_CLICKED, event -> {
@@ -281,17 +289,6 @@ public class TestApp extends Application {
         // now initialize the mapView
         mapView.initialize();
 
-        mapView2 = new MapView();
-        mapView2.setMinWidth(200);
-        borderPane.setRight(mapView2);
-        mapView2.initializedProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue) {
-                mapView2.setCenter(coordKarlsruheHarbour);
-                mapView2.setZoom(10);
-            }
-        });
-        mapView2.initialize();
-
         // show the whole thing
         final Scene scene = new Scene(borderPane, 1200, 800);
 
@@ -419,6 +416,11 @@ public class TestApp extends Application {
         btn = new Button();
         btn.setText("WMS");
         btn.setOnAction(evt -> mapView.setMapType(MapType.WMS));
+        hbox.getChildren().add(btn);
+
+        btn = new Button();
+        btn.setText("XYZ");
+        btn.setOnAction(evt -> mapView.setMapType(MapType.XYZ));
         hbox.getChildren().add(btn);
 
         btn = new Button();

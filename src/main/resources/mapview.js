@@ -1,5 +1,5 @@
 /*
- Copyright 2015-2017 Peter-Josef Meisch (pj.meisch@sothawo.com)
+ Copyright 2015-2018 Peter-Josef Meisch (pj.meisch@sothawo.com)
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -78,6 +78,7 @@ function JSMapView(javaConnector) {
     this.anchorsPatched = false;
     this.bingMapsApiKey = '';
     this.wmsParams = {};
+    this.xyzParams = {};
 }
 
 JSMapView.prototype.toString = function () {
@@ -250,6 +251,15 @@ JSMapView.prototype.setMapType = function (newType) {
                         serverType: 'geoserver'
                     })
                 })
+            ]
+        }));
+    } else if (newType == 'XYZ' && this.xyzParams.url.length > 0) {
+        _map.setLayerGroup(new ol.layer.Group({
+            layers: [
+                new ol.layer.Tile({
+                    source: new ol.source.XYZ(this.xyzParams)
+                }),
+                _layerFeatures
             ]
         }));
     }
@@ -569,6 +579,14 @@ JSMapView.prototype.setLabelCss = function (name, cssClass) {
  */
 JSMapView.prototype.setBingMapsApiKey = function (apiKey) {
     this.bingMapsApiKey = apiKey;
+};
+
+/**
+ * sets the XYZ Params object
+ * @param params the params object
+ */
+JSMapView.prototype.setXYZParams = function (params) {
+    this.xyzParams = JSON.parse(params);
 };
 
 /**

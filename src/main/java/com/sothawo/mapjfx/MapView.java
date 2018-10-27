@@ -1,5 +1,5 @@
 /*
- Copyright 2015-2017 Peter-Josef Meisch (pj.meisch@sothawo.com)
+ Copyright 2015-2018 Peter-Josef Meisch (pj.meisch@sothawo.com)
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -86,6 +86,7 @@ import static java.util.Objects.requireNonNull;
  * All the setters return the MapView itself to enable fluent programming.
  *
  * @author P.J. Meisch (pj.meisch@sothawo.com).
+ * @author Erik Jähne
  */
 @SuppressWarnings("UnusedDeclaration")
 public final class MapView extends Region {
@@ -169,6 +170,8 @@ public final class MapView extends Region {
     private Optional<URL> customMapviewCssURL = Optional.empty();
     /** optional WMS server parameters. */
     private Optional<WMSParam> wmsParam = Optional.empty();
+    /** optional XYZ server parameters. */
+    private Optional<XYZParam> xyzParam = Optional.empty();
 
 
     /**
@@ -231,6 +234,19 @@ public final class MapView extends Region {
                 }
                 if (!wmsValid) {
                     logger.warning("no wms params defined for map type " + newValue);
+                    mapType.set(oldValue);
+                }
+            }
+            if (MapType.XYZ.equals(newValue)) {
+                boolean xyzValid = false;
+                if (xyzParam.isPresent()) {
+                    String url = xyzParam.get().getUrl();
+                    if (null != url && !url.isEmpty()) {
+                        xyzValid = true;
+                    }
+                }
+                if (!xyzValid) {
+                    logger.warning("no xyz params defined for map type " + newValue);
                     mapType.set(oldValue);
                 }
             }
@@ -343,6 +359,9 @@ public final class MapView extends Region {
                 jsMapView.call("newWMSParams");
                 jsMapView.call("setWMSParamsUrl", wmsParam.getUrl());
                 wmsParam.getParams().forEach((key, value) -> jsMapView.call("addWMSParamsParams", key, value));
+            });
+            xyzParam.ifPresent(xyzParam -> {
+                jsMapView.call("setXYZParams", xyzParam.toJSON());
             });
             jsMapView.call("setMapType", mapTypeName);
         }
@@ -1057,7 +1076,7 @@ public final class MapView extends Region {
     }
 
     /**
-     * setst the WMS parameters.
+     * sets the WMS parameters.
      *
      * @param wmsParam
      *         WMS parameters
@@ -1065,6 +1084,18 @@ public final class MapView extends Region {
      */
     public MapView setWMSParam(final WMSParam wmsParam) {
         this.wmsParam = Optional.ofNullable(wmsParam);
+        return this;
+    }
+
+    /**
+     * sets the XYZ parameters.
+     *
+     * @param xyzParam
+     *         XYZ parameters
+     * @return this object
+     */
+    public MapView setXYZParam(final XYZParam xyzParam) {
+        this.xyzParam = Optional.ofNullable(xyzParam);
         return this;
     }
 
