@@ -109,7 +109,6 @@ public class TestApp extends Application {
 
     /** the MapView */
     private MapView mapView;
-    private MapView mapView2;
 
 // -------------------------- STATIC METHODS --------------------------
     /** api keys for bing maps. */
@@ -289,17 +288,6 @@ public class TestApp extends Application {
 
         // now initialize the mapView
         mapView.initialize();
-
-        mapView2 = new MapView();
-        mapView2.setMinWidth(200);
-        borderPane.setRight(mapView2);
-        mapView2.initializedProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue) {
-                mapView2.setCenter(coordKarlsruheHarbour);
-                mapView2.setZoom(10);
-            }
-        });
-        mapView2.initialize();
 
         // show the whole thing
         final Scene scene = new Scene(borderPane, 1200, 800);

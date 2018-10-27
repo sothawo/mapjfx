@@ -1,5 +1,5 @@
 /*
- Copyright 2014 Peter-Josef Meisch (pj.meisch@sothawo.com)
+ Copyright 2014-2018 Peter-Josef Meisch (pj.meisch@sothawo.com)
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package com.sothawo.mapjfx;
  * Enumeration defining the different map types.
  *
  * @author P.J. Meisch (pj.meisch@sothawo.com).
+ * @author Erik Jähne
  */
 public enum MapType {
     /** OpenStreetMap. */
