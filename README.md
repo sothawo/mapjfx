@@ -42,6 +42,8 @@ The test application does not contain all the features, to have that, check
 ## version history
 
 ## current
+## 1.19.0
+
 
 * add XYZ map source (contribution from [Erik Jaehne](https://github.com/s3erjaeh))
 
