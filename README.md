@@ -34,7 +34,7 @@ this project is built using mvn. The library jar is created by running `mvn pack
 the project contains a test application which is mostly used during development. The source is found in the test
 sources (src/test/java). It is compiled and executed with the following command (no need to build the library first):
 
-`mvn test exec:java -Dexec.mainClass="com.sothawo.mapjfx.TestApp" -Dexec.classpathScope=test`
+`mvn test exec:java -Dexec.mainClass="com.sothawo.mapjfx.TestAppLauncher" -Dexec.classpathScope=test`
 
 The test application does not contain all the features, to have that, check
  [mapjfx-demo](http://www.sothawo.com/projects/mapjfx-demo/)
@@ -42,15 +42,17 @@ The test application does not contain all the features, to have that, check
 ## version history
 
 ## current
-## 1.19.0
 
+* switch to OpenJDK 11 and OpenJFX 11
+
+## 1.19.0
 
 * add XYZ map source (contribution from [Erik Jaehne](https://github.com/s3erjaeh))
 
 ## 1.18.0
 
 * add MAP_POINTER_MOVED event
-* OfflineCache is now a Singleton, so one aplication can have multiple maps and have them use a common cache.
+* OfflineCache is now a Singleton, so one application can have multiple maps and have them use a common cache.
 
 ## 1.17.0
 
