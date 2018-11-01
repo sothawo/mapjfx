@@ -101,6 +101,33 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>shaded</id>
+            <build>
+                <finalName>${project.artifactId}</finalName>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-shade-plugin</artifactId>
+                        <version>3.2.0</version>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>shade</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>com.sothawo.mapjfx.app.TestAppLauncher</mainClass>
+                                </transformer>
+                            </transformers>
+                        </configuration>                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 
     <build>

@@ -38,10 +38,14 @@ Pull requests should be based on 1.x for changes/backports in the Java 8 version
  
 ## running the test application
 
-the project contains a test application which is mostly used during development. The source is found in the test
-sources (src/test/java). It is compiled and executed with the following command (no need to build the library first):
+the project contains a test application which is mostly used during development. The application can be started from 
+within an IDE by using the `com.sothawo.mapjfx.app.TestAppLauncher` class.
 
-`mvn test exec:java -Dexec.mainClass="com.sothawo.mapjfx.TestAppLauncher"`
+to run it from the commandline it is first necessary to build the library with all dependencies as a shaded jar and 
+the run the test application:
+
+     mvn -P shaded package
+     java -jar target/mapjfx.jar
 
 The test application does not contain all the features, to have that, check
  [mapjfx-demo](http://www.sothawo.com/projects/mapjfx-demo/)
