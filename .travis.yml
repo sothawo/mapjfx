@@ -14,8 +14,5 @@ matrix:
   include:
   - jdk: oraclejdk8
     script:
-      - if [ "$TRAVIS_BRANCH" = "develop" ]; then mvn clean package --settings .travis-mvn.xml -B -U; fi
+      - if [ "$TRAVIS_BRANCH" = "1.x" ]; then mvn clean package --settings .travis-mvn.xml -B -U; fi
       - if [ "$TRAVIS_BRANCH" = "master" ]; then mvn clean deploy --settings .travis-mvn.xml -B -U -Prelease; fi
-  - jdk: oraclejdk9
-    script:
-      - if [ "$TRAVIS_BRANCH" = "develop" ]; then mvn clean package --settings .travis-mvn.xml -B -U; fi
