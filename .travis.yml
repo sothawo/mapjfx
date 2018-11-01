@@ -12,9 +12,6 @@ install:
 
 matrix:
   include:
-  - jdk: openjdk8
-    script:
-      - if [ "$TRAVIS_BRANCH" = "21x" ]; then mvn clean package --settings .travis-mvn.xml -B -U; fi
   - jdk: openjdk11
     script:
       - if [ "$TRAVIS_BRANCH" = "2.x" ]; then mvn clean package --settings .travis-mvn.xml -B -U; fi
