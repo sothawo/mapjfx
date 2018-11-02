@@ -50,8 +50,12 @@ The test application does not contain all the features, to have that, check
 ## version history
 
 ## current
-## 1.19.0
 
+## 1.19.1
+
+* no code changes, branch adaptions for branches 1.x and 2.x
+
+## 1.19.0
 
 * add XYZ map source (contribution from [Erik Jaehne](https://github.com/s3erjaeh))
 
