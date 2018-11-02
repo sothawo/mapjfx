@@ -21,13 +21,21 @@ More Information about the project can be found at [the sothawo website](http://
    See the License for the specific language governing permissions and
    limitations under the License.
 
-## building the library
+## Java versions and branches
 
-this project is built using mvn. The library jar is created by running `mvn package`
+the original version started with JDK8. In November 2018 I started the branch _2.x_ which is set to use Java 11 as the
+ main development branch.
 
+Pull requests should be based on _1.x_ for changes/backports in the Java 8 version and to _2.x_ for the current version.
+
+Releases are based on _master_ for the _2.x_ branch ad on _master-1.x_ for the _1.x_ branch.
+ 
 ## build status on travis-ci
 
-[![Build Status](https://travis-ci.org/sothawo/mapjfx.svg?branch=master)](https://travis-ci.org/sothawo/mapjfx)
+2.x: [![Build Status](https://travis-ci.org/sothawo/mapjfx.svg?branch=2.x)](https://travis-ci.org/sothawo/mapjfx)    
+master: [![Build Status](https://travis-ci.org/sothawo/mapjfx.svg?branch=master)](https://travis-ci.org/sothawo/mapjfx)    
+1.x: [![Build Status](https://travis-ci.org/sothawo/mapjfx.svg?branch=1.x)](https://travis-ci.org/sothawo/mapjfx)  
+master-1.x: [![Build Status](https://travis-ci.org/sothawo/mapjfx.svg?branch=master-1.x)](https://travis-ci.org/sothawo/mapjfx)  
 
 ## running the test application
 
