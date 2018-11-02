@@ -27,14 +27,23 @@ this project is built using mvn. The library jar is created by running `mvn pack
 
 ## build status on travis-ci
 
-[![Build Status](https://travis-ci.org/sothawo/mapjfx.svg?branch=master)](https://travis-ci.org/sothawo/mapjfx)
+master: [![Build Status](https://travis-ci.org/sothawo/mapjfx.svg?branch=master)](https://travis-ci
+.org/sothawo/mapjfx)    
+2.x | [![Build Status](https://travis-ci.org/sothawo/mapjfx.svg?branch=2.x)](https://travis-ci.org/sothawo/mapjfx)  
+1.x | [![Build Status](https://travis-ci.org/sothawo/mapjfx.svg?branch=1.x)](https://travis-ci.org/sothawo/mapjfx)  
+master-1.x | [![Build Status](https://travis-ci.org/sothawo/mapjfx.svg?branch=master-1.x)](https://travis-ci
+.org/sothawo/mapjfx)  
 
 ## Java versions
 
-the original version started with JDK8. The last version built for Java 8 is 1.19.0.
-In November 2018 I started the branch 2.x which is set to use Java 11 as the main development branch.
+the original version started with JDK8. 
+
+In November 2018 I started the branch 2.x which is set to use Java 11 as the main development branch. branch 1.x 
+conitunues to live with the development for Java 8. 
 
 Pull requests should be based on 1.x for changes/backports in the Java 8 version and to 2.x for the current version.
+
+Released versions are created from the _master_ branch for the 2.x branch and from _master-1.x_ for the 1.x branch.
  
 ## running the test application
 
