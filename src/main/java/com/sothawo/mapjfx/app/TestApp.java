@@ -16,32 +16,20 @@
 package com.sothawo.mapjfx.app;
 
 import com.sothawo.mapjfx.*;
-import com.sothawo.mapjfx.event.MapLabelEvent;
-import com.sothawo.mapjfx.event.MapViewEvent;
-import com.sothawo.mapjfx.event.MarkerEvent;
+import com.sothawo.mapjfx.event.*;
 import com.sothawo.mapjfx.offline.OfflineCache;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.Slider;
-import javafx.scene.control.TextField;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.file.FileSystems;
 import java.util.Collections;
-import java.util.logging.Level;
-import java.util.logging.LogManager;
-import java.util.logging.Logger;
+import java.util.logging.*;
 
 /**
  * Test application.
@@ -298,6 +286,12 @@ public class TestApp extends Application {
         primaryStage.show();
 
         logger.finer(() -> "application started.");
+    }
+
+    @Override
+    public void stop() throws Exception {
+        mapView.close();
+        super.stop();
     }
 
     private void initOfflineCache() {

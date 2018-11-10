@@ -59,6 +59,8 @@ The test application does not contain all the features, to have that, check
 
 ## current
 
+* added MapView.close() method to cleanup resources and implement AutoCloseable.
+
 ## 2.0.0
 
 * switch to OpenJDK 11 and OpenJFX 11
