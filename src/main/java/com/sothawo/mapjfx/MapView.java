@@ -89,7 +89,7 @@ import static java.util.Objects.requireNonNull;
  * @author Erik Jähne
  */
 @SuppressWarnings("UnusedDeclaration")
-public final class MapView extends Region {
+public final class MapView extends Region implements AutoCloseable {
 
     /** minimal zoom level, OL defines this as 0. */
     public static final int MIN_ZOOM = 0;
@@ -188,12 +188,6 @@ public final class MapView extends Region {
         setBackground(new Background(new BackgroundFill(Paint.valueOf("#ccc"), null, null)));
 
         startWeakRefCleaner();
-    }
-
-    @Override
-    protected void finalize() throws Throwable {
-        stopWeakRefCleaner();
-        super.finalize();
     }
 
     /**
