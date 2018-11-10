@@ -299,6 +299,12 @@ public class TestApp extends Application {
         logger.finer(() -> "application started.");
     }
 
+    @Override
+    public void stop() throws Exception {
+        mapView.close();
+        super.stop();
+    }
+
     private void initOfflineCache() {
         final OfflineCache offlineCache = OfflineCache.INSTANCE;
         offlineCache.setCacheDirectory(FileSystems.getDefault().getPath("tmpdata/cache"));
