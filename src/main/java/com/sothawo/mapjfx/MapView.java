@@ -89,8 +89,7 @@ import static java.util.Objects.requireNonNull;
  * @author Erik Jähne
  */
 @SuppressWarnings("UnusedDeclaration")
-public final class MapView extends Region {
-// ------------------------------ FIELDS ------------------------------
+public final class MapView extends Region implements AutoCloseable {
 
     /** minimal zoom level, OL defines this as 0. */
     public static final int MIN_ZOOM = 0;
@@ -172,6 +171,8 @@ public final class MapView extends Region {
     private Optional<WMSParam> wmsParam = Optional.empty();
     /** optional XYZ server parameters. */
     private Optional<XYZParam> xyzParam = Optional.empty();
+    /** the thread to clean weak references. */
+    private Thread weakRefCleaner;
 
 
     /**
@@ -189,7 +190,12 @@ public final class MapView extends Region {
         startWeakRefCleaner();
     }
 
-// --------------------------- CONSTRUCTORS ---------------------------
+    /**
+     * should be called when the MapViewis no longer needed. Cleans up internal resources.
+     */
+    public void close() {
+        stopWeakRefCleaner();
+    }
 
     /**
      * initializes the JavaFX properties.
@@ -257,8 +263,8 @@ public final class MapView extends Region {
     /**
      * defines and starts the thread watching the weak reference queue(s)
      */
-    private void startWeakRefCleaner() {
-        Thread thread = new Thread(() -> {
+    private synchronized void startWeakRefCleaner() {
+        weakRefCleaner = new Thread(() -> {
             boolean running = true;
             while (running) {
                 try {
@@ -292,14 +298,21 @@ public final class MapView extends Region {
                     Platform.runLater(
                             () -> mapCoordinateElementsToRemove.forEach(this::removeMapCoordinateElementWithId));
                 } catch (InterruptedException e) {
-                    logger.warning("thread interrupted");
+                    logger.finer("thread interrupted");
                     running = false;
                 }
             }
         });
-        thread.setName("MapView-WeakRef-Cleaner");
-        thread.setDaemon(true);
-        thread.start();
+        weakRefCleaner.setName("MapView-WeakRef-Cleaner");
+        weakRefCleaner.setDaemon(true);
+        weakRefCleaner.start();
+    }
+
+    private synchronized void stopWeakRefCleaner() {
+        if (weakRefCleaner != null) {
+            weakRefCleaner.interrupt();
+            weakRefCleaner = null;
+        }
     }
 
     /**

@@ -51,6 +51,10 @@ The test application does not contain all the features, to have that, check
 
 ## current
 
+## 1.20.0
+
+* added MapView.close() method to cleanup resources
+
 ## 1.19.1
 
 * no code changes, branch adaptions for branches 1.x and 2.x
