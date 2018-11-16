@@ -59,6 +59,10 @@ The test application does not contain all the features, to have that, check
 
 ## current
 
+## 2.1.1
+
+* use OpenLayers 5.3.0
+
 ## 2.1.0
 
 * added MapView.close() method to cleanup resources and implement AutoCloseable.
