@@ -51,6 +51,10 @@ The test application does not contain all the features, to have that, check
 
 ## current
 
+## 1.20.1
+
+* use OpenLayers 5.3.0
+
 ## 1.20.0
 
 * added MapView.close() method to cleanup resources
