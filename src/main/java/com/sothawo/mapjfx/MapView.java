@@ -15,62 +15,32 @@
 */
 package com.sothawo.mapjfx;
 
-import com.sothawo.mapjfx.event.ClickType;
-import com.sothawo.mapjfx.event.MapLabelEvent;
-import com.sothawo.mapjfx.event.MapViewEvent;
-import com.sothawo.mapjfx.event.MarkerEvent;
+import com.sothawo.mapjfx.event.*;
 import com.sothawo.mapjfx.offline.OfflineCache;
 import javafx.application.Platform;
-import javafx.beans.property.ReadOnlyBooleanProperty;
-import javafx.beans.property.ReadOnlyBooleanWrapper;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.*;
 import javafx.beans.value.ChangeListener;
 import javafx.concurrent.Worker;
 import javafx.event.EventType;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
-import javafx.scene.layout.Region;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Paint;
-import javafx.scene.web.WebEngine;
-import javafx.scene.web.WebView;
-import netscape.javascript.JSException;
-import netscape.javascript.JSObject;
+import javafx.scene.web.*;
+import netscape.javascript.*;
 
 import java.awt.*;
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.lang.ref.ReferenceQueue;
-import java.lang.ref.WeakReference;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLConnection;
+import java.io.*;
+import java.lang.ref.*;
+import java.net.*;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.logging.*;
+import java.util.regex.*;
+import java.util.stream.*;
 
-import static java.util.Objects.requireNonNull;
+import static java.util.Objects.*;
 
 /**
  * Map component. To use the MapView, construct it and add it to your scene. Then the  {@link #initialized} property
@@ -472,20 +442,26 @@ public final class MapView extends Region implements AutoCloseable {
         } else {
             // sync on the coordinatesLines map as the cleaner thread accesses this as well
             synchronized (coordinateLines) {
-                String id = requireNonNull(coordinateLine).getId();
+                final String id = requireNonNull(coordinateLine).getId();
                 if (!coordinateLines.containsKey(id)) {
                     logger.fine(() -> "adding coordinate line " + coordinateLine);
-                    JSObject jsCoordinateLine = (JSObject) jsMapView.call("getCoordinateLine", id);
+                    final JSObject jsCoordinateLine = (JSObject) jsMapView.call("getCoordinateLine", id);
                     coordinateLine.getCoordinateStream().forEach(
                             (coord) -> jsCoordinateLine
                                     .call("addCoordinate", coord.getLatitude(), coord.getLongitude()));
-                    javafx.scene.paint.Color color = coordinateLine.getColor();
-                    jsCoordinateLine.call("setColor", color.getRed() * 255, color.getGreen() * 255, color.getBlue() *
-                            255, color.getOpacity());
+                    final javafx.scene.paint.Color color = coordinateLine.getColor();
+                    jsCoordinateLine.call("setColor",
+                            color.getRed() * 255, color.getGreen() * 255, color.getBlue() * 255,
+                            color.getOpacity());
+                    final javafx.scene.paint.Color fillColor = coordinateLine.getFillColor();
+                    jsCoordinateLine.call("setFillColor",
+                            fillColor.getRed() * 255, fillColor.getGreen() * 255, fillColor.getBlue() * 255,
+                            fillColor.getOpacity());
                     jsCoordinateLine.call("setWidth", coordinateLine.getWidth());
+                    jsCoordinateLine.call("setClosed", coordinateLine.isClosed());
                     jsCoordinateLine.call("seal");
 
-                    ChangeListener<Boolean> changeListener =
+                    final ChangeListener<Boolean> changeListener =
                             (observable, newValue, oldValue) -> setCoordinateLineVisibleInMap(id);
                     coordinateLine.visibleProperty().addListener(changeListener);
                     // store the listener as we must unregister on removeCooridnateLine
