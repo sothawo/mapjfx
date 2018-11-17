@@ -1,5 +1,5 @@
 /*
-   Copyright 2015 Peter-Josef Meisch (pj.meisch@sothawo.com)
+   Copyright 2015-2018 Peter-Josef Meisch (pj.meisch@sothawo.com)
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,14 +28,18 @@ function CoordinateLine() {
     this.onMap = false;
     // default color opaque red
     this.color = [255, 0, 0, 1];
+    // default fill color transparent yellow
+    this.fillColor = [255, 255, 0, 0.3];
     // default width 3
     this.width = 3;
+    // default is not closed
+    this.closed = false
 }
 
 /**
  * @returns {array} the coordinates of this CoordinateLine. Coordinates are in longitude/latitude order.
  */
-CoordinateLine.prototype.getCoordinates = function() {
+CoordinateLine.prototype.getCoordinates = function () {
     return this.coordinates;
 }
 
@@ -44,49 +48,56 @@ CoordinateLine.prototype.getCoordinates = function() {
  * @param {number} latitude value in WGS84
  * @param {number} longitude value in WGS84
  */
-CoordinateLine.prototype.addCoordinate = function(latitude, longitude) {
+CoordinateLine.prototype.addCoordinate = function (latitude, longitude) {
     // lat/lon reversion
     this.coordinates.push(cFromWGS84([longitude, latitude]));
 }
 
 /**
- * finishes construction of the object and builds the OL Feature based in the coordinates that were set
+ * finishes construction of the object and builds the OL Feature based in the coordinates that were set.
  */
-CoordinateLine.prototype.seal = function() {
-    this.feature = new ol.Feature(new ol.geom.LineString(this.coordinates));
+CoordinateLine.prototype.seal = function () {
+    if (this.closed) {
+        this.feature = new ol.Feature(new ol.geom.Polygon([this.coordinates]));
+    } else {
+        this.feature = new ol.Feature(new ol.geom.LineString(this.coordinates));
+    }
     var style = new ol.style.Style({
         stroke: new ol.style.Stroke({
-                width: this.width,
-                color: this.color
-              })
-          });
+            width: this.width,
+            color: this.color
+        }),
+        fill: new ol.style.Fill({
+            color: this.fillColor
+        })
+    });
     this.feature.setStyle(style);
-}
+};
 
 /**
  * gets the feature for OpenLayers map
  * @return {ol.Feature}
  */
-CoordinateLine.prototype.getFeature = function() {
+CoordinateLine.prototype.getFeature = function () {
     return this.feature;
-}
+};
 
 /**
  * sets the flag wether the feature is shown on the map
  *
- * @param {boolean}
+ * @param flag
  */
-CoordinateLine.prototype.setOnMap = function(flag) {
+CoordinateLine.prototype.setOnMap = function (flag) {
     this.onMap = flag;
-}
+};
 
 /**
  * gets the flag wether the feature is visible on the map
  * @return {boolean}
  */
-CoordinateLine.prototype.getOnMap = function() {
+CoordinateLine.prototype.getOnMap = function () {
     return this.onMap;
-}
+};
 
 /**
  * sets the color of the line.
@@ -94,17 +105,37 @@ CoordinateLine.prototype.getOnMap = function() {
  * @param {number} red 0..255
  * @param {number} green 0..255
  * @param {number} blue 0..255
- * @param {number} aplha 0..1
+ * @param {number} alpha 0..1
  */
-CoordinateLine.prototype.setColor = function(red, green, blue, alpha) {
+CoordinateLine.prototype.setColor = function (red, green, blue, alpha) {
     this.color = [red, green, blue, alpha];
-}
+};
+
+/**
+ * sets the fill color of the line.
+ *
+ * @param {number} red 0..255
+ * @param {number} green 0..255
+ * @param {number} blue 0..255
+ * @param {number} alpha 0..1
+ */
+CoordinateLine.prototype.setFillColor = function (red, green, blue, alpha) {
+    this.fillColor = [red, green, blue, alpha];
+};
 
 /**
  * sets the width of the line
  *
- * @param {number} the width
+ * @param width
  */
-CoordinateLine.prototype.setWidth = function(width) {
+CoordinateLine.prototype.setWidth = function (width) {
     this.width = width;
-}
+};
+
+/**
+ * sets the closed flag.
+ * @param flag
+ */
+CoordinateLine.prototype.setClosed = function (flag) {
+    this.closed = flag
+};
