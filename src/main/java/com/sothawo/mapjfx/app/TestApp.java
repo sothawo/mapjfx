@@ -1,5 +1,5 @@
 /*
- Copyright 2015-2017 Peter-Josef Meisch (pj.meisch@sothawo.com)
+ Copyright 2015-2018 Peter-Josef Meisch (pj.meisch@sothawo.com)
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -37,7 +37,6 @@ import java.util.logging.*;
  * @author P.J. Meisch (pj.meisch@sothawo.com).
  */
 public class TestApp extends Application {
-// ------------------------------ FIELDS ------------------------------
 
     private static final Logger logger;
 
@@ -49,10 +48,12 @@ public class TestApp extends Application {
             Extent.forCoordinates(coordKarlsruheHarbour, coordKarlsruheCastle, coordKarlsruheStation);
 
     private static final CoordinateLine coordinateLine =
-            new CoordinateLine(coordKarlsruheCastle, coordKarlsruheHarbour, coordKarlsruheStation).setVisible(true)
-                    .setColor(Color.DODGERBLUE).setWidth(7);
-
-    private static final int DEFAULT_ZOOM = 14;
+            new CoordinateLine(coordKarlsruheCastle, coordKarlsruheHarbour, coordKarlsruheStation)
+                    .setVisible(true)
+                    .setColor(Color.DODGERBLUE)
+                    .setWidth(7)
+                    .setClosed(true)
+                    .setFillColor(Color.web("lawngreen", 0.5));
 
     private static final Marker marker;
 
