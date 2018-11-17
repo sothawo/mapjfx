@@ -63,7 +63,7 @@ public class TestApp extends Application {
                     .setVisible(true)
                     .setColor(Color.DODGERBLUE)
                     .setWidth(7)
-                    .setClosed(false)
+                    .setClosed(true)
                     .setFillColor(Color.web("lawngreen", 0.5));
 
     private static final Marker marker;
