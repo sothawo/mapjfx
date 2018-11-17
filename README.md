@@ -51,6 +51,10 @@ The test application does not contain all the features, to have that, check
 
 ## current
 
+## 1.21.0
+
+* CoordinateLines can now be closed (polygon) and have a fill color
+
 ## 1.20.1
 
 * use OpenLayers 5.3.0

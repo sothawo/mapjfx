@@ -26,21 +26,33 @@ import static org.junit.Assert.*;
 /**
  * Tests for CoordinateLine.
  *
- * @author P.J.Meisch (pj.meisch@jaroso.de)
+ * @author P.J.Meisch (pj.meisch@sothawo.com)
  */
 public class CoordinateLineTest implements TestBase {
 // -------------------------- OTHER METHODS --------------------------
 
     @Test
     public void colorCanBeSet() throws Exception {
-        CoordinateLine coordinateLine = new CoordinateLine();
+        final CoordinateLine coordinateLine = new CoordinateLine();
         coordinateLine.setColor(Color.BISQUE);
         assertEquals(Color.BISQUE, coordinateLine.getColor());
     }
 
     @Test
+    public void fillColorCanBeSet() throws Exception {
+        final CoordinateLine coordinateLine = new CoordinateLine();
+        coordinateLine.setFillColor(Color.CORNSILK);
+        assertEquals(Color.CORNSILK, coordinateLine.getFillColor());
+    }
+
+    @Test
     public void defaultColorIsSet() throws Exception {
         assertEquals(CoordinateLine.DEFAULT_COLOR, new CoordinateLine().getColor());
+    }
+
+    @Test
+    public void defaultFillColorIsSet() throws Exception {
+        assertEquals(CoordinateLine.DEFAULT_FILL_COLOR, new CoordinateLine().getFillColor());
     }
 
     @Test
@@ -54,15 +66,20 @@ public class CoordinateLineTest implements TestBase {
     }
 
     @Test
+    public void defaultIsNotClosed() {
+        assertFalse(new CoordinateLine().isClosed());
+    }
+
+    @Test
     public void noCoordinatesInCtorYieldsEmptyStream() throws Exception {
-        CoordinateLine coordinateLine = new CoordinateLine();
+        final CoordinateLine coordinateLine = new CoordinateLine();
         assertEquals(0, coordinateLine.getCoordinateStream().count());
     }
 
     @Test
     public void passedCoordinatesAreInStream() throws Exception {
-        CoordinateLine coordinateLine = new CoordinateLine(coordKarlsruheHarbour, coordKarlsruheStation);
-        Set<Coordinate> coordinates = coordinateLine.getCoordinateStream().collect(Collectors.toSet());
+        final CoordinateLine coordinateLine = new CoordinateLine(coordKarlsruheHarbour, coordKarlsruheStation);
+        final Set<Coordinate> coordinates = coordinateLine.getCoordinateStream().collect(Collectors.toSet());
         assertTrue(coordinates.contains(coordKarlsruheHarbour));
         assertTrue(coordinates.contains(coordKarlsruheStation));
         assertEquals(2, coordinates.size());
@@ -70,15 +87,22 @@ public class CoordinateLineTest implements TestBase {
 
     @Test
     public void setVisibility() throws Exception {
-        CoordinateLine coordinateLine = new CoordinateLine();
+        final CoordinateLine coordinateLine = new CoordinateLine();
         coordinateLine.setVisible(true);
         assertTrue(coordinateLine.getVisible());
     }
 
     @Test
     public void widthCanBeSet() throws Exception {
-        CoordinateLine coordinateLine = new CoordinateLine();
+        final CoordinateLine coordinateLine = new CoordinateLine();
         coordinateLine.setWidth(5);
         assertEquals(5, coordinateLine.getWidth());
+    }
+
+    @Test
+    public void closedFlagCanBeSet() {
+        final CoordinateLine coordinateLine = new CoordinateLine();
+        coordinateLine.setClosed(true);
+        assertTrue(coordinateLine.isClosed());
     }
 }

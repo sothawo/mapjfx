@@ -196,21 +196,30 @@ Copyright 2015-2018 Peter-Josef Meisch (pj.meisch@sothawo.com)
     var addAll = function () {
         jsMapView.addMarker('castle-marker', './markers/blue_map_marker.png', 49.013517, 8.404435, -32, -64);
         jsMapView.addLabel('castle-label', 'Das Schloss', '', 49.013517, 8.404435, 0, 0);
+        var cl = jsMapView.getCoordinateLine('coli');
+        cl.addCoordinate(49.013517, 8.404435);
+        cl.addCoordinate(49.015511, 8.323497);
+        cl.addCoordinate(48.993284, 8.402186);
+        cl.setClosed(true);
+        cl.seal()
     };
 
     var showAll = function () {
         jsMapView.showMapObject('castle-marker');
         jsMapView.showMapObject('castle-label');
+        jsMapView.showCoordinateLine('coli')
     };
 
     var hideAll = function () {
         jsMapView.hideMapObject('castle-marker');
         jsMapView.hideMapObject('castle-label');
+        jsMapView.hideCoordinateLine('coli')
     };
 
     var removeAll = function () {
         jsMapView.removeMapObject('castle-marker');
         jsMapView.removeMapObject('castle-label');
+        jsMapView.removeCoordinateLine('coli');
     };
 </script>
 <!-- replaced by: -->
