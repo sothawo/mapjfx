@@ -35,7 +35,7 @@ public final class Coordinate {
     /**
      * creates a coordinate.
      *
-     * parameter order lat/lon according to EPSG:4326 spec.
+     * parameter order lat/lon according.
      *
      * @param latitude
      *         latitude of the coordinate

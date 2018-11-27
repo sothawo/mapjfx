@@ -1,5 +1,5 @@
 /*
-   Copyright 2015 Peter-Josef Meisch (pj.meisch@sothawo.com)
+ Copyright 2018 Peter-Josef Meisch (pj.meisch@sothawo.com)
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,9 +13,23 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
+package com.sothawo.mapjfx;
 
-// coordinate and extent transformation
-function cToWGS84(c) {return ol.proj.transform(c, 'EPSG:3857', 'EPSG:4326')}
-function cFromWGS84(c) {return ol.proj.transform(c, 'EPSG:4326', 'EPSG:3857')}
-function eToWGS84(e) {return ol.proj.transformExtent(e, 'EPSG:3857', 'EPSG:4326')}
-function eFromWGS84(e) {return ol.proj.transformExtent(e, 'EPSG:4326', 'EPSG:3857')}
+/**
+ * @author P.J. Meisch (pj.meisch@sothawo.com)
+ */
+public enum Projection {
+    EPSG_3857("EPSG:3857"),
+    WEB_MERCATOR("EPSG:3857"),
+    EPSG_4326("EPSG:4326"),
+    WGS_84("EPSG:4326");
+
+    private final String olName;
+
+    Projection(final String name) {
+        olName = name;
+    }
+
+    public String getOlName() {
+        return olName;
+    }}
