@@ -15,70 +15,23 @@
  */
 
 /*******************************************************************************************************************
- * predefined map layers
- */
-
-// Source for the coordinateLine features
-var _sourceFeatures = new ol.source.Vector({
-    features: []
-});
-// layer for the featuress
-var _layerFeatures = new ol.layer.Vector({
-    source: _sourceFeatures
-});
-
-// layer groups for the different map styles
-var _layersOSM = new ol.layer.Group({
-    layers: [
-        new ol.layer.Tile({
-            source: new ol.source.OSM()
-        }),
-        _layerFeatures
-    ]
-});
-
-var _layersStamenWC = new ol.layer.Group({
-    layers: [
-        new ol.layer.Tile({
-            source: new ol.source.Stamen({
-                layer: 'watercolor'
-            })
-        }),
-        new ol.layer.Tile({
-            source: new ol.source.Stamen({
-                layer: 'terrain-labels'
-            })
-        })
-    ]
-});
-
-/*******************************************************************************************************************
- global variables
- */
-var _map = new ol.Map({
-    target: 'map',
-    layers: _layersOSM,
-    view: new ol.View({
-        zoom: 1
-    })
-});
-
-var _view = _map.getView();
-
-
-/*******************************************************************************************************************
  * Connector object for the java application with the functions to be called.
  * @param javaConnector the javaConnector object
  */
 
 function JSMapView(javaConnector) {
+    this.map = {};
+    this.sourceFeatures = {};
+    this.layerFeatures = {};
     this.coordinateLines = {};
     this.mapObjects = {};
+    this.mapType = '';
     this.javaConnector = javaConnector;
     this.anchorsPatched = false;
     this.bingMapsApiKey = '';
     this.wmsParams = {};
     this.xyzParams = {};
+    this.projections = new Projections();
 }
 
 JSMapView.prototype.toString = function () {
@@ -87,23 +40,51 @@ JSMapView.prototype.toString = function () {
 
 /**
  * initializes the JSMapView and the map.
+ * @param projection the projection to use for the map, i.e. 'EPSG:4326'
  */
-JSMapView.prototype.init = function () {
-    _map.on('pointermove',
+JSMapView.prototype.init = function (projection) {
+    this.projections.mapjfx = 'EPSG:4326';
+    this.projections.openlayers = projection;
+
+    // Source for the coordinateLine features
+    this.sourceFeatures = new ol.source.Vector({
+        features: []
+    });
+    // layer for the featuress
+    this.layerFeatures = new ol.layer.Vector({
+        source: this.sourceFeatures
+    });
+
+
+    this.map = new ol.Map({
+        target: 'map',
+        layers: new ol.layer.Group({
+            layers: []
+        }),
+        view: new ol.View({
+            zoom: 1,
+            projection: projection
+        })
+    });
+
+    var view = this.map.getView();
+
+
+    this.map.on('pointermove',
         (function (evt) {
-            var coordinate = cToWGS84(evt.coordinate);
+            var coordinate = this.projections.cToWGS84(evt.coordinate);
             // lat/lon reversion
             this.javaConnector.pointerMovedTo(coordinate[1], coordinate[0]);
         }).bind(this));
 
-    _map.on('singleclick',
+    this.map.on('singleclick',
         (function (evt) {
-            var coordinate = cToWGS84(evt.coordinate);
+            var coordinate = this.projections.cToWGS84(evt.coordinate);
             // lat/lon reversion
             this.javaConnector.singleClickAt(coordinate[1], coordinate[0]);
         }).bind(this));
 
-    _map.on('postrender',
+    this.map.on('postrender',
         (function (evt) {
             if (!this.anchorsPatched) {
                 var anchors = document.getElementById('map').getElementsByTagName('a');
@@ -120,20 +101,20 @@ JSMapView.prototype.init = function () {
             }
         }).bind(this));
 
-    _view.on('change:center',
+    view.on('change:center',
         (function (evt) {
-            var center = cToWGS84(evt.target.get('center'));
+            var center = this.projections.cToWGS84(evt.target.get('center'));
             // lat/lon reversion
             this.javaConnector.centerMovedTo(center[1], center[0]);
             this.reportExtent();
         }).bind(this));
 
-    _view.on('change:resolution', (function (evt) {
-        this.javaConnector.zoomChanged(_view.getZoom());
+    view.on('change:resolution', (function (evt) {
+        this.javaConnector.zoomChanged(view.getZoom());
         this.reportExtent();
     }).bind(this));
 
-    _map.on('change:size', (function (evt) {
+    this.map.on('change:size', (function (evt) {
         this.reportExtent();
     }).bind(this));
 
@@ -142,11 +123,13 @@ JSMapView.prototype.init = function () {
         condition: ol.events.condition.platformModifierKeyOnly
     });
     dragBox.on('boxend', (function () {
-        var extent = eToWGS84(dragBox.getGeometry().getExtent());
+        var extent = this.projections.eToWGS84(dragBox.getGeometry().getExtent());
         this.javaConnector.extentSelected(extent[1], extent[0], extent[3], extent[2]);
     }).bind(this));
 
-    _map.addInteraction(dragBox);
+    this.map.addInteraction(dragBox);
+
+    this.setMapType('OSM');
 };
 
 /**
@@ -157,16 +140,17 @@ JSMapView.prototype.init = function () {
  * @param {number} animationDuration duration in ms
  */
 JSMapView.prototype.setCenter = function (lat, lon, animationDuration) {
+    var view = this.map.getView();
     // transform uses x/y coordinates, thats lon/lat
-    var newCenter = cFromWGS84([lon, lat]);
-    var oldCenter = _view.getCenter();
+    var newCenter = this.projections.cFromWGS84([lon, lat]);
+    var oldCenter = view.getCenter();
     if (oldCenter && animationDuration > 1) {
-        _view.animate({
+        view.animate({
             center: newCenter,
             duration: animationDuration
         });
     } else {
-        _view.setCenter(newCenter);
+        view.setCenter(newCenter);
     }
 };
 
@@ -177,14 +161,15 @@ JSMapView.prototype.setCenter = function (lat, lon, animationDuration) {
  * @param {number} animationDuration duration in ms
  */
 JSMapView.prototype.setZoom = function (zoom, animationDuration) {
-    if (zoom != _view.getZoom()) {
+    var view = this.map.getView();
+    if (zoom !== view.getZoom()) {
         if (animationDuration > 1) {
-            _view.animate({
+            view.animate({
                 zoom: zoom,
                 duration: animationDuration
             });
         } else {
-            _view.setZoom(zoom);
+            view.setZoom(zoom);
         }
     }
 };
@@ -199,13 +184,18 @@ JSMapView.prototype.setZoom = function (zoom, animationDuration) {
  * @param {number} animationDuration duration in ms
  */
 JSMapView.prototype.setExtent = function (minLat, minLon, maxLat, maxLon, animationDuration) {
+    var view = this.map.getView();
     // lat/lon reversion
-    var extent = eFromWGS84([minLon, minLat, maxLon, maxLat]);
+    var extent = this.projections.eFromWGS84([minLon, minLat, maxLon, maxLat]);
     if (animationDuration > 1) {
-        _view.fit(extent, {duration: animationDuration});
+        view.fit(extent, {duration: animationDuration});
     } else {
-        _view.fit(extent);
+        view.fit(extent);
     }
+};
+
+JSMapView.prototype.getMapType = function () {
+    return this.mapType;
 };
 
 /**
@@ -216,55 +206,92 @@ JSMapView.prototype.setExtent = function (minLat, minLon, maxLat, maxLon, animat
 JSMapView.prototype.setMapType = function (newType) {
     // reset the patched flag; the new layer can have different attributions
     this.anchorsPatched = false;
-    if (newType == 'OSM') {
-        _map.setLayerGroup(_layersOSM);
-    } else if (newType == 'BINGMAPS_ROAD') {
-        _map.setLayerGroup(new ol.layer.Group({
+    var mapTypeChanged = true;
+
+    if (newType === 'OSM') {
+        this.map.setLayerGroup(new ol.layer.Group({
+                layers: [
+                    new ol.layer.Tile({
+                        source: new ol.source.OSM({
+                            projection: new ol.proj.Projection(this.projections.openlayers)
+                        })
+                    }),
+                    this.layerFeatures
+                ]
+            })
+        );
+    } else if (newType === 'BINGMAPS_ROAD') {
+        this.map.setLayerGroup(new ol.layer.Group({
             layers: [
                 new ol.layer.Tile({
                     source: new ol.source.BingMaps({
                         imagerySet: 'Road',
-                        key: this.bingMapsApiKey
+                        key: this.bingMapsApiKey,
+                        projection: new ol.proj.Projection(this.projections.openlayers)
                     })
                 }),
-                _layerFeatures
+                this.layerFeatures
             ]
         }));
-    } else if (newType == 'BINGMAPS_AERIAL') {
-        _map.setLayerGroup(new ol.layer.Group({
+    } else if (newType === 'BINGMAPS_AERIAL') {
+        this.map.setLayerGroup(new ol.layer.Group({
             layers: [
                 new ol.layer.Tile({
                     source: new ol.source.BingMaps({
                         imagerySet: 'Aerial',
-                        key: this.bingMapsApiKey
+                        key: this.bingMapsApiKey,
+                        projection: new ol.proj.Projection(this.projections.openlayers)
                     })
                 }),
-                _layerFeatures
+                this.layerFeatures
             ]
         }));
-    } else if (newType == 'STAMEN_WC') {
-        _map.setLayerGroup(_layersStamenWC);
-    } else if (newType == 'WMS' && this.wmsParams.getUrl().length > 0) {
-        _map.setLayerGroup(new ol.layer.Group({
+    } else if (newType === 'STAMEN_WC') {
+        this.map.setLayerGroup(new ol.layer.Group({
+            layers: [
+                new ol.layer.Tile({
+                    source: new ol.source.Stamen({
+                        layer: 'watercolor',
+                        projection: new ol.proj.Projection(this.projections.openlayers)
+                    })
+                }),
+                new ol.layer.Tile({
+                    source: new ol.source.Stamen({
+                        layer: 'terrain-labels',
+                        projection: new ol.proj.Projection(this.projections.openlayers)
+                    })
+                })
+            ]
+        }));
+    } else if (newType === 'WMS' && this.wmsParams.getUrl().length > 0) {
+        this.map.setLayerGroup(new ol.layer.Group({
             layers: [
                 new ol.layer.Tile({
                     source: new ol.source.TileWMS({
                         url: this.wmsParams.getUrl(),
                         params: this.wmsParams.getParams(),
-                        serverType: 'geoserver'
+                        serverType: 'geoserver',
+                        projection: new ol.proj.Projection(this.projections.openlayers)
                     })
                 })
             ]
         }));
-    } else if (newType == 'XYZ' && this.xyzParams.url.length > 0) {
-        _map.setLayerGroup(new ol.layer.Group({
+    } else if (newType === 'XYZ' && this.xyzParams.url.length > 0) {
+        this.map.setLayerGroup(new ol.layer.Group({
             layers: [
                 new ol.layer.Tile({
-                    source: new ol.source.XYZ(this.xyzParams)
+                    source: new ol.source.XYZ(this.xyzParams),
+                    projection: new ol.proj.Projection(this.projections.openlayers)
                 }),
-                _layerFeatures
+                this.layerFeatures
             ]
         }));
+    } else {
+        mapTypeChanged = false;
+    }
+
+    if (mapTypeChanged) {
+        this.mapType = newType;
     }
 };
 
@@ -278,7 +305,7 @@ JSMapView.prototype.setMapType = function (newType) {
 JSMapView.prototype.getCoordinateLine = function (name) {
     var coordinateLine = this.coordinateLines[name];
     if (!coordinateLine) {
-        coordinateLine = new CoordinateLine();
+        coordinateLine = new CoordinateLine(this.projections);
         this.coordinateLines[name] = coordinateLine;
         this.javaConnector.debug("created CoordinateLine object named " + name);
     }
@@ -295,7 +322,7 @@ JSMapView.prototype.showCoordinateLine = function (name) {
     this.javaConnector.debug("should show CoordinateLine object named " + name);
     var coordinateLine = this.coordinateLines[name];
     if (coordinateLine && !coordinateLine.getOnMap()) {
-        _sourceFeatures.addFeature(coordinateLine.getFeature());
+        this.sourceFeatures.addFeature(coordinateLine.getFeature());
         this.javaConnector.debug("showed CoordinateLine object named " + name);
         coordinateLine.setOnMap(true);
     }
@@ -310,7 +337,7 @@ JSMapView.prototype.hideCoordinateLine = function (name) {
     this.javaConnector.debug("should hide CoordinateLine object named " + name);
     var coordinateLine = this.coordinateLines[name];
     if (coordinateLine && coordinateLine.getOnMap()) {
-        _sourceFeatures.removeFeature(coordinateLine.getFeature());
+        this.sourceFeatures.removeFeature(coordinateLine.getFeature());
         this.javaConnector.debug("hid CoordinateLine object named " + name);
         coordinateLine.setOnMap(false);
     }
@@ -342,7 +369,7 @@ JSMapView.prototype.removeCoordinateLine = function (name) {
 JSMapView.prototype.addMarker = function (name, url, latitude, longitude, offsetX, offsetY) {
     var marker = this.mapObjects[name];
     if (!marker) {
-        marker = new MapObject(cFromWGS84([longitude, latitude]));
+        marker = new MapObject(this.projections.cFromWGS84([longitude, latitude]));
         this.javaConnector.debug('created Marker object named ' + name);
 
         // add a new <img> element to <div id='markers'>
@@ -407,7 +434,7 @@ JSMapView.prototype.addMarker = function (name, url, latitude, longitude, offset
             element: imgElement
         });
         marker.setOverlay(overlay);
-        _map.addOverlay(overlay);
+        this.map.addOverlay(overlay);
         this.mapObjects[name] = marker;
     }
 };
@@ -425,7 +452,7 @@ JSMapView.prototype.addMarker = function (name, url, latitude, longitude, offset
 JSMapView.prototype.addLabel = function (name, text, cssClass, latitude, longitude, offsetX, offsetY) {
     var label = this.mapObjects[name];
     if (!label) {
-        label = new MapObject(cFromWGS84([longitude, latitude]));
+        label = new MapObject(this.projections.cFromWGS84([longitude, latitude]));
         this.javaConnector.debug('created Label object named ' + name);
 
         // add a new <div> element to <div id='labels'>
@@ -479,7 +506,7 @@ JSMapView.prototype.addLabel = function (name, text, cssClass, latitude, longitu
             element: labelElement
         });
         label.setOverlay(overlay);
-        _map.addOverlay(overlay);
+        this.map.addOverlay(overlay);
         this.mapObjects[name] = label;
     }
 };
@@ -493,7 +520,7 @@ JSMapView.prototype.addLabel = function (name, text, cssClass, latitude, longitu
 JSMapView.prototype.moveMapObject = function (name, latitude, longitude) {
     var mapObject = this.mapObjects[name];
     if (mapObject) {
-        mapObject.setPosition(cFromWGS84([longitude, latitude]));
+        mapObject.setPosition(this.projections.cFromWGS84([longitude, latitude]));
         if (mapObject.getOnMap()) {
             var overlay = mapObject.getOverlay();
             if (overlay) {
@@ -515,7 +542,7 @@ JSMapView.prototype.removeMapObject = function (name) {
         this.hideMapObject(mapObject);
         var overlay = mapObject.getOverlay();
         if (overlay) {
-            _map.removeOverlay(overlay);
+            this.map.removeOverlay(overlay);
             var element = overlay.getElement();
             if (element) {
                 delete element;
@@ -629,14 +656,14 @@ JSMapView.prototype.addWMSParamsParams = function (key, value) {
  * @param browserEvent the browser event
  */
 JSMapView.prototype.contextmenu = function (browserEvent) {
-    var coordinate = cToWGS84(_map.getEventCoordinate(browserEvent));
+    var coordinate = this.projections.cToWGS84(this.map.getEventCoordinate(browserEvent));
     // lat/lon reversion
     this.javaConnector.contextClickAt(coordinate[1], coordinate[0]);
 };
 
 JSMapView.prototype.reportExtent = function () {
     try {
-        var extent = eToWGS84(_view.calculateExtent(_map.getSize()));
+        var extent = this.projections.eToWGS84(this.map.getView().calculateExtent(this.map.getSize()));
         this.javaConnector.extentChanged(extent[1], extent[0], extent[3], extent[2]);
     } catch (e) {
         // ignore
@@ -644,11 +671,12 @@ JSMapView.prototype.reportExtent = function () {
 };
 
 /**
+ * @param projection the projection to use for the map, i.e. 'EPSG:4326'
  * @return JSMapView object
  */
-function getJSMapView() {
+function getJSMapView(projection) {
     var jsMapView = new JSMapView(_javaConnector);
-    jsMapView.init();
+    jsMapView.init(projection);
     return jsMapView;
 }
 

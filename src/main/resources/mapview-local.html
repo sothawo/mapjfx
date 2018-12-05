@@ -163,13 +163,14 @@ Copyright 2015-2018 Peter-Josef Meisch (pj.meisch@sothawo.com)
     };
 
 </script>
-<script src="functions.js" type="text/javascript"></script>
+<script src="projections.js" type="text/javascript"></script>
 <script src="MapObject.js" type="text/javascript"></script>
 <script src="WMSParams.js" type="text/javascript"></script>
 <script src="coordinateline.js" type="text/javascript"></script>
 <script src="mapview.js" type="text/javascript"></script>
 <script>
-    var jsMapView = getJSMapView();
+    var jsMapView = getJSMapView('EPSG:3857');
+    // var jsMapView = getJSMapView('EPSG:4326');
 
     // no browser context menu, markers and labels handle it separately, for the mapview itself
     // it must be caught here as ol.Map has no context menu event.
@@ -224,7 +225,7 @@ Copyright 2015-2018 Peter-Josef Meisch (pj.meisch@sothawo.com)
 </script>
 <!-- replaced by: -->
 <!--<script type="text/javascript">-->
-<!--#functions.js#-->
+<!--#projections.js#-->
 <!--#MapObject.js#-->
 <!--#coordinateline.js#-->
 <!--#mapview.js#-->

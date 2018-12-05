@@ -289,6 +289,7 @@ public class TestApp extends Application {
 
         // now initialize the mapView
         mapView.initialize();
+//        mapView.initialize(Projection.WGS_84);
 
         // show the whole thing
         final Scene scene = new Scene(borderPane, 1200, 800);
