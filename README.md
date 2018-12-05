@@ -51,6 +51,10 @@ The test application does not contain all the features, to have that, check
 
 ## current
 
+## 1.22.0
+
+* add possibility to set the map projection (either WGS_84("EPSG:4326") or WEB_MERCATOR("EPSG:3857"))
+
 ## 1.21.0
 
 * CoordinateLines can now be closed (polygon) and have a fill color
