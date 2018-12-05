@@ -22,7 +22,7 @@
 /**
  * @constructor
  */
-function CoordinateLine() {
+function CoordinateLine(projections) {
     this.coordinates = [];
     this.feature = null;
     this.onMap = false;
@@ -33,7 +33,9 @@ function CoordinateLine() {
     // default width 3
     this.width = 3;
     // default is not closed
-    this.closed = false
+    this.closed = false;
+    this.projections = projections;
+
 }
 
 /**
@@ -50,7 +52,7 @@ CoordinateLine.prototype.getCoordinates = function () {
  */
 CoordinateLine.prototype.addCoordinate = function (latitude, longitude) {
     // lat/lon reversion
-    this.coordinates.push(cFromWGS84([longitude, latitude]));
+    this.coordinates.push(this.projections.cFromWGS84([longitude, latitude]));
 }
 
 /**
