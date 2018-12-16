@@ -15,6 +15,9 @@
 */
 package com.sothawo.mapjfx.offline;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -33,7 +36,6 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -54,7 +56,7 @@ public enum OfflineCache {
     INSTANCE;
 
     /** Logger for the class */
-    private static final Logger logger = Logger.getLogger(OfflineCache.class.getCanonicalName());
+    private static final Logger logger = LoggerFactory.getLogger(OfflineCache.class);
     /** the url pattern to be mapped. */
     private static final String TILE_OPENSTREETMAP_ORG = "[a-z]\\.tile\\.openstreetmap\\.org";
     /** list of Patterns which are used to match against urls to prevent caching. */
@@ -181,10 +183,14 @@ public enum OfflineCache {
                 return;
             } catch (final Error e) {
                 msg = "cannot setup URLStreamFactoryHandler, it is already set in this application. " + e.getMessage();
-                logger.warning(msg);
+                if (logger.isErrorEnabled()) {
+                    logger.error(msg);
+                }
             } catch (final SecurityException e) {
                 msg = "cannot setup URLStreamFactoryHandler. " + e.getMessage();
-                logger.severe(msg);
+                if (logger.isErrorEnabled()) {
+                    logger.error(msg);
+                }
             }
             throw new IllegalStateException(msg);
         }
@@ -197,12 +203,14 @@ public enum OfflineCache {
      *         the URL to check
      * @return true if cached
      */
-    boolean isCached(URL url) {
+    boolean isCached(final URL url) {
         try {
             final Path cacheFile = filenameForURL(url);
             return (Files.exists(cacheFile) && Files.isReadable(cacheFile) && Files.size(cacheFile) > 0);
         } catch (final IOException e) {
-            logger.warning(e.getMessage());
+            if (logger.isWarnEnabled()) {
+                logger.warn(e.getMessage());
+            }
         }
         return false;
     }
@@ -242,8 +250,7 @@ public enum OfflineCache {
             return urlString;
         }
 
-        final String mappedString = urlString.replaceAll(TILE_OPENSTREETMAP_ORG, "x.tile.openstreetmap.org");
-        return mappedString;
+        return urlString.replaceAll(TILE_OPENSTREETMAP_ORG, "x.tile.openstreetmap.org");
     }
 
     /**
@@ -256,12 +263,16 @@ public enum OfflineCache {
      */
     void saveCachedDataInfo(final Path cacheFile, final CachedDataInfo cachedDataInfo) {
         final Path cacheDataFile = Paths.get(cacheFile + ".dataInfo");
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(cacheDataFile.toFile()))) {
+        try (final ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(cacheDataFile.toFile()))) {
             oos.writeObject(cachedDataInfo);
             oos.flush();
-            logger.finer("saved dataInfo " + cacheDataFile);
-        } catch (Exception e) {
-            logger.severe("could not save dataInfo " + cacheDataFile);
+            if (logger.isTraceEnabled()) {
+                logger.trace("saved dataInfo {}", cacheDataFile);
+            }
+        } catch (final Exception e) {
+            if (logger.isWarnEnabled()) {
+                logger.warn("could not save dataInfo {}", cacheDataFile);
+            }
         }
     }
 
@@ -278,8 +289,10 @@ public enum OfflineCache {
         if (Files.exists(cacheDataFile)) {
             try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(cacheDataFile.toFile()))) {
                 cachedDataInfo = (CachedDataInfo) ois.readObject();
-            } catch (Exception e) {
-                logger.severe("could not read dataInfo from " + cacheDataFile + ", " + e.getMessage());
+            } catch (final Exception e) {
+                if (logger.isWarnEnabled()) {
+                    logger.warn("could not read dataInfo from {}, {}", cacheDataFile, e.getMessage());
+                }
             }
         }
         return cachedDataInfo;

@@ -9,7 +9,6 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.logging.Logger;
 
 /**
  * FilterInputStream that dumps all data passed through it to a cache file before passing the data on.
@@ -17,8 +16,6 @@ import java.util.logging.Logger;
  * @author P.J. Meisch (pj.meisch@sothawo.com).
  */
 public class WriteCacheFileInputStream extends FilterInputStream {
-
-    private static final Logger logger = Logger.getLogger(WriteCacheFileInputStream.class.getCanonicalName());
 
     /** the output stream where the data is stored. */
     private final OutputStream out;
@@ -43,6 +40,15 @@ public class WriteCacheFileInputStream extends FilterInputStream {
     }
 
     @Override
+    public int read(byte[] b, int off, int len) throws IOException {
+        final int numBytes = super.read(b, off, len);
+        if (null != out && numBytes > 0) {
+            out.write(b, off, numBytes);
+        }
+        return numBytes;
+    }
+
+    @Override
     public void close() throws IOException {
         super.close();
         if (null != out) {
@@ -52,15 +58,6 @@ public class WriteCacheFileInputStream extends FilterInputStream {
         if (null != notifyOnClose) {
             notifyOnClose.run();
         }
-    }
-
-    @Override
-    public int read(byte[] b, int off, int len) throws IOException {
-        final int numBytes = super.read(b, off, len);
-        if (null != out && numBytes > 0) {
-            out.write(b, off, numBytes);
-        }
-        return numBytes;
     }
 
     public void onInputStreamClose(Runnable r) {
