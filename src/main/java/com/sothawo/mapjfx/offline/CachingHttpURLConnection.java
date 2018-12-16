@@ -5,6 +5,9 @@
  */
 package com.sothawo.mapjfx.offline;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -15,10 +18,8 @@ import java.net.ProtocolException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.security.Permission;
-import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 /**
  * HttpURLConnection implementation that caches the data in a local file, if it is not already stored there.
@@ -28,7 +29,7 @@ import java.util.logging.Logger;
 public class CachingHttpURLConnection extends HttpURLConnection {
 
     /** Logger for the class */
-    private static final Logger logger = Logger.getLogger(CachingHttpURLConnection.class.getCanonicalName());
+    private static final Logger logger = LoggerFactory.getLogger(CachingHttpURLConnection.class);
 
     /** the delegate original connection. */
     private final HttpURLConnection delegate;
@@ -70,7 +71,7 @@ public class CachingHttpURLConnection extends HttpURLConnection {
      * @throws IOException
      *         if the output file cannot be created, or the input stream from the delegate cannot be retrieved
      */
-    public CachingHttpURLConnection(OfflineCache cache, HttpURLConnection delegate) throws IOException {
+    public CachingHttpURLConnection(final OfflineCache cache, final HttpURLConnection delegate) throws IOException {
         super(delegate.getURL());
         this.cache = cache;
         this.delegate = delegate;
@@ -82,18 +83,18 @@ public class CachingHttpURLConnection extends HttpURLConnection {
             cachedDataInfo = new CachedDataInfo();
         }
 
-        logger.finer(MessageFormat
-                .format("in cache: {2}, URL: {0}, cache file: {1}", delegate.getURL().toExternalForm(),
-                        cacheFile, readFromCache));
+        if (logger.isTraceEnabled()) {
+            logger.trace("in cache: {}, URL: {}, cache file: {}", readFromCache, delegate.getURL().toExternalForm(), cacheFile);
+        }
     }
 
     public void connect() throws IOException {
         if (!readFromCache) {
-            logger.finer("connect to " + delegate.getURL().toExternalForm());
+            if (logger.isTraceEnabled()) {
+                logger.trace("connect to {}", delegate.getURL().toExternalForm());
+            }
             delegate.connect();
         }
-    }    public void addRequestProperty(String key, String value) {
-        delegate.addRequestProperty(key, value);
     }
 
     public String getHeaderFieldKey(int n) {
@@ -102,27 +103,42 @@ public class CachingHttpURLConnection extends HttpURLConnection {
 
     public void setFixedLengthStreamingMode(int contentLength) {
         delegate.setFixedLengthStreamingMode(contentLength);
-    }    public void disconnect() {
+    }
+
+    public void setFixedLengthStreamingMode(long contentLength) {
+        delegate.setFixedLengthStreamingMode(contentLength);
+    }    public void addRequestProperty(String key, String value) {
+        delegate.addRequestProperty(key, value);
+    }
+
+    public void setChunkedStreamingMode(int chunklen) {
+        delegate.setChunkedStreamingMode(chunklen);
+    }
+
+    public String getHeaderField(int n) {
+        return delegate.getHeaderField(n);
+    }
+
+
+
+    public void disconnect() {
         if (!readFromCache) {
             delegate.disconnect();
         }
     }
 
-    public void setFixedLengthStreamingMode(long contentLength) {
-        delegate.setFixedLengthStreamingMode(contentLength);
-    }    public boolean getAllowUserInteraction() {
+
+    public boolean getAllowUserInteraction() {
         return delegate.getAllowUserInteraction();
     }
 
-    public void setChunkedStreamingMode(int chunklen) {
-        delegate.setChunkedStreamingMode(chunklen);
-    }    public int getConnectTimeout() {
+
+    public int getConnectTimeout() {
         return readFromCache ? 10 : delegate.getConnectTimeout();
     }
 
-    public String getHeaderField(int n) {
-        return delegate.getHeaderField(n);
-    }    public Object getContent() throws IOException {
+
+    public Object getContent() throws IOException {
         return delegate.getContent();
     }
 
@@ -178,7 +194,6 @@ public class CachingHttpURLConnection extends HttpURLConnection {
     }
 
 
-
     public String getHeaderField(String name) {
         return delegate.getHeaderField(name);
     }
@@ -190,7 +205,6 @@ public class CachingHttpURLConnection extends HttpURLConnection {
     public int getHeaderFieldInt(String name, int Default) {
         return delegate.getHeaderFieldInt(name, Default);
     }
-
 
 
     public long getHeaderFieldLong(String name, long Default) {
@@ -228,11 +242,14 @@ public class CachingHttpURLConnection extends HttpURLConnection {
                         if (responseCode == HTTP_OK) {
                             cache.saveCachedDataInfo(cacheFile, cachedDataInfo);
                         } else {
-                            logger.warning(
-                                    () -> "not caching because of response code " + responseCode + ": " + getURL());
+                            if (logger.isWarnEnabled()) {
+                                logger.warn("not caching because of response code {}: {}", responseCode, getURL());
+                            }
                         }
-                    } catch (IOException e) {
-                        logger.warning("cannot retrieve response code");
+                    } catch (final IOException e) {
+                        if (logger.isWarnEnabled()) {
+                            logger.warn("cannot retrieve response code");
+                        }
                     }
                 });
                 inputStream = wis;
@@ -295,7 +312,6 @@ public class CachingHttpURLConnection extends HttpURLConnection {
     }
 
 
-
     public void setConnectTimeout(int timeout) {
         delegate.setConnectTimeout(timeout);
     }
@@ -311,9 +327,6 @@ public class CachingHttpURLConnection extends HttpURLConnection {
     public void setDoOutput(boolean dooutput) {
         delegate.setDoOutput(dooutput);
     }
-
-
-
 
 
     public void setIfModifiedSince(long ifmodifiedsince) {

@@ -5,6 +5,9 @@
  */
 package com.sothawo.mapjfx.offline;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.net.ssl.HttpsURLConnection;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -17,7 +20,6 @@ import java.net.URLStreamHandlerFactory;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Logger;
 
 /**
  * Custom URLStreamHandlerFactory that is used to implement caching. The factory creates CachingHttpUrlConnection (and
@@ -31,13 +33,13 @@ public class CachingURLStreamHandlerFactory implements URLStreamHandlerFactory {
     public static final String PROTO_HTTPS = "https";
 
     /** Logger for the class */
-    private static final Logger logger = Logger.getLogger(CachingURLStreamHandlerFactory.class.getCanonicalName());
+    private static final Logger logger = LoggerFactory.getLogger(CachingURLStreamHandlerFactory.class);
 
     /** the cache this instance belongs to. */
     private final OfflineCache cache;
 
     /** the map with the default handlers for different protocols. */
-    private Map<String, URLStreamHandler> handlers = new ConcurrentHashMap<>();
+    private final Map<String, URLStreamHandler> handlers = new ConcurrentHashMap<>();
 
 
     /**
@@ -46,7 +48,7 @@ public class CachingURLStreamHandlerFactory implements URLStreamHandlerFactory {
      * @param cache
      *         the cache this instance belongs to
      */
-    CachingURLStreamHandlerFactory(OfflineCache cache) {
+    CachingURLStreamHandlerFactory(final OfflineCache cache) {
         this.cache = cache;
         handlers.put(PROTO_HTTP, getURLStreamHandler(PROTO_HTTP));
         handlers.put(PROTO_HTTPS, getURLStreamHandler(PROTO_HTTPS));
@@ -59,13 +61,15 @@ public class CachingURLStreamHandlerFactory implements URLStreamHandlerFactory {
      *         the protocol
      * @return the URLStreamHandler, null if it cannot be retrieved.
      */
-    private URLStreamHandler getURLStreamHandler(String protocol) {
+    private URLStreamHandler getURLStreamHandler(final String protocol) {
         try {
-            Method method = URL.class.getDeclaredMethod("getURLStreamHandler", String.class);
+            final Method method = URL.class.getDeclaredMethod("getURLStreamHandler", String.class);
             method.setAccessible(true);
             return (URLStreamHandler) method.invoke(null, protocol);
-        } catch (Exception e) {
-            logger.warning("could not access URL.getUrlStreamHandler");
+        } catch (final Exception e) {
+            if (logger.isWarnEnabled()) {
+                logger.warn("could not access URL.getUrlStreamHandler");
+            }
             return null;
         }
     }
@@ -77,23 +81,28 @@ public class CachingURLStreamHandlerFactory implements URLStreamHandlerFactory {
         if (null == protocol) {
             throw new IllegalArgumentException("null protocol not allowed");
         }
-        logger.finer("need to create URLStreamHandler for protocol " + protocol);
+        if (logger.isTraceEnabled()) {
+            logger.trace("need to create URLStreamHandler for protocol {}", protocol);
+        }
 
         final String proto = protocol.toLowerCase();
         if (PROTO_HTTP.equals(proto) || PROTO_HTTPS.equals(proto)) {
             return new URLStreamHandler() {
                 @Override
                 protected URLConnection openConnection(final URL url) throws IOException {
-                    logger.finer("should open connection to " + url.toExternalForm());
+                    if (logger.isTraceEnabled()) {
+                        logger.trace("should open connection to {}", url.toExternalForm());
+                    }
 
                     // URLConnection only has a protected ctor, so we need to go through the URL ctor with the matching handler
                     final URLConnection defaultUrlConnection =
                             new URL(protocol, url.getHost(), url.getPort(), url.getFile(), handlers.get(protocol))
                                     .openConnection();
 
-
                     if (!cache.urlShouldBeCached(url)) {
-                        logger.finer("not using cache for " + url);
+                        if (logger.isTraceEnabled()) {
+                            logger.trace("not using cache for {}", url);
+                        }
                         return defaultUrlConnection;
                     }
 
@@ -116,7 +125,9 @@ public class CachingURLStreamHandlerFactory implements URLStreamHandlerFactory {
 
                 @Override
                 protected URLConnection openConnection(final URL u, final Proxy p) throws IOException {
-                    logger.finer("should open connection to " + u.toExternalForm() + " via " + p.toString());
+                    if (logger.isTraceEnabled()) {
+                        logger.trace("should open connection to {} via {}", u.toExternalForm(), p);
+                    }
                     // URLConnection only has a protected ctor, so we need to go through the URL ctor with the
                     // matching handler to get a default implementation of the needed URLStreamHandler
                     final URLConnection defaultUrlConnection =

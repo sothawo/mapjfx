@@ -5,6 +5,9 @@
  */
 package com.sothawo.mapjfx.offline;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLPeerUnverifiedException;
@@ -20,10 +23,8 @@ import java.nio.file.Path;
 import java.security.Permission;
 import java.security.Principal;
 import java.security.cert.Certificate;
-import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 /**
  * HttpsURLConnection implementation that caches the data in a local file, if it is not already stored there.
@@ -33,7 +34,7 @@ import java.util.logging.Logger;
 public class CachingHttpsURLConnection extends HttpsURLConnection {
 
     /** Logger for the class */
-    private static final Logger logger = Logger.getLogger(CachingHttpsURLConnection.class.getCanonicalName());
+    private static final Logger logger = LoggerFactory.getLogger(CachingHttpsURLConnection.class);
 
     /** the delegate original connection. */
     private final HttpsURLConnection delegate;
@@ -58,7 +59,7 @@ public class CachingHttpsURLConnection extends HttpsURLConnection {
      * @param u
      *         the URL
      */
-    private CachingHttpsURLConnection(URL url) {
+    private CachingHttpsURLConnection(final URL url) {
         super(url);
         this.cache = null;
         this.delegate = null;
@@ -75,7 +76,7 @@ public class CachingHttpsURLConnection extends HttpsURLConnection {
      * @throws IOException
      *         if the output file cannot be created, or the input stream from the delegate cannot be retrieved
      */
-    public CachingHttpsURLConnection(OfflineCache cache, HttpsURLConnection delegate)
+    public CachingHttpsURLConnection(final OfflineCache cache, final HttpsURLConnection delegate)
             throws IOException {
         super(delegate.getURL());
         this.cache = cache;
@@ -88,14 +89,16 @@ public class CachingHttpsURLConnection extends HttpsURLConnection {
             cachedDataInfo = new CachedDataInfo();
         }
 
-        logger.finer(MessageFormat
-                .format("in cache: {2}, URL: {0}, cache file: {1}", delegate.getURL().toExternalForm(),
-                        cacheFile, readFromCache));
+        if (logger.isTraceEnabled()) {
+            logger.trace("in cache: {}, URL: {}, cache file: {}", readFromCache, delegate.getURL().toExternalForm(), cacheFile);
+        }
     }
 
     public void connect() throws IOException {
         if (!readFromCache) {
-            logger.finer("connect to " + delegate.getURL().toExternalForm());
+            if (logger.isTraceEnabled()) {
+                logger.trace("connect to {}", delegate.getURL().toExternalForm());
+            }
             delegate.connect();
         }
     }
@@ -110,8 +113,6 @@ public class CachingHttpsURLConnection extends HttpsURLConnection {
 
     public Certificate[] getServerCertificates() throws SSLPeerUnverifiedException {
         return delegate.getServerCertificates();
-    }    public void addRequestProperty(String key, String value) {
-        delegate.addRequestProperty(key, value);
     }
 
     public Principal getPeerPrincipal() throws SSLPeerUnverifiedException {
@@ -128,14 +129,12 @@ public class CachingHttpsURLConnection extends HttpsURLConnection {
 
     public void setFixedLengthStreamingMode(int contentLength) {
         delegate.setFixedLengthStreamingMode(contentLength);
+    }    public void addRequestProperty(String key, String value) {
+        delegate.addRequestProperty(key, value);
     }
 
     public void setFixedLengthStreamingMode(long contentLength) {
         delegate.setFixedLengthStreamingMode(contentLength);
-    }    public void disconnect() {
-        if (!readFromCache) {
-            delegate.disconnect();
-        }
     }
 
     public void setChunkedStreamingMode(int chunklen) {
@@ -148,11 +147,17 @@ public class CachingHttpsURLConnection extends HttpsURLConnection {
 
 
 
-    public boolean getAllowUserInteraction() {
-        return delegate.getAllowUserInteraction();
+
+    public void disconnect() {
+        if (!readFromCache) {
+            delegate.disconnect();
+        }
     }
 
 
+    public boolean getAllowUserInteraction() {
+        return delegate.getAllowUserInteraction();
+    }
 
 
     public int getConnectTimeout() {
@@ -271,11 +276,14 @@ public class CachingHttpsURLConnection extends HttpsURLConnection {
                         if (responseCode == HTTP_OK) {
                             cache.saveCachedDataInfo(cacheFile, cachedDataInfo);
                         } else {
-                            logger.warning(
-                                    () -> "not caching because of response code " + responseCode + ": " + getURL());
+                            if (logger.isWarnEnabled()) {
+                                logger.warn("not caching because of response code {}: {}", responseCode, getURL());
+                            }
                         }
-                    } catch (IOException e) {
-                        logger.warning("cannot retrieve response code");
+                    } catch (final IOException e) {
+                        if (logger.isWarnEnabled()) {
+                            logger.warn("cannot retrieve response code");
+                        }
                     }
                 });
                 inputStream = wis;

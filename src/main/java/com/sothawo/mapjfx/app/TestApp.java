@@ -15,21 +15,39 @@
 */
 package com.sothawo.mapjfx.app;
 
-import com.sothawo.mapjfx.*;
-import com.sothawo.mapjfx.event.*;
+import com.sothawo.mapjfx.Coordinate;
+import com.sothawo.mapjfx.CoordinateLine;
+import com.sothawo.mapjfx.Extent;
+import com.sothawo.mapjfx.MapLabel;
+import com.sothawo.mapjfx.MapType;
+import com.sothawo.mapjfx.MapView;
+import com.sothawo.mapjfx.Marker;
+import com.sothawo.mapjfx.WMSParam;
+import com.sothawo.mapjfx.XYZParam;
+import com.sothawo.mapjfx.event.MapLabelEvent;
+import com.sothawo.mapjfx.event.MapViewEvent;
+import com.sothawo.mapjfx.event.MarkerEvent;
 import com.sothawo.mapjfx.offline.OfflineCache;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.Slider;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.util.Collections;
-import java.util.logging.*;
 
 /**
  * Test application.
@@ -38,7 +56,7 @@ import java.util.logging.*;
  */
 public class TestApp extends Application {
 
-    private static final Logger logger;
+    private static final Logger logger = LoggerFactory.getLogger(TestApp.class);
 
     /** some coordinates from around town */
     private static final Coordinate coordKarlsruheCastle = new Coordinate(49.013517, 8.404435);
@@ -64,17 +82,6 @@ public class TestApp extends Application {
     private static final XYZParam xyzParam;
 
     static {
-        // init the logging from the classpath logging.properties
-        InputStream inputStream = TestApp.class.getResourceAsStream("/logging.properties");
-        if (null != inputStream) {
-            try {
-                LogManager.getLogManager().readConfiguration(inputStream);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        logger = Logger.getLogger(TestApp.class.getCanonicalName());
-
         marker = Marker.createProvided(Marker.Provided.BLUE).setPosition(coordKarlsruheCastle).setVisible(true);
         mapLabel = new MapLabel("blau!")
                 .setCssClass("blue-label")
@@ -100,11 +107,8 @@ public class TestApp extends Application {
     /** the MapView */
     private MapView mapView;
 
-// -------------------------- STATIC METHODS --------------------------
     /** api keys for bing maps. */
     private TextField bingApiKey;
-
-// -------------------------- OTHER METHODS --------------------------
 
     public static void main(String[] args) {
         launch(args);
@@ -137,7 +141,7 @@ public class TestApp extends Application {
 
         // listen to MapViewEvent MAP_CLICKED
         mapView.addEventHandler(MapViewEvent.MAP_CLICKED, event -> {
-            logger.info("MAP_CLICKED event at " + event.getCoordinate());
+            logger.info("MAP_CLICKED event at {}", event.getCoordinate());
             event.consume();
             if (marker.getVisible()) {
                 marker.setPosition(event.getCoordinate());
@@ -149,98 +153,98 @@ public class TestApp extends Application {
 
         // listen to MapViewEvent MAP_RIGHTCLICKED
         mapView.addEventHandler(MapViewEvent.MAP_RIGHTCLICKED, event -> {
-            logger.info("MAP_RIGHTCLICKED event at " + event.getCoordinate());
+            logger.info("MAP_RIGHTCLICKED event at {}", event.getCoordinate());
             event.consume();
         });
 
         // listen to MapViewEvent MAP_EXTENT
         mapView.addEventHandler(MapViewEvent.MAP_EXTENT, event -> {
-            logger.info(() -> "MAP_EXTENT event: " + event.getExtent());
+            logger.info("MAP_EXTENT event: {}", event.getExtent());
             mapView.setExtent(event.getExtent());
             event.consume();
         });
 
         // listen to MapViewEvent MAP_BOUNDING_EXTENT
         mapView.addEventHandler(MapViewEvent.MAP_BOUNDING_EXTENT, event -> {
-            logger.info(() -> "MAP_BOUNDING_EXTENT event: " + event.getExtent());
+            logger.info("MAP_BOUNDING_EXTENT event: {}", event.getExtent());
             event.consume();
         });
 
         // listen to MARKER_CLICKED event.
         mapView.addEventHandler(MarkerEvent.MARKER_CLICKED, event -> {
-            logger.info("MARKER_CLICKED event: " + event.getMarker());
+            logger.info("MARKER_CLICKED event: {}", event.getMarker());
             event.consume();
         });
         // listen to MARKER_MOUSEDOWN event.
         mapView.addEventHandler(MarkerEvent.MARKER_MOUSEDOWN, event -> {
-            logger.info("MARKER_MOUSEDOWN event: " + event.getMarker());
+            logger.info("MARKER_MOUSEDOWN event: {}", event.getMarker());
             event.consume();
         });
         // listen to MARKER_MOUSEUP event.
         mapView.addEventHandler(MarkerEvent.MARKER_MOUSEUP, event -> {
-            logger.info("MARKER_MOUSEUP event: " + event.getMarker());
+            logger.info("MARKER_MOUSEUP event: {}", event.getMarker());
             event.consume();
         });
         // listen to MARKER_DOUBLECLICKED event.
         mapView.addEventHandler(MarkerEvent.MARKER_DOUBLECLICKED, event -> {
-            logger.info("MARKER_DOUBLECLICKED event: " + event.getMarker());
+            logger.info("MARKER_DOUBLECLICKED event: {}", event.getMarker());
             event.consume();
         });
         // listen to MARKER_RIGHTCLICKED event.
         mapView.addEventHandler(MarkerEvent.MARKER_RIGHTCLICKED, event -> {
-            logger.info("MARKER_RIGHTCLICKED event: " + event.getMarker());
+            logger.info("MARKER_RIGHTCLICKED event: {}", event.getMarker());
             event.consume();
         });
         // listen to MARKER_ENTERED event.
         mapView.addEventHandler(MarkerEvent.MARKER_ENTERED, event -> {
-            logger.info("MARKER_ENTERED event: " + event.getMarker());
+            logger.info("MARKER_ENTERED event: {}", event.getMarker());
             event.consume();
         });
         // listen to MARKER_EXITED event.
         mapView.addEventHandler(MarkerEvent.MARKER_EXITED, event -> {
-            logger.info("MARKER_EXITED event: " + event.getMarker());
+            logger.info("MARKER_EXITED event: {}", event.getMarker());
             event.consume();
         });
         // listen to MAPLABEL_MOUSEDOWN event.
         mapView.addEventHandler(MapLabelEvent.MAPLABEL_MOUSEDOWN, event -> {
-            logger.info("MAPLABEL_MOUSEDOWN event: " + event.getMapLabel());
+            logger.info("MAPLABEL_MOUSEDOWN event: {}", event.getMapLabel());
             event.consume();
         });
         // listen to MAPLABEL_MOUSEUP event.
         mapView.addEventHandler(MapLabelEvent.MAPLABEL_MOUSEUP, event -> {
-            logger.info("MAPLABEL_MOUSEUP event: " + event.getMapLabel());
+            logger.info("MAPLABEL_MOUSEUP event: {}", event.getMapLabel());
             event.consume();
         });
         // listen to MAPLABEL_CLICKED event.
         mapView.addEventHandler(MapLabelEvent.MAPLABEL_CLICKED, event -> {
-            logger.info("MAPLABEL_CLICKED event: " + event.getMapLabel());
+            logger.info("MAPLABEL_CLICKED event: {}", event.getMapLabel());
             event.consume();
         });
         // listen to MAPLABEL_RIGHTCLICKED event.
         mapView.addEventHandler(MapLabelEvent.MAPLABEL_RIGHTCLICKED, event -> {
-            logger.info("MAPLABEL_RIGHTCLICKED event: " + event.getMapLabel());
+            logger.info("MAPLABEL_RIGHTCLICKED event: {}", event.getMapLabel());
             event.consume();
         });
         // listen to MAPLABEL_DOUBLECLICKED event.
         mapView.addEventHandler(MapLabelEvent.MAPLABEL_DOUBLECLICKED, event -> {
-            logger.info("MAPLABEL_DOUBLECLICKED event: " + event.getMapLabel());
+            logger.info("MAPLABEL_DOUBLECLICKED event:{}", event.getMapLabel());
             event.consume();
         });
         // listen to MAPLABEL_ENTERED event.
         mapView.addEventHandler(MapLabelEvent.MAPLABEL_ENTERED, event -> {
-            logger.info("MAPLABEL_ENTERED event: " + event.getMapLabel());
+            logger.info("MAPLABEL_ENTERED event: {}", event.getMapLabel());
             event.consume();
             event.getMapLabel().setCssClass("green-label");
         });
         // listen to MAPLABEL_EXITED event.
         mapView.addEventHandler(MapLabelEvent.MAPLABEL_EXITED, event -> {
-            logger.info("MAPLABEL_EXITED event: " + event.getMapLabel());
+            logger.info("MAPLABEL_EXITED event: {}", event.getMapLabel());
             event.consume();
             event.getMapLabel().setCssClass("blue-label");
         });
         // listen to MAP_POINTER_MOVED event
         mapView.addEventHandler(MapViewEvent.MAP_POINTER_MOVED, event -> {
-            logger.info("MAP_POINTER_MOVED event: " + event.getCoordinate());
+            logger.info("MAP_POINTER_MOVED event: {}", event.getCoordinate());
             event.consume();
         });
 
@@ -286,7 +290,7 @@ public class TestApp extends Application {
         primaryStage.setScene(scene);
         primaryStage.show();
 
-        logger.finer(() -> "application started.");
+        logger.debug("application started.");
     }
 
     @Override
@@ -329,8 +333,6 @@ public class TestApp extends Application {
         });
         return hbox;
     }
-
-// --------------------------- main() method ---------------------------
 
     /**
      * creates the top pane with the different location buttons.
@@ -484,7 +486,7 @@ public class TestApp extends Application {
             try {
                 mapView.getOfflineCache().clear();
             } catch (IOException e) {
-                logger.log(Level.WARNING, "could not clear cache", e);
+                logger.warn("could not clear cache", e);
             }
         });
         hbox.getChildren().add(btn);
