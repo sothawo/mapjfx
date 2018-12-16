@@ -51,6 +51,8 @@ The test application does not contain all the features, to have that, check
 
 ## current
 
+* added slf4j api to the libarary and logback to the testapp
+
 ## 1.22.0
 
 * add possibility to set the map projection (either WGS_84("EPSG:4326") or WEB_MERCATOR("EPSG:3857"))
