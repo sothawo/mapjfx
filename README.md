@@ -44,13 +44,13 @@ master-1.x: [![Build Status](https://travis-ci.org/sothawo/mapjfx.svg?branch=mas
 ## running the test application
 
 the project contains a test application which is mostly used during development. The application can be started from 
-within an IDE by using the `com.sothawo.mapjfx.app.TestAppLauncher` class.
+within an IDE by using the `com.sothawo.mapjfx.app.TestAppLauncher` class. To get the logging, the IDE should add the provided dependency to the run classpath.
 
 to run it from the commandline it is first necessary to build the library with all dependencies as a shaded jar and 
 the run the test application:
 
      mvn -P shaded package
-     java -jar target/mapjfx.jar
+     java -Dlogback.configurationFile=logback.xml -jar target/mapjfx.jar
 
 The test application does not contain all the features, to have that, check
  [mapjfx-demo](http://www.sothawo.com/projects/mapjfx-demo/)
@@ -58,6 +58,8 @@ The test application does not contain all the features, to have that, check
 ## version history
 
 ## current
+
+* added slf4j api to the libarary and logback to the testapp
 
 ## 2.2.0
 
