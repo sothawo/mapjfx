@@ -76,7 +76,7 @@ import static java.util.Objects.requireNonNull;
  * Map component. To use the MapView, construct it and add it to your scene. Then the  {@link #initialized} property
  * should be observed as well as bindings/observations to other properties should be established. <br><br>
  *
- * After that, the {@link #initialize()} Method must be called. When the MapView is initialized and ready to be used,
+ * After that, the {@link #initialize(Projection)} Method must be called. When the MapView is initialized and ready to be used,
  * the {@link #initialized} property is set to true.<br><br>
  *
  * No map is displayed until {@link #setCenter(Coordinate)} is called.<br><br>
@@ -173,7 +173,6 @@ public final class MapView extends Region implements AutoCloseable {
     private Optional<XYZParam> xyzParam = Optional.empty();
     /** the thread to clean weak references. */
     private Thread weakRefCleaner;
-
 
     /**
      * create a MapView with no initial center coordinate.
@@ -805,11 +804,22 @@ public final class MapView extends Region implements AutoCloseable {
         return this;
     }
 
+
+    /**
+     * calls {@link #initialize(Projection)} with a value of #WEB_MERCATOR.
+     */
+    public void initialize() {
+        initialize(Projection.WEB_MERCATOR);
+    }
+
     /**
      * initializes the MapView. The internal HTML file is loaded into the contained WebView and the necessary setup is
      * made for communication between this object and the Javascript elements on the web page.
+     *
+     * @param projection
+     *         the projection to use for the Map
      */
-    public void initialize() {
+    public void initialize(final Projection projection) {
         if (logger.isDebugEnabled()) {
             logger.debug("initializing...");
         }
@@ -853,7 +863,7 @@ public final class MapView extends Region implements AutoCloseable {
                             do {
                                 final Object o;
                                 try {
-                                    o = webEngine.executeScript("getJSMapView()");
+                                    o = webEngine.executeScript("getJSMapView('" + projection.getOlName() + "')");
                                     jsMapView = (JSObject) o;
                                 } catch (final JSException e) {
                                     if (logger.isWarnEnabled()) {

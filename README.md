@@ -61,6 +61,10 @@ The test application does not contain all the features, to have that, check
 
 * added slf4j api to the libarary and logback to the testapp
 
+## 2.3.0
+
+* add possibility to set the map projection (either WGS_84("EPSG:4326") or WEB_MERCATOR("EPSG:3857"))
+
 ## 2.2.0
 
 * CoordinateLines can now be closed (polygon) and have a fill color
