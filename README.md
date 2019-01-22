@@ -59,6 +59,7 @@ The test application does not contain all the features, to have that, check
 
 ## current
 
+* enable map zooming with scroll wheel on markers ands labels
 * added slf4j api to the libarary and logback to the testapp
 
 ## 2.3.0
