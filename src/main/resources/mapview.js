@@ -431,7 +431,8 @@ JSMapView.prototype.addMarker = function (name, url, latitude, longitude, offset
         var overlay = new ol.Overlay({
             offset: [offsetX, offsetY],
             position: undefined,
-            element: imgElement
+            element: imgElement,
+            stopEvent: false
         });
         marker.setOverlay(overlay);
         this.map.addOverlay(overlay);
@@ -503,7 +504,8 @@ JSMapView.prototype.addLabel = function (name, text, cssClass, latitude, longitu
         var overlay = new ol.Overlay({
             offset: [offsetX, offsetY],
             position: undefined,
-            element: labelElement
+            element: labelElement,
+            stopEvent: false
         });
         label.setOverlay(overlay);
         this.map.addOverlay(overlay);
