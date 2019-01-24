@@ -1,5 +1,5 @@
 /*
- Copyright 2015 Peter-Josef Meisch (pj.meisch@sothawo.com)
+ Copyright 2015-2019 Peter-Josef Meisch (pj.meisch@sothawo.com)
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,12 +25,9 @@ import java.util.Objects;
  * @author P.J. Meisch (pj.meisch@sothawo.com).
  */
 public final class CoordinateLineListener {
-// ------------------------------ FIELDS ------------------------------
 
     /** listener for visibilty changes */
     private final ChangeListener<Boolean> visibileChangeListener;
-
-// --------------------------- CONSTRUCTORS ---------------------------
 
     /**
      * @param visibileChangeListener
@@ -41,8 +38,6 @@ public final class CoordinateLineListener {
     public CoordinateLineListener(ChangeListener<Boolean> visibileChangeListener) {
         this.visibileChangeListener = Objects.requireNonNull(visibileChangeListener);
     }
-
-// --------------------- GETTER / SETTER METHODS ---------------------
 
     public ChangeListener<Boolean> getVisibileChangeListener() {
         return visibileChangeListener;
