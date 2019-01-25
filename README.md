@@ -57,6 +57,14 @@ The test application does not contain all the features, to have that, check
 
 ## version history
 
+## 2.5.2
+
+* adapt readme
+
+## 2.5.1
+
+* update coypright notices
+
 ## 2.5.0
 
 * enable map zooming with scroll wheel on markers ands labels
