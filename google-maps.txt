@@ -1,0 +1,10 @@
+findings:
+
+* different version of OL included: 5.0.3 (dating from 2018/07/03) (actual version 1.1.1 of olgm, 2019/02/20), current OL is 5.3.0 from 2018/11/06
+
+* the map does not fill the given area
+* no zoom controls visible
+* when using a mouse scroll to zoom in/out, the shown marker jumps to a different position, although the mouse is not over it
+* polygon layer is not shown
+
+* when using the other layers like OSM from this code, the attributions and scroll controls are not shown anymore.

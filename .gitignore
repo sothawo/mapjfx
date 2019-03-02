@@ -7,3 +7,4 @@ target
 .DS_Store
 
 /dependency-reduced-pom.xml
+/src/main/resources/mapview-local-google-api-key.html

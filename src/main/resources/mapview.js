@@ -129,7 +129,8 @@ JSMapView.prototype.init = function (projection) {
 
     this.map.addInteraction(dragBox);
 
-    this.setMapType('OSM');
+    this.setMapType('GOOGLE');
+    // this.setMapType('OSM');
 };
 
 /**
@@ -284,6 +285,13 @@ JSMapView.prototype.setMapType = function (newType) {
                     projection: new ol.proj.Projection(this.projections.openlayers)
                 }),
                 this.layerFeatures
+            ]
+        }));
+    } else if(newType === 'GOOGLE') {
+        this.map.interactions = olgm.interaction.defaults();
+        this.map.setLayerGroup(new ol.layer.Group({
+            layers: [
+                new olgm.layer.Google()
             ]
         }));
     } else {
