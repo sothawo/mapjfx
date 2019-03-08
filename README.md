@@ -34,13 +34,6 @@ Pull requests should be based on _1.x_ for changes/backports in the Java 8 versi
 
 Releases are based on _master_ for the _2.x_ branch ad on _master-1.x_ for the _1.x_ branch.
  
-## build status on travis-ci
-
-2.x: [![Build Status](https://travis-ci.org/sothawo/mapjfx.svg?branch=2.x)](https://travis-ci.org/sothawo/mapjfx)    
-master: [![Build Status](https://travis-ci.org/sothawo/mapjfx.svg?branch=master)](https://travis-ci.org/sothawo/mapjfx)    
-1.x: [![Build Status](https://travis-ci.org/sothawo/mapjfx.svg?branch=1.x)](https://travis-ci.org/sothawo/mapjfx)  
-master-1.x: [![Build Status](https://travis-ci.org/sothawo/mapjfx.svg?branch=master-1.x)](https://travis-ci.org/sothawo/mapjfx)  
-
 ## running the test application
 
 the project contains a test application which is mostly used during development. The application can be started from 
@@ -56,6 +49,10 @@ The test application does not contain all the features, to have that, check
  [mapjfx-demo](http://www.sothawo.com/projects/mapjfx-demo/)
 
 ## version history
+
+## 2.5.3
+
+* removed travis-ci integration
 
 ## 2.5.2
 
