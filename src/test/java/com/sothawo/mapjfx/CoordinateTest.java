@@ -17,27 +17,28 @@ package com.sothawo.mapjfx;
 
 import org.junit.Test;
 
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 public class CoordinateTest {
-// -------------------------- OTHER METHODS --------------------------
 
     @Test
     public void equals() throws Exception {
-        Coordinate coordinate1 = new Coordinate(12.345, 67.89);
-        Coordinate coordinate2 = new Coordinate(12.345, 67.89);
+        final Coordinate coordinate1 = new Coordinate(12.345, 67.89);
+        final Coordinate coordinate2 = new Coordinate(12.345, 67.89);
         assertEquals(coordinate1, coordinate2);
     }
 
     @Test
     public void getLatitude() throws Exception {
-        Coordinate coordinate = new Coordinate(12.345, 67.89);
+        final Coordinate coordinate = new Coordinate(12.345, 67.89);
         assertEquals((Double) 12.345, coordinate.getLatitude());
     }
 
     @Test
     public void getLongitude() throws Exception {
-        Coordinate coordinate = new Coordinate(12.345, 67.89);
+        final Coordinate coordinate = new Coordinate(12.345, 67.89);
         assertEquals((Double) 67.89, coordinate.getLongitude());
     }
 
@@ -51,4 +52,15 @@ public class CoordinateTest {
         new Coordinate(12.345, null);
     }
 
+    @Test
+    public void normalize() {
+        assertEquals(new Coordinate(10.0, 177.5).normalize().getLongitude(), 177.5,0.01);
+        assertEquals(new Coordinate(10.0, 222.5).normalize().getLongitude(), -137.5,0.01);
+        assertEquals(new Coordinate(10.0, 537.5).normalize().getLongitude(), 177.5,0.01);
+        assertEquals(new Coordinate(10.0, 582.5).normalize().getLongitude(), -137.5,0.01);
+        assertEquals(new Coordinate(10.0, 897.5).normalize().getLongitude(), 177.5,0.01);
+
+        assertEquals(new Coordinate(10.0, -183.5).normalize().getLongitude(), 176.5,0.01);
+        assertEquals(new Coordinate(10.0, -222.5).normalize().getLongitude(), 137.5,0.01);
+    }
 }

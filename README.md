@@ -1,6 +1,6 @@
 # mapjfx
 
-mapjfx provides a JavaFX8 region containing a map, allowing to zoom, pan, and use markers.
+mapjfx provides a JavaFX region containing a map, allowing to zoom, pan, and use markers.
 
 It uses [OpenLayers](http://openlayers.org) as the map technology.
 More Information about the project can be found at [the sothawo website](http://www.sothawo.com/projects/mapjfx/).
@@ -42,6 +42,7 @@ The test application does not contain all the features, to have that, check
 
 ## version history
 
+* added `Coordinate.normalize()` method
 
 ## 1.24.3
 
