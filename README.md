@@ -50,6 +50,8 @@ The test application does not contain all the features, to have that, check
 
 ## version history
 
+## 2.6.0
+
 * added `Coordinate.normalize()` method
 
 ## 2.5.3
