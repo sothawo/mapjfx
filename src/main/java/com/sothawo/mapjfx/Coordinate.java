@@ -23,14 +23,12 @@ import static java.util.Objects.requireNonNull;
  * @author P.J.Meisch (pj.meisch@sothawo.com)
  */
 public final class Coordinate {
-// ------------------------------ FIELDS ------------------------------
 
     /** latitude value */
     private final Double latitude;
     /** longitude value */
     private final Double longitude;
 
-// --------------------------- CONSTRUCTORS ---------------------------
 
     /**
      * creates a coordinate.
@@ -49,26 +47,12 @@ public final class Coordinate {
         this.longitude = requireNonNull(longitude);
     }
 
-// --------------------- GETTER / SETTER METHODS ---------------------
-
     public final Double getLatitude() {
         return latitude;
     }
 
     public final Double getLongitude() {
         return longitude;
-    }
-
-// ------------------------ CANONICAL METHODS ------------------------
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        Coordinate that = (Coordinate) o;
-
-        return latitude.equals(that.latitude) && longitude.equals(that.longitude);
     }
 
     @Override
@@ -79,10 +63,25 @@ public final class Coordinate {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        final Coordinate that = (Coordinate) o;
+
+        return latitude.equals(that.latitude) && longitude.equals(that.longitude);
+    }
+
+    @Override
     public String toString() {
-        return '[' +
-                "latitude=" + latitude +
+        return "[latitude=" + latitude +
                 ", longitude=" + longitude +
                 ']';
     }
+
+    public Coordinate normalize() {
+        Double l = getLongitude();
+        while(l < -180.0) l += 360;
+        while(l > 180.0) l -= 360;
+        return new Coordinate(latitude, l);    }
 }

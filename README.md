@@ -1,6 +1,6 @@
 # mapjfx
 
-mapjfx provides a JavaFX8 region containing a map, allowing to zoom, pan, and use markers.
+mapjfx provides a JavaFX region containing a map, allowing to zoom, pan, and use markers.
 
 It uses [OpenLayers](http://openlayers.org) as the map technology.
 More Information about the project can be found at [the sothawo website](http://www.sothawo.com/projects/mapjfx/).
@@ -30,13 +30,6 @@ Pull requests should be based on _1.x_ for changes/backports in the Java 8 versi
 
 Releases are based on _master_ for the _2.x_ branch ad on _master-1.x_ for the _1.x_ branch.
  
-## build status on travis-ci
-
-2.x: [![Build Status](https://travis-ci.org/sothawo/mapjfx.svg?branch=2.x)](https://travis-ci.org/sothawo/mapjfx)    
-master: [![Build Status](https://travis-ci.org/sothawo/mapjfx.svg?branch=master)](https://travis-ci.org/sothawo/mapjfx)    
-1.x: [![Build Status](https://travis-ci.org/sothawo/mapjfx.svg?branch=1.x)](https://travis-ci.org/sothawo/mapjfx)  
-master-1.x: [![Build Status](https://travis-ci.org/sothawo/mapjfx.svg?branch=master-1.x)](https://travis-ci.org/sothawo/mapjfx)  
-
 ## running the test application
 
 the project contains a test application which is mostly used during development. The source is found in the test
@@ -49,6 +42,7 @@ The test application does not contain all the features, to have that, check
 
 ## version history
 
+* added `Coordinate.normalize()` method
 
 ## 1.24.3
 
