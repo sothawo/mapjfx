@@ -42,7 +42,7 @@ JSMapView.prototype.toString = function () {
  * initializes the JSMapView and the map.
  * @param projection the projection to use for the map, i.e. 'EPSG:4326'
  */
-JSMapView.prototype.init = function (projection) {
+JSMapView.prototype.init = function (projection, interactive) {
     this.projections.mapjfx = 'EPSG:4326';
     this.projections.openlayers = projection;
 
@@ -64,6 +64,15 @@ JSMapView.prototype.init = function (projection) {
         view: new ol.View({
             zoom: 1,
             projection: projection
+        }),
+        controls: ol.control.defaults({
+            zoom: interactive
+        }),
+        interactions: ol.interaction.defaults({
+            doubleClickZoom: interactive,
+            dragPan: interactive,
+            keyboardZoom: interactive,
+            mouseWheelZoom: interactive
         })
     });
 
@@ -676,9 +685,9 @@ JSMapView.prototype.reportExtent = function () {
  * @param projection the projection to use for the map, i.e. 'EPSG:4326'
  * @return JSMapView object
  */
-function getJSMapView(projection) {
+function getJSMapView(projection, interactive) {
     var jsMapView = new JSMapView(_javaConnector);
-    jsMapView.init(projection);
+    jsMapView.init(projection, interactive);
     return jsMapView;
 }
 
