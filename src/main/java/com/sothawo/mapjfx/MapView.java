@@ -76,7 +76,8 @@ import static java.util.Objects.requireNonNull;
  * Map component. To use the MapView, construct it and add it to your scene. Then the  {@link #initialized} property
  * should be observed as well as bindings/observations to other properties should be established. <br><br>
  *
- * After that, the {@link #initialize(Projection)} Method must be called. When the MapView is initialized and ready to be used,
+ * After that, the {@link #initialize()} method or one of it's overloads must be called.
+ * When the MapView is initialized and ready to be used,
  * the {@link #initialized} property is set to true.<br><br>
  *
  * No map is displayed until {@link #setCenter(Coordinate)} is called.<br><br>
@@ -814,6 +815,9 @@ public final class MapView extends Region implements AutoCloseable {
 
     /**
      * calls {@link #initialize(Projection, boolean)} with a values of #WEB_MERCATOR for the projection.
+     *
+     * @param interactive
+     *         if false, the user cannot change the zoom by controls in the map, scrolling the wheel or doubleclicking and cannot pan around by dragging the mouse
      */
     public void initialize(boolean interactive) {
         initialize(Projection.WEB_MERCATOR, interactive);
