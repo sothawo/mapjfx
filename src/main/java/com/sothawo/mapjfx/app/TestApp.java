@@ -22,6 +22,7 @@ import com.sothawo.mapjfx.MapLabel;
 import com.sothawo.mapjfx.MapType;
 import com.sothawo.mapjfx.MapView;
 import com.sothawo.mapjfx.Marker;
+import com.sothawo.mapjfx.Projection;
 import com.sothawo.mapjfx.WMSParam;
 import com.sothawo.mapjfx.XYZParam;
 import com.sothawo.mapjfx.event.MapLabelEvent;
@@ -281,8 +282,9 @@ public class TestApp extends Application {
         mapView.setCustomMapviewCssURL(getClass().getResource("/custom_mapview.css"));
 
         // now initialize the mapView
-        mapView.initialize();
-//        mapView.initialize(Projection.WGS_84);
+        mapView.initialize(false);
+//        mapView.initialize();
+//        mapView.initialize(Projection.WGS_84, true);
 
         // show the whole thing
         final Scene scene = new Scene(borderPane, 1200, 800);

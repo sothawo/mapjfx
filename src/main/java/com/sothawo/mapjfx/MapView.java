@@ -806,10 +806,17 @@ public final class MapView extends Region implements AutoCloseable {
 
 
     /**
-     * calls {@link #initialize(Projection)} with a value of #WEB_MERCATOR.
+     * calls {@link #initialize(Projection, boolean)} with a values of #WEB_MERCATOR and true.
      */
     public void initialize() {
-        initialize(Projection.WEB_MERCATOR);
+        initialize(Projection.WEB_MERCATOR, true);
+    }
+
+    /**
+     * calls {@link #initialize(Projection, boolean)} with a values of #WEB_MERCATOR for the projection.
+     */
+    public void initialize(boolean interactive) {
+        initialize(Projection.WEB_MERCATOR, interactive);
     }
 
     /**
@@ -818,8 +825,10 @@ public final class MapView extends Region implements AutoCloseable {
      *
      * @param projection
      *         the projection to use for the Map
+     * @param interactive
+     *         if false, the user cannot change the zoom by controls in the map, scrolling the wheel or doubleclicking and cannot pan around by dragging the mouse
      */
-    public void initialize(final Projection projection) {
+    public void initialize(final Projection projection, boolean interactive) {
         if (logger.isDebugEnabled()) {
             logger.debug("initializing...");
         }
@@ -863,7 +872,11 @@ public final class MapView extends Region implements AutoCloseable {
                             do {
                                 final Object o;
                                 try {
-                                    o = webEngine.executeScript("getJSMapView('" + projection.getOlName() + "')");
+                                    final String script = "getJSMapView('" + projection.getOlName() + "'," + interactive + ")";
+                                    if (logger.isDebugEnabled()) {
+                                        logger.debug("calling JS \"" + script + "\"");
+                                    }
+                                    o = webEngine.executeScript(script);
                                     jsMapView = (JSObject) o;
                                 } catch (final JSException e) {
                                     if (logger.isWarnEnabled()) {
