@@ -169,8 +169,8 @@ Copyright 2015-2019 Peter-Josef Meisch (pj.meisch@sothawo.com)
 <script src="coordinateline.js" type="text/javascript"></script>
 <script src="mapview.js" type="text/javascript"></script>
 <script>
-    var jsMapView = getJSMapView('EPSG:3857');
-    // var jsMapView = getJSMapView('EPSG:4326');
+    var jsMapView = getJSMapView('EPSG:3857', false);
+    // var jsMapView = getJSMapView('EPSG:4326', true);
 
     // no browser context menu, markers and labels handle it separately, for the mapview itself
     // it must be caught here as ol.Map has no context menu event.
@@ -222,6 +222,7 @@ Copyright 2015-2019 Peter-Josef Meisch (pj.meisch@sothawo.com)
         jsMapView.removeMapObject('castle-label');
         jsMapView.removeCoordinateLine('coli');
     };
+
 </script>
 <!-- replaced by: -->
 <!--<script type="text/javascript">-->
