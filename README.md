@@ -50,6 +50,10 @@ The test application does not contain all the features, to have that, check
 
 ## version history
 
+## 2.7.0
+
+* added non-interactive map mode
+
 ## 2.6.0
 
 * added `Coordinate.normalize()` method
