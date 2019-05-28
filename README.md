@@ -42,6 +42,8 @@ The test application does not contain all the features, to have that, check
 
 ## version history
 
+### 1.26.1
+
 * MAPJFX-54: fix that coordinate lines were not shown on WMS
 * MAPJFX-53: fix that WMS maps are not shown
 
