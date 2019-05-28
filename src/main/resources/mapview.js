@@ -269,7 +269,8 @@ JSMapView.prototype.setMapType = function (newType) {
                         layer: 'terrain-labels',
                         projection: new ol.proj.Projection(this.projections.openlayers)
                     })
-                })
+                }),
+                this.layerFeatures
             ]
         }));
     } else if (newType === 'WMS' && this.wmsParams.getUrl().length > 0) {
@@ -279,10 +280,10 @@ JSMapView.prototype.setMapType = function (newType) {
                     source: new ol.source.TileWMS({
                         url: this.wmsParams.getUrl(),
                         params: this.wmsParams.getParams(),
-                        serverType: 'geoserver',
-                        projection: new ol.proj.Projection(this.projections.openlayers)
+                        serverType: 'geoserver'
                     })
-                })
+                }),
+                this.layerFeatures
             ]
         }));
     } else if (newType === 'XYZ' && this.xyzParams.url.length > 0) {

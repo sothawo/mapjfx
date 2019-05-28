@@ -22,6 +22,7 @@ import com.sothawo.mapjfx.MapLabel;
 import com.sothawo.mapjfx.MapType;
 import com.sothawo.mapjfx.MapView;
 import com.sothawo.mapjfx.Marker;
+import com.sothawo.mapjfx.Projection;
 import com.sothawo.mapjfx.WMSParam;
 import com.sothawo.mapjfx.XYZParam;
 import com.sothawo.mapjfx.event.MapLabelEvent;
@@ -95,9 +96,13 @@ public class TestApp extends Application {
 //                .addParam("layers", "landsat")
 //                .addParam("REQUEST", "GetTile");
 
+//        wmsParam = new WMSParam()
+//                .setUrl("http://geonode.wfp.org:80/geoserver/ows")
+//                .addParam("layers", "geonode:admin_2_gaul_2015");
+
         wmsParam = new WMSParam()
-                .setUrl("http://geonode.wfp.org:80/geoserver/ows")
-                .addParam("layers", "geonode:admin_2_gaul_2015");
+                .setUrl("http://ows.terrestris.de/osm/service")
+                .addParam("layers", "OSM-WMS");
 
         xyzParam = new XYZParam()
                 .withUrl("https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x})")
@@ -281,8 +286,8 @@ public class TestApp extends Application {
         mapView.setCustomMapviewCssURL(getClass().getResource("/custom_mapview.css"));
 
         // now initialize the mapView
-        mapView.initialize(false);
-//        mapView.initialize();
+//        mapView.initialize(false);
+        mapView.initialize();
 //        mapView.initialize(Projection.WGS_84, true);
 
         // show the whole thing
@@ -304,7 +309,7 @@ public class TestApp extends Application {
     private void initOfflineCache() {
         final OfflineCache offlineCache = OfflineCache.INSTANCE;
         offlineCache.setCacheDirectory(FileSystems.getDefault().getPath("tmpdata/cache"));
-        offlineCache.setActive(true);
+        offlineCache.setActive(false);
         offlineCache.setNoCacheFilters(Collections.singletonList(".*\\.sothawo\\.com/.*"));
     }
 

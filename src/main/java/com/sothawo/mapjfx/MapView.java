@@ -805,7 +805,6 @@ public final class MapView extends Region implements AutoCloseable {
         return this;
     }
 
-
     /**
      * calls {@link #initialize(Projection, boolean)} with a values of #WEB_MERCATOR and true.
      */
