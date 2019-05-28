@@ -279,8 +279,7 @@ JSMapView.prototype.setMapType = function (newType) {
                     source: new ol.source.TileWMS({
                         url: this.wmsParams.getUrl(),
                         params: this.wmsParams.getParams(),
-                        serverType: 'geoserver',
-                        projection: new ol.proj.Projection(this.projections.openlayers)
+                        serverType: 'geoserver'
                     })
                 })
             ]

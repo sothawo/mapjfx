@@ -41,13 +41,13 @@ import java.util.stream.Collectors;
 
 /**
  * Offline Cache functionality. The cache must be explicitly set to be active. If it is active, a call to a http or
- * https resource is intercepted. If the reuslt of the same call is already stored in the local cache directory, it is
+ * https resource is intercepted. If the result of the same call is already stored in the local cache directory, it is
  * returned without a further connect to the network. If it is not in the cache directory, a network request is made and
  * the returned data is stored in the local cache directory.
  *
  * The cache is implemented as singleton.
  *
- * A list of regexp string s can be set with {@link #setNoCacheFilters(Collection)}. URLs that match any of these
+ * A list of regexp strings can be set with {@link #setNoCacheFilters(Collection)}. URLs that match any of these
  * patterns will not be cached.
  *
  * @author P.J. Meisch (pj.meisch@sothawo.com).
