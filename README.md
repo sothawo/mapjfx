@@ -42,6 +42,8 @@ The test application does not contain all the features, to have that, check
 
 ## version history
 
+### 1.26.2
+
 * MAPJFX-56: Initialization fix.
 
 ### 1.26.1
