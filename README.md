@@ -48,7 +48,11 @@ the run the test application:
 The test application does not contain all the features, to have that, check
  [mapjfx-demo](http://www.sothawo.com/projects/mapjfx-demo/)
 
-## version history
+## current version
+
+* MAPJFX-56: Initialization fix.
+
+## 2.7.1
 
 ## 2.7.1
 

@@ -64,6 +64,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -113,6 +114,8 @@ public final class MapView extends Region implements AutoCloseable {
     private static final String CUSTOM_MAPVIEW_CSS = "custom_mapview.css";
     /** readonly property that informs if this MapView is fully initialized. */
     private final ReadOnlyBooleanWrapper initialized = new ReadOnlyBooleanWrapper(false);
+    /** flag that is set to true after the technical infrastructure is set up, but before center, zoom etc are set. */
+    private final AtomicBoolean mapViewReady = new AtomicBoolean(false);
     /** used to store the last coordinate that was reported by the map to prevent setting it again in the map. */
     private final AtomicReference<Coordinate> lastCoordinateFromMap = new AtomicReference<>();
     /** used to store the last zoom value that was reported by the map to prevent setting it again in the map. */
@@ -422,7 +425,7 @@ public final class MapView extends Region implements AutoCloseable {
      * @return true if the MapView is initialized.
      */
     public boolean getInitialized() {
-        return initialized.get();
+        return mapViewReady.get() || initialized.get();
     }
 
     /**
@@ -906,10 +909,11 @@ public final class MapView extends Region implements AutoCloseable {
                                     logger.warn("error loading {}, JavaScript not ready.", MAPVIEW_HTML);
                                 }
                             } else {
-                                initialized.set(true);
+                                mapViewReady.set(true);
                                 setMapTypeInMap();
                                 setCenterInMap();
                                 setZoomInMap();
+                                initialized.set(true);
                                 if (logger.isDebugEnabled()) {
                                     logger.debug("initialized.");
                                 }
