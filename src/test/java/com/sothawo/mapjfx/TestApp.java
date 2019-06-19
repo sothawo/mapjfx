@@ -13,18 +13,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package com.sothawo.mapjfx.app;
+package com.sothawo.mapjfx;
 
-import com.sothawo.mapjfx.Coordinate;
-import com.sothawo.mapjfx.CoordinateLine;
-import com.sothawo.mapjfx.Extent;
-import com.sothawo.mapjfx.MapLabel;
-import com.sothawo.mapjfx.MapType;
-import com.sothawo.mapjfx.MapView;
-import com.sothawo.mapjfx.Marker;
-import com.sothawo.mapjfx.Projection;
-import com.sothawo.mapjfx.WMSParam;
-import com.sothawo.mapjfx.XYZParam;
 import com.sothawo.mapjfx.event.MapLabelEvent;
 import com.sothawo.mapjfx.event.MapViewEvent;
 import com.sothawo.mapjfx.event.MarkerEvent;
