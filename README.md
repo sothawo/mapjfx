@@ -42,6 +42,8 @@ The test application does not contain all the features, to have that, check
 
 ## version history
 
+* MAPJFX-56: Initialization fix.
+
 ### 1.26.1
 
 * MAPJFX-54: fix that coordinate lines were not shown on WMS
@@ -51,60 +53,60 @@ The test application does not contain all the features, to have that, check
 
 * added non-interactive map mode
 
-## 1.25.0
+### 1.25.0
 
 * added `Coordinate.normalize()` method
 
-## 1.24.3
+### 1.24.3
 
 removed travis-ci integration
 
-## 1.24.2
+### 1.24.2
 
 * adapt readme
 
-## 1.24.1
+### 1.24.1
 
 * update coypright notices
 
-## 1.24.0
+### 1.24.0
 
 * enable map zooming with scroll wheel on markers ands labels
 
-## 1.23.0
+### 1.23.0
 
 * added slf4j api to the libarary and logback to the testapp
 
-## 1.22.0
+### 1.22.0
 
 * add possibility to set the map projection (either WGS_84("EPSG:4326") or WEB_MERCATOR("EPSG:3857"))
 
-## 1.21.0
+### 1.21.0
 
 * CoordinateLines can now be closed (polygon) and have a fill color
 
-## 1.20.1
+### 1.20.1
 
 * use OpenLayers 5.3.0
 
-## 1.20.0
+### 1.20.0
 
 * added MapView.close() method to cleanup resources
 
-## 1.19.1
+### 1.19.1
 
 * no code changes, branch adaptions for branches 1.x and 2.x
 
-## 1.19.0
+### 1.19.0
 
 * add XYZ map source (contribution from [Erik Jaehne](https://github.com/s3erjaeh))
 
-## 1.18.0
+### 1.18.0
 
 * add MAP_POINTER_MOVED event
 * OfflineCache is now a Singleton, so one aplication can have multiple maps and have them use a common cache.
 
-## 1.17.0
+### 1.17.0
 
 * report changes in the map's extent
 * use OpenLayers 4.6.5
