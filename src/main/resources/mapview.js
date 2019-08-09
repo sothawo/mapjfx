@@ -682,14 +682,26 @@ JSMapView.prototype.reportExtent = function () {
     }
 };
 
+var _jsMapView;
+
 /**
+ * creates the global JSMapView object
  * @param projection the projection to use for the map, i.e. 'EPSG:4326'
- * @return JSMapView object
+ * @param interactive when false, the map cannot be panned and zoomed
+ * @return the global JSMapView object.
  */
-function getJSMapView(projection, interactive) {
+function createJSMapView(projection, interactive) {
     var jsMapView = new JSMapView(_javaConnector);
     jsMapView.init(projection, interactive);
-    return jsMapView;
+    _jsMapView = jsMapView;
+    return getJSMapView();
+}
+
+/**
+ * @return the global JSMapView object.
+ */
+function getJSMapView() {
+    return _jsMapView;
 }
 
 

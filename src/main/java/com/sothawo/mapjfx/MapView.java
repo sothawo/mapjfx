@@ -872,15 +872,18 @@ public final class MapView extends Region implements AutoCloseable {
                             final JSObject window = (JSObject) webEngine.executeScript("window");
                             window.setMember("_javaConnector", javaConnector);
 
+                            // add JS console.log() redirector
+                            webEngine.executeScript("console.log = function(msg) { _javaConnector.console(msg) }");
+
                             // get the Javascript connector object. Even if the html file is loaded, JS may not yet
                             // be ready, so prepare for an exception and retry
                             int numRetries = 0;
                             do {
                                 final Object o;
                                 try {
-                                    final String script = "getJSMapView('" + projection.getOlName() + "'," + interactive + ")";
+                                    final String script = "createJSMapView('" + projection.getOlName() + "'," + interactive + ')';
                                     if (logger.isDebugEnabled()) {
-                                        logger.debug("calling JS \"" + script + "\"");
+                                        logger.debug("calling JS \"" + script + '"');
                                     }
                                     o = webEngine.executeScript(script);
                                     jsMapView = (JSObject) o;
@@ -892,7 +895,7 @@ public final class MapView extends Region implements AutoCloseable {
                                     try {
                                         Thread.sleep(500);
                                     } catch (final InterruptedException e1) {
-                                        if (logger.isErrorEnabled()) {
+                                        if (logger.isWarnEnabled()) {
                                             logger.warn("retry interrupted");
                                         }
                                     }
@@ -1334,6 +1337,18 @@ public final class MapView extends Region implements AutoCloseable {
         public void debug(String msg) {
             if (logger.isDebugEnabled()) {
                 logger.debug("JS: {}", msg);
+            }
+        }
+
+        /**
+         * called when something writes in the JS side to console.log()
+         *
+         * @param msg
+         *         the message to log
+         */
+        public void console(String msg) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("JS Console: {}", msg);
             }
         }
 
