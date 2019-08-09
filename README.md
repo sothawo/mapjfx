@@ -54,6 +54,8 @@ The test application does not contain all the features, to have that, check
 
 ## current version
 
+* MAPJFX-52 - fix context menu regression.
+
 ### 2.7.2
 
 * MAPJFX-56: Initialization fix.
