@@ -16,12 +16,12 @@
 package com.sothawo.mapjfx;
 
 import javafx.scene.paint.Color;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 /**
  * Tests for CoordinateLine.
@@ -29,80 +29,79 @@ import static org.junit.Assert.*;
  * @author P.J.Meisch (pj.meisch@sothawo.com)
  */
 public class CoordinateLineTest implements TestBase {
-// -------------------------- OTHER METHODS --------------------------
 
     @Test
     public void colorCanBeSet() throws Exception {
         final CoordinateLine coordinateLine = new CoordinateLine();
         coordinateLine.setColor(Color.BISQUE);
-        assertEquals(Color.BISQUE, coordinateLine.getColor());
+        assertThat(coordinateLine.getColor()).isEqualTo(Color.BISQUE);
     }
 
     @Test
     public void fillColorCanBeSet() throws Exception {
         final CoordinateLine coordinateLine = new CoordinateLine();
         coordinateLine.setFillColor(Color.CORNSILK);
-        assertEquals(Color.CORNSILK, coordinateLine.getFillColor());
+        assertThat(coordinateLine.getFillColor()).isEqualTo(Color.CORNSILK);
     }
 
     @Test
     public void defaultColorIsSet() throws Exception {
-        assertEquals(CoordinateLine.DEFAULT_COLOR, new CoordinateLine().getColor());
+        assertThat(new CoordinateLine().getColor()).isEqualTo(CoordinateLine.DEFAULT_COLOR);
     }
 
     @Test
     public void defaultFillColorIsSet() throws Exception {
-        assertEquals(CoordinateLine.DEFAULT_FILL_COLOR, new CoordinateLine().getFillColor());
+        assertThat(new CoordinateLine().getFillColor()).isEqualTo(CoordinateLine.DEFAULT_FILL_COLOR);
     }
 
     @Test
     public void defaultVisibilityIsFalse() throws Exception {
-        assertFalse(new CoordinateLine().getVisible());
+        assertThat(new CoordinateLine().getVisible()).isFalse();
     }
 
     @Test
     public void defaultWidthIsSet() throws Exception {
-        assertEquals(CoordinateLine.DEFAULT_WIDTH, new CoordinateLine().getWidth());
+        assertThat(new CoordinateLine().getWidth()).isEqualTo(CoordinateLine.DEFAULT_WIDTH);
     }
 
     @Test
     public void defaultIsNotClosed() {
-        assertFalse(new CoordinateLine().isClosed());
+        assertThat(new CoordinateLine().isClosed()).isFalse();
     }
 
     @Test
     public void noCoordinatesInCtorYieldsEmptyStream() throws Exception {
         final CoordinateLine coordinateLine = new CoordinateLine();
-        assertEquals(0, coordinateLine.getCoordinateStream().count());
+        assertThat(coordinateLine.getCoordinateStream().count()).isEqualTo(0);
     }
 
     @Test
     public void passedCoordinatesAreInStream() throws Exception {
         final CoordinateLine coordinateLine = new CoordinateLine(coordKarlsruheHarbour, coordKarlsruheStation);
         final Set<Coordinate> coordinates = coordinateLine.getCoordinateStream().collect(Collectors.toSet());
-        assertTrue(coordinates.contains(coordKarlsruheHarbour));
-        assertTrue(coordinates.contains(coordKarlsruheStation));
-        assertEquals(2, coordinates.size());
+        assertThat(coordinates.contains(coordKarlsruheHarbour)).isTrue();
+        assertThat(coordinates.contains(coordKarlsruheStation)).isTrue();
+        assertThat(coordinates.size()).isEqualTo(2);
     }
 
     @Test
     public void setVisibility() throws Exception {
         final CoordinateLine coordinateLine = new CoordinateLine();
         coordinateLine.setVisible(true);
-        assertTrue(coordinateLine.getVisible());
+        assertThat(coordinateLine.getVisible()).isTrue();
     }
 
     @Test
     public void widthCanBeSet() throws Exception {
         final CoordinateLine coordinateLine = new CoordinateLine();
         coordinateLine.setWidth(5);
-        assertEquals(5, coordinateLine.getWidth());
+        assertThat(coordinateLine.getWidth()).isEqualTo(5);
     }
 
     @Test
     public void closedFlagCanBeSet() {
         final CoordinateLine coordinateLine = new CoordinateLine();
         coordinateLine.setClosed(true);
-        assertTrue(coordinateLine.isClosed());
+        assertThat(coordinateLine.isClosed()).isTrue();
     }
 }

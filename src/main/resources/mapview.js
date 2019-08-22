@@ -40,11 +40,16 @@ JSMapView.prototype.toString = function () {
 
 /**
  * initializes the JSMapView and the map.
- * @param projection the projection to use for the map, i.e. 'EPSG:4326'
+ * @param config JSON string with configuraiton settings
  */
-JSMapView.prototype.init = function (projection, interactive) {
+JSMapView.prototype.init = function (config) {
+
+    var configuration = JSON.parse(config);
+    console.log(configuration.projection);
+    console.log(configuration.interactive);
+
     this.projections.mapjfx = 'EPSG:4326';
-    this.projections.openlayers = projection;
+    this.projections.openlayers = configuration.projection;
 
     // Source for the coordinateLine features
     this.sourceFeatures = new ol.source.Vector({
@@ -63,16 +68,16 @@ JSMapView.prototype.init = function (projection, interactive) {
         }),
         view: new ol.View({
             zoom: 1,
-            projection: projection
+            projection: configuration.projection
         }),
         controls: ol.control.defaults({
-            zoom: interactive
+            zoom: configuration.interactive
         }),
         interactions: ol.interaction.defaults({
-            doubleClickZoom: interactive,
-            dragPan: interactive,
-            keyboardZoom: interactive,
-            mouseWheelZoom: interactive
+            doubleClickZoom: configuration.interactive,
+            dragPan: configuration.interactive,
+            keyboardZoom: configuration.interactive,
+            mouseWheelZoom: configuration.interactive
         })
     });
 
@@ -686,13 +691,12 @@ var _jsMapView;
 
 /**
  * creates the global JSMapView object
- * @param projection the projection to use for the map, i.e. 'EPSG:4326'
- * @param interactive when false, the map cannot be panned and zoomed
+ * @param config JSON string with configuraiton settings
  * @return the global JSMapView object.
  */
-function createJSMapView(projection, interactive) {
+function createJSMapView(config) {
     var jsMapView = new JSMapView(_javaConnector);
-    jsMapView.init(projection, interactive);
+    jsMapView.init(config);
     _jsMapView = jsMapView;
     return getJSMapView();
 }

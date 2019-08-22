@@ -15,40 +15,42 @@
 */
 package com.sothawo.mapjfx;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.net.URL;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 public class MarkerTest {
 
     private static final String TEST_IMG = "/markers/blue_map_marker.png";
     URL imageURL;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         imageURL = getClass().getResource(TEST_IMG);
-        assertNotNull("Testimage not found: " + TEST_IMG, imageURL);
+        assertThat(imageURL).isNotNull();
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void ctorWithNullURL() throws Exception {
-        new Marker(null);
+        assertThatThrownBy(() -> {
+            new Marker(null);
+        }).isInstanceOf(NullPointerException.class);
     }
 
     @Test
     public void ctorArgsAreSet() throws Exception {
         Marker marker = new Marker(imageURL, 47, 11);
-        assertEquals(marker.getImageURL(), imageURL);
-        assertEquals(47, marker.getOffsetX());
-        assertEquals(11, marker.getOffsetY());
+        assertThat(imageURL).isEqualTo(marker.getImageURL());
+        assertThat(marker.getOffsetX()).isEqualTo(47);
+        assertThat(marker.getOffsetY()).isEqualTo(11);
     }
 
     @Test
     public void noPositionInNewObject() throws Exception {
-        assertNull(new Marker(imageURL).getPosition());
+        assertThat(new Marker(imageURL).getPosition()).isNull();
     }
 
     @Test
@@ -56,6 +58,6 @@ public class MarkerTest {
         Coordinate position = new Coordinate(48.3, 8.2);
         Marker marker = new Marker(imageURL);
         marker.setPosition(position);
-        assertEquals(position, marker.getPosition());
+        assertThat(marker.getPosition()).isEqualTo(position);
     }
 }

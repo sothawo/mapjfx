@@ -15,11 +15,11 @@
 */
 package com.sothawo.mapjfx;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.data.Offset.offset;
 
 public class CoordinateTest {
 
@@ -27,40 +27,44 @@ public class CoordinateTest {
     public void equals() throws Exception {
         final Coordinate coordinate1 = new Coordinate(12.345, 67.89);
         final Coordinate coordinate2 = new Coordinate(12.345, 67.89);
-        assertEquals(coordinate1, coordinate2);
+        assertThat(coordinate2).isEqualTo(coordinate1);
     }
 
     @Test
     public void getLatitude() throws Exception {
         final Coordinate coordinate = new Coordinate(12.345, 67.89);
-        assertEquals((Double) 12.345, coordinate.getLatitude());
+        assertThat(coordinate.getLatitude()).isEqualTo((Double) 12.345);
     }
 
     @Test
     public void getLongitude() throws Exception {
         final Coordinate coordinate = new Coordinate(12.345, 67.89);
-        assertEquals((Double) 67.89, coordinate.getLongitude());
+        assertThat(coordinate.getLongitude()).isEqualTo((Double) 67.89);
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void nullLatitude() throws Exception {
-        new Coordinate(null, 12.345);
+        assertThatExceptionOfType(NullPointerException.class).isThrownBy(() -> {
+            new Coordinate(null, 12.345);
+        });
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void nullLongitude() throws Exception {
-        new Coordinate(12.345, null);
+        assertThatExceptionOfType(NullPointerException.class).isThrownBy(() -> {
+            new Coordinate(12.345, null);
+        });
     }
 
     @Test
     public void normalize() {
-        assertEquals(new Coordinate(10.0, 177.5).normalize().getLongitude(), 177.5,0.01);
-        assertEquals(new Coordinate(10.0, 222.5).normalize().getLongitude(), -137.5,0.01);
-        assertEquals(new Coordinate(10.0, 537.5).normalize().getLongitude(), 177.5,0.01);
-        assertEquals(new Coordinate(10.0, 582.5).normalize().getLongitude(), -137.5,0.01);
-        assertEquals(new Coordinate(10.0, 897.5).normalize().getLongitude(), 177.5,0.01);
+        assertThat(177.5).isCloseTo(new Coordinate(10.0, 177.5).normalize().getLongitude(), offset(0.01));
+        assertThat(-137.5).isCloseTo(new Coordinate(10.0, 222.5).normalize().getLongitude(), offset(0.01));
+        assertThat(177.5).isCloseTo(new Coordinate(10.0, 537.5).normalize().getLongitude(), offset(0.01));
+        assertThat(-137.5).isCloseTo(new Coordinate(10.0, 582.5).normalize().getLongitude(), offset(0.01));
+        assertThat(177.5).isCloseTo(new Coordinate(10.0, 897.5).normalize().getLongitude(), offset(0.01));
 
-        assertEquals(new Coordinate(10.0, -183.5).normalize().getLongitude(), 176.5,0.01);
-        assertEquals(new Coordinate(10.0, -222.5).normalize().getLongitude(), 137.5,0.01);
+        assertThat(176.5).isCloseTo(new Coordinate(10.0, -183.5).normalize().getLongitude(), offset(0.01));
+        assertThat(137.5).isCloseTo(new Coordinate(10.0, -222.5).normalize().getLongitude(), offset(0.01));
     }
 }
