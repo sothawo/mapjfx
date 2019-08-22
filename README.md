@@ -42,6 +42,7 @@ The test application does not contain all the features, to have that, check
 
 ## version history
 
+* MAPJFX-59 - Hiding zoom controls.
 * MAPJFX-60 - Configure mapjfx with configuration object.
 
 ### 1.26.3

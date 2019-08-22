@@ -23,10 +23,12 @@ public class Configuration {
     private final Projection projection;
 
     private final boolean interactive;
+    private final boolean showZoomControls;
 
-    private Configuration(final Projection projection, final boolean interactive) {
+    private Configuration(final Projection projection, final boolean interactive, final boolean showZoomControls) {
         this.projection = projection;
         this.interactive = interactive;
+        this.showZoomControls = showZoomControls && interactive;
     }
 
     /**
@@ -41,6 +43,7 @@ public class Configuration {
         return "Configuration{" +
             "projection=" + projection +
             ", interactive=" + interactive +
+            ", showZoomControls=" + showZoomControls +
             '}';
     }
 
@@ -65,13 +68,22 @@ public class Configuration {
         return '{' +
             "\"projection\":" +
             '"' + projection.getOlName() + "\"," +
-            "\"interactive\":" + getInteractive() +
+            "\"interactive\":" + getInteractive() + "," +
+            "\"showZoomControls\":" + showZoomControls() +
             '}';
+    }
+
+    /**
+     * @return false if the zoom controls in the map should not be shown.
+     */
+    public boolean showZoomControls() {
+        return showZoomControls;
     }
 
     public static final class ConfigurationBuilder {
         private Projection projection = Projection.WEB_MERCATOR;
-        private Boolean interactive = true;
+        private boolean interactive = true;
+        private boolean showZoomControls = true;
 
         private ConfigurationBuilder() {
         }
@@ -82,13 +94,18 @@ public class Configuration {
             return this;
         }
 
-        public ConfigurationBuilder interactive(final boolean interactive) {
+        public ConfigurationBuilder interactive(boolean interactive) {
             this.interactive = interactive;
             return this;
         }
 
+        public ConfigurationBuilder showZoomControls(final boolean showZoomControls) {
+            this.showZoomControls = showZoomControls;
+            return this;
+        }
+
         public Configuration build() {
-            return new Configuration(projection, interactive);
+            return new Configuration(projection, interactive, showZoomControls);
         }
     }
 }
