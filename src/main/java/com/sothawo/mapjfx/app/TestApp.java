@@ -277,11 +277,10 @@ public class TestApp extends Application {
         mapView.setCustomMapviewCssURL(getClass().getResource("/custom_mapview.css"));
 
         // now initialize the mapView
-        mapView.initialize();
-//        mapView.initialize(Configuration.builder()
-//            .projection(Projection.WGS_84)
-//            .interactive(false)
-//            .build());
+//        mapView.initialize();
+        mapView.initialize(Configuration.builder()
+            .showZoomControls(false)
+            .build());
 
         // show the whole thing
         final Scene scene = new Scene(borderPane, 1200, 800);

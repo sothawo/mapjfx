@@ -45,8 +45,7 @@ JSMapView.prototype.toString = function () {
 JSMapView.prototype.init = function (config) {
 
     var configuration = JSON.parse(config);
-    console.log(configuration.projection);
-    console.log(configuration.interactive);
+    console.log(config);
 
     this.projections.mapjfx = 'EPSG:4326';
     this.projections.openlayers = configuration.projection;
@@ -71,7 +70,7 @@ JSMapView.prototype.init = function (config) {
             projection: configuration.projection
         }),
         controls: ol.control.defaults({
-            zoom: configuration.interactive
+            zoom: configuration.showZoomControls
         }),
         interactions: ol.interaction.defaults({
             doubleClickZoom: configuration.interactive,

@@ -32,16 +32,28 @@ public class ConfigurationTest {
 
         assertThat(configuration.getProjection()).isEqualTo(Projection.WEB_MERCATOR);
         assertThat(configuration.getInteractive()).isTrue();
+        assertThat(configuration.showZoomControls()).isTrue();
+    }
+
+    @Test
+    void shouldDisableZoomControlsWhenNotInteractive() {
+        Configuration configuration = Configuration.builder()
+            .showZoomControls(true)
+            .interactive(false)
+            .build();
+
+        assertThat(configuration.showZoomControls()).isFalse();
     }
 
     @Test
     public void shouldProduceJson() throws JSONException {
 
-        String expected = "{\"projection\":\"EPSG:4326\", \"interactive\": false}";
+        String expected = "{\"projection\":\"EPSG:4326\", \"interactive\": false, \"showZoomControls\": false}";
 
         String json = Configuration.builder()
             .projection(Projection.WGS_84)
             .interactive(false)
+            .showZoomControls(false)
             .build().toJson();
 
         assertEquals(expected, json, false);
