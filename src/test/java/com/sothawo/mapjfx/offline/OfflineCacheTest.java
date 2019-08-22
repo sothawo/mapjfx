@@ -15,26 +15,21 @@
 */
 package com.sothawo.mapjfx.offline;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 
-import java.io.IOException;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import java.io.PrintWriter;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileSystems;
-import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /**
  * @author P.J. Meisch (pj.meisch@sothawo.com).
@@ -45,20 +40,20 @@ public class OfflineCacheTest {
 
     private final OfflineCache cache = OfflineCache.INSTANCE;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         Files.createDirectories(cacheDirectory);
         cache.setCacheDirectory(cacheDirectory);
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         OfflineCache.clearDirectory(cacheDirectory);
     }
 
     @Test
     public void cacheIsInactive() throws Exception {
-        assertThat(cache.isActive(), is(false));
+        assertThat(cache.isActive()).isFalse();
     }
 
     @Test
@@ -66,9 +61,9 @@ public class OfflineCacheTest {
         // NOTE: setActive(true) can only be done once in a VM!
         cache.setActive(true);
         cache.setNoCacheFilters(Arrays.asList("https?://www\\.sothawo\\.com.*"));
-        assertThat(cache.urlShouldBeCached(new URL("http://www.sothawo.com/")), is(false));
-        assertThat(cache.urlShouldBeCached(new URL("https://www.sothawo.com/")), is(false));
-        assertThat(cache.urlShouldBeCached(new URL("http://www.github.com/")), is(true));
+        assertThat(cache.urlShouldBeCached(new URL("http://www.sothawo.com/"))).isFalse();
+        assertThat(cache.urlShouldBeCached(new URL("https://www.sothawo.com/"))).isFalse();
+        assertThat(cache.urlShouldBeCached(new URL("http://www.github.com/"))).isTrue();
     }
 
     @Test
@@ -79,14 +74,14 @@ public class OfflineCacheTest {
         Path cacheDirectory = cache.getCacheDirectory();
         final Path filenamePath = cacheDirectory.resolve(encoded);
 
-        assertThat(filenamePath, is(equalTo(cache.filenameForURL(url))));
+        assertThat(filenamePath).isEqualTo(cache.filenameForURL(url));
     }
 
     @Test
     public void clearCache() throws Exception {
-        for(int i = 1; i < 3; i++) {
+        for (int i = 1; i < 3; i++) {
             Path p = cacheDirectory.resolve("file_" + i);
-            try(PrintWriter w= new PrintWriter(p.toFile())) {
+            try (PrintWriter w = new PrintWriter(p.toFile())) {
                 w.println("42");
                 w.flush();
             }
@@ -95,12 +90,10 @@ public class OfflineCacheTest {
         cache.clear();
 
         boolean directoryIsEmpty = false;
-        try(DirectoryStream<Path> s = Files.newDirectoryStream(cacheDirectory)) {
+        try (DirectoryStream<Path> s = Files.newDirectoryStream(cacheDirectory)) {
             directoryIsEmpty = !s.iterator().hasNext();
         }
 
-        assertThat(directoryIsEmpty, is(true));
+        assertThat(directoryIsEmpty).isTrue();
     }
-
-
 }

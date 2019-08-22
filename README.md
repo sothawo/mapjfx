@@ -54,6 +54,8 @@ The test application does not contain all the features, to have that, check
 
 ## current version
 
+* MAPJFX-60: Configure mapjfx with configuration object.
+
 ### 2.7.3
 
 * MAPJFX-52 - fix context menu regression.

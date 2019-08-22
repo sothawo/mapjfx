@@ -1,5 +1,5 @@
 /*
- Copyright 2014 Peter-Josef Meisch (pj.meisch@sothawo.com)
+ Copyright 2014-2019 Peter-Josef Meisch (pj.meisch@sothawo.com)
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,48 +15,48 @@
 */
 package com.sothawo.mapjfx;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Collection;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.*;
 
 @SuppressWarnings("RedundantArrayCreation")
 public class ExtentTest implements TestBase {
-// ------------------------------ FIELDS ------------------------------
-
-    // -------------------------- OTHER METHODS --------------------------
 
     @Test
     public void createWithArray() throws Exception {
         Extent extent = Extent.forCoordinates(new Coordinate[]{coordKarlsruheCastle, coordKarlsruheHarbour,
                                                                coordKarlsruheStation});
         // min latitude
-        assertEquals(coordKarlsruheStation.getLatitude(), extent.getMin().getLatitude());
+        assertThat(extent.getMin().getLatitude()).isEqualTo(coordKarlsruheStation.getLatitude());
         // min longitude
-        assertEquals(coordKarlsruheHarbour.getLongitude(), extent.getMin().getLongitude());
+        assertThat(extent.getMin().getLongitude()).isEqualTo(coordKarlsruheHarbour.getLongitude());
         // max latitude
-        assertEquals(coordKarlsruheHarbour.getLatitude(), extent.getMax().getLatitude());
+        assertThat(extent.getMax().getLatitude()).isEqualTo(coordKarlsruheHarbour.getLatitude());
         // max longitude
-        assertEquals(coordKarlsruheCastle.getLongitude(), extent.getMax().getLongitude());
+        assertThat(extent.getMax().getLongitude()).isEqualTo(coordKarlsruheCastle.getLongitude());
     }
+
     @Test
     public void createWithArrayEllipsis() throws Exception {
         Extent extent = Extent.forCoordinates(coordKarlsruheCastle, coordKarlsruheHarbour, coordKarlsruheStation);
         // min latitude
-        assertEquals(coordKarlsruheStation.getLatitude(), extent.getMin().getLatitude());
+        assertThat(extent.getMin().getLatitude()).isEqualTo(coordKarlsruheStation.getLatitude());
         // min longitude
-        assertEquals(coordKarlsruheHarbour.getLongitude(), extent.getMin().getLongitude());
+        assertThat(extent.getMin().getLongitude()).isEqualTo(coordKarlsruheHarbour.getLongitude());
         // max latitude
-        assertEquals(coordKarlsruheHarbour.getLatitude(), extent.getMax().getLatitude());
+        assertThat(extent.getMax().getLatitude()).isEqualTo(coordKarlsruheHarbour.getLatitude());
         // max longitude
-        assertEquals(coordKarlsruheCastle.getLongitude(), extent.getMax().getLongitude());
+        assertThat(extent.getMax().getLongitude()).isEqualTo(coordKarlsruheCastle.getLongitude());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void createWithArrayWithOneElement() throws Exception {
-        Extent.forCoordinates(new Coordinate[]{coordKarlsruheCastle});
+        assertThatThrownBy(() -> {
+            Extent.forCoordinates(new Coordinate[]{coordKarlsruheCastle});
+        }).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
@@ -68,39 +68,49 @@ public class ExtentTest implements TestBase {
         Extent extent = Extent.forCoordinates(col);
 
         // min latitude
-        assertEquals(coordKarlsruheStation.getLatitude(), extent.getMin().getLatitude());
+        assertThat(extent.getMin().getLatitude()).isEqualTo(coordKarlsruheStation.getLatitude());
         // min longitude
-        assertEquals(coordKarlsruheHarbour.getLongitude(), extent.getMin().getLongitude());
+        assertThat(extent.getMin().getLongitude()).isEqualTo(coordKarlsruheHarbour.getLongitude());
         // max latitude
-        assertEquals(coordKarlsruheHarbour.getLatitude(), extent.getMax().getLatitude());
+        assertThat(extent.getMax().getLatitude()).isEqualTo(coordKarlsruheHarbour.getLatitude());
         // max longitude
-        assertEquals(coordKarlsruheCastle.getLongitude(), extent.getMax().getLongitude());
+        assertThat(extent.getMax().getLongitude()).isEqualTo(coordKarlsruheCastle.getLongitude());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void createWithCollectionWithOneElement() throws Exception {
-        Collection<Coordinate> col = new ArrayList<>();
-        col.add(coordKarlsruheCastle);
-        Extent.forCoordinates(col);
+        assertThatThrownBy(() -> {
+            Collection<Coordinate> col = new ArrayList<>();
+            col.add(coordKarlsruheCastle);
+            Extent.forCoordinates(col);
+        }).isInstanceOf(IllegalArgumentException.class);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void createWithEmptyArray() throws Exception {
-        Extent.forCoordinates(new Coordinate[]{});
+        assertThatThrownBy(() -> {
+            Extent.forCoordinates(new Coordinate[]{});
+        }).isInstanceOf(IllegalArgumentException.class);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void createWithEmptyCollection() throws Exception {
-        Extent.forCoordinates(new ArrayList<>());
+        assertThatThrownBy(() -> {
+            Extent.forCoordinates(new ArrayList<>());
+        }).isInstanceOf(IllegalArgumentException.class);
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void createWithNullArray() throws Exception {
-        Extent.forCoordinates((Coordinate[]) null);
+        assertThatThrownBy(() -> {
+            Extent.forCoordinates((Coordinate[]) null);
+        }).isInstanceOf(NullPointerException.class);
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void createWithNullCollection() throws Exception {
-        Extent.forCoordinates((Collection<Coordinate>) null);
+        assertThatThrownBy(() -> {
+            Extent.forCoordinates((Collection<Coordinate>) null);
+        }).isInstanceOf(NullPointerException.class);
     }
 }

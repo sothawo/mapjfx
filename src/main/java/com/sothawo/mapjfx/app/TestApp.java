@@ -15,16 +15,7 @@
 */
 package com.sothawo.mapjfx.app;
 
-import com.sothawo.mapjfx.Coordinate;
-import com.sothawo.mapjfx.CoordinateLine;
-import com.sothawo.mapjfx.Extent;
-import com.sothawo.mapjfx.MapLabel;
-import com.sothawo.mapjfx.MapType;
-import com.sothawo.mapjfx.MapView;
-import com.sothawo.mapjfx.Marker;
-import com.sothawo.mapjfx.Projection;
-import com.sothawo.mapjfx.WMSParam;
-import com.sothawo.mapjfx.XYZParam;
+import com.sothawo.mapjfx.*;
 import com.sothawo.mapjfx.event.MapLabelEvent;
 import com.sothawo.mapjfx.event.MapViewEvent;
 import com.sothawo.mapjfx.event.MarkerEvent;
@@ -64,15 +55,15 @@ public class TestApp extends Application {
     private static final Coordinate coordKarlsruheHarbour = new Coordinate(49.015511, 8.323497);
     private static final Coordinate coordKarlsruheStation = new Coordinate(48.993284, 8.402186);
     private static final Extent extentAll =
-            Extent.forCoordinates(coordKarlsruheHarbour, coordKarlsruheCastle, coordKarlsruheStation);
+        Extent.forCoordinates(coordKarlsruheHarbour, coordKarlsruheCastle, coordKarlsruheStation);
 
     private static final CoordinateLine coordinateLine =
-            new CoordinateLine(coordKarlsruheCastle, coordKarlsruheHarbour, coordKarlsruheStation)
-                    .setVisible(true)
-                    .setColor(Color.DODGERBLUE)
-                    .setWidth(7)
-                    .setClosed(true)
-                    .setFillColor(Color.web("lawngreen", 0.5));
+        new CoordinateLine(coordKarlsruheCastle, coordKarlsruheHarbour, coordKarlsruheStation)
+            .setVisible(true)
+            .setColor(Color.DODGERBLUE)
+            .setWidth(7)
+            .setClosed(true)
+            .setFillColor(Color.web("lawngreen", 0.5));
 
     private static final Marker marker;
 
@@ -85,9 +76,9 @@ public class TestApp extends Application {
     static {
         marker = Marker.createProvided(Marker.Provided.BLUE).setPosition(coordKarlsruheCastle).setVisible(true);
         mapLabel = new MapLabel("blau!")
-                .setCssClass("blue-label")
-                .setPosition(coordKarlsruheCastle)
-                .setVisible(true);
+            .setCssClass("blue-label")
+            .setPosition(coordKarlsruheCastle)
+            .setVisible(true);
 
         marker.attachLabel(mapLabel);
 
@@ -101,12 +92,12 @@ public class TestApp extends Application {
 //                .addParam("layers", "geonode:admin_2_gaul_2015");
 
         wmsParam = new WMSParam()
-                .setUrl("http://ows.terrestris.de/osm/service")
-                .addParam("layers", "OSM-WMS");
+            .setUrl("http://ows.terrestris.de/osm/service")
+            .addParam("layers", "OSM-WMS");
 
         xyzParam = new XYZParam()
-                .withUrl("https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x})")
-                .withAttributions("'Tiles &copy; <a href=\"https://services.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer\">ArcGIS</a>'");
+            .withUrl("https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x})")
+            .withAttributions("'Tiles &copy; <a href=\"https://services.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer\">ArcGIS</a>'");
     }
 
     /** the MapView */
@@ -264,20 +255,20 @@ public class TestApp extends Application {
 
                 // add two markers without keeping a ref to them, they should disappear from the map when gc'ed
                 mapView.addMarker(Marker.createProvided(Marker.Provided.GREEN).setPosition(coordKarlsruheHarbour)
-                        .setVisible(true));
+                    .setVisible(true));
                 mapView.addMarker(
-                        Marker.createProvided(Marker.Provided.ORANGE).setPosition(coordKarlsruheStation).setVisible(
-                                true));
+                    Marker.createProvided(Marker.Provided.ORANGE).setPosition(coordKarlsruheStation).setVisible(
+                        true));
 
                 // add a coordinate line to be gc'ed
                 mapView.addCoordinateLine(
-                        new CoordinateLine(coordKarlsruheHarbour, coordKarlsruheStation, coordKarlsruheCastle)
-                                .setVisible(true)
-                                .setColor(Color.FUCHSIA).setWidth(5));
+                    new CoordinateLine(coordKarlsruheHarbour, coordKarlsruheStation, coordKarlsruheCastle)
+                        .setVisible(true)
+                        .setColor(Color.FUCHSIA).setWidth(5));
 
                 // add a label to be gc'ed
                 mapView.addLabel(new MapLabel("clean me up").setPosition(coordKarlsruheStation)
-                        .setVisible(true));
+                    .setVisible(true));
                 topPane.setDisable(false);
             }
         });
@@ -286,9 +277,11 @@ public class TestApp extends Application {
         mapView.setCustomMapviewCssURL(getClass().getResource("/custom_mapview.css"));
 
         // now initialize the mapView
-//        mapView.initialize(false);
         mapView.initialize();
-//        mapView.initialize(Projection.WGS_84, true);
+//        mapView.initialize(Configuration.builder()
+//            .projection(Projection.WGS_84)
+//            .interactive(false)
+//            .build());
 
         // show the whole thing
         final Scene scene = new Scene(borderPane, 1200, 800);

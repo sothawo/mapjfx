@@ -15,39 +15,40 @@
 */
 package com.sothawo.mapjfx;
 
-import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.*;
 
 public class MapLabelTest {
-// ------------------------------ FIELDS ------------------------------
 
     private static final String TEXT = "text";
-
-// -------------------------- OTHER METHODS --------------------------
 
     @Test
     public void ctorArgsAreSet() throws Exception {
         MapLabel mapLabel = new MapLabel(TEXT, 47, 11);
-        assertEquals(mapLabel.getText(), TEXT);
-        assertEquals(47, mapLabel.getOffsetX());
-        assertEquals(11, mapLabel.getOffsetY());
+        assertThat(TEXT).isEqualTo(mapLabel.getText());
+        assertThat(mapLabel.getOffsetX()).isEqualTo(47);
+        assertThat(mapLabel.getOffsetY()).isEqualTo(11);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void ctorWithEmptyLabel() throws Exception {
-        new MapLabel("");
+        assertThatThrownBy(() -> {
+            new MapLabel("");
+        }).isInstanceOf(IllegalArgumentException.class);
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void ctorWithNullLabel() throws Exception {
-        new MapLabel(null);
+        assertThatThrownBy(() -> {
+            new MapLabel(null);
+        }).isInstanceOf(NullPointerException.class);
     }
 
     @Test
     public void noPositionInNewObject() throws Exception {
-        assertNull(new MapLabel(TEXT).getPosition());
+        assertThat(new MapLabel(TEXT).getPosition()).isNull();
     }
 
     @Test
@@ -55,6 +56,6 @@ public class MapLabelTest {
         Coordinate position = new Coordinate(48.3, 8.2);
         MapLabel mapLabel = new MapLabel(TEXT);
         mapLabel.setPosition(position);
-        assertEquals(position, mapLabel.getPosition());
+        assertThat(mapLabel.getPosition()).isEqualTo(position);
     }
 }
