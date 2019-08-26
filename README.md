@@ -42,6 +42,8 @@ The test application does not contain all the features, to have that, check
 
 ## version history
 
+* MAPJFX-61 - fix pom.xml in 1.x branch.
+
 ### 1.27.0
 
 * MAPJFX-59 - Hiding zoom controls.
