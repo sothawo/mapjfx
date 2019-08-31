@@ -36,7 +36,7 @@ public class ConfigurationTest {
     }
 
     @Test
-    void shouldDisableZoomControlsWhenNotInteractive() {
+    public void shouldDisableZoomControlsWhenNotInteractive() {
         Configuration configuration = Configuration.builder()
             .showZoomControls(true)
             .interactive(false)
