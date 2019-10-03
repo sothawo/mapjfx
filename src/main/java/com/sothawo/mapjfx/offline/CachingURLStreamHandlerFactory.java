@@ -78,7 +78,7 @@ public class CachingURLStreamHandlerFactory implements URLStreamHandlerFactory {
             return (URLStreamHandler) method.invoke(null, protocol);
         } catch (final Exception e) {
             if (logger.isWarnEnabled()) {
-                logger.warn("could not access URL.getUrlStreamHandler");
+                logger.warn("could not access URL.getUrlStreamHandler for protocol {}, {}", protocol, e.getMessage());
             }
             return null;
         }
@@ -95,6 +95,10 @@ public class CachingURLStreamHandlerFactory implements URLStreamHandlerFactory {
             logger.trace("need to create URLStreamHandler for protocol {}", protocol);
         }
 
+        if (handlers.get(protocol) == null) {
+            logger.warn("default protocol handler for protocol {} not available", protocol);
+            return null;
+        }
         final String proto = protocol.toLowerCase();
         if (PROTO_HTTP.equals(proto) || PROTO_HTTPS.equals(proto)) {
             return new URLStreamHandler() {
