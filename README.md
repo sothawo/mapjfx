@@ -56,7 +56,7 @@ The test application does not contain all the features, to have that, check
 
 ## current version
 
-* fix URLSTreamHandler implementation
+* fix URLStreamHandler implementation
 * use Java 12
 
 ### 2.8.0
