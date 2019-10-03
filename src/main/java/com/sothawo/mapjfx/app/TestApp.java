@@ -301,7 +301,7 @@ public class TestApp extends Application {
     private void initOfflineCache() {
         final OfflineCache offlineCache = OfflineCache.INSTANCE;
         offlineCache.setCacheDirectory(FileSystems.getDefault().getPath("tmpdata/cache"));
-        offlineCache.setActive(false);
+        offlineCache.setActive(true);
         offlineCache.setNoCacheFilters(Collections.singletonList(".*\\.sothawo\\.com/.*"));
     }
 

@@ -105,6 +105,10 @@ public class CachingURLStreamHandlerFactory implements URLStreamHandlerFactory {
 
         final String proto = protocol.toLowerCase();
         if (PROTO_HTTP.equals(proto) || PROTO_HTTPS.equals(proto)) {
+            if (handlers.get(protocol) == null) {
+                logger.warn("default protocol handler for protocol {} not available", protocol);
+                return null;
+            }
             return new URLStreamHandler() {
                 @Override
                 protected URLConnection openConnection(final URL url) throws IOException {
