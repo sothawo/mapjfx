@@ -52,7 +52,12 @@ the run the test application:
 The test application does not contain all the features, to have that, check
  [mapjfx-demo](http://www.sothawo.com/projects/mapjfx-demo/)
 
+*Note:* To use theoffline cache with Java 1 and up, it is necessary to add `--add-opens java.base/java.net=com.sothawo.mapjfx` to the java call.
+
 ## current version
+
+* fix URLSTreamHandler implementation
+* use Java 12
 
 ### 2.8.0
 
