@@ -53,7 +53,7 @@ public class OfflineCacheTest {
 
     @Test
     public void cacheIsInactive() throws Exception {
-        assertThat(cache.isActive()).isFalse();
+        assertThat(cache.isNotActive()).isTrue();
     }
 
     @Test

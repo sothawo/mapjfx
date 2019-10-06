@@ -18,6 +18,7 @@ package com.sothawo.mapjfx.offline;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -25,6 +26,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
@@ -36,6 +38,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
+import java.util.concurrent.ForkJoinPool;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -59,6 +62,7 @@ public enum OfflineCache {
     private static final Logger logger = LoggerFactory.getLogger(OfflineCache.class);
     /** the url pattern to be mapped. */
     private static final String TILE_OPENSTREETMAP_ORG = "[a-z]\\.tile\\.openstreetmap\\.org";
+    private static final int PRELOAD_DATABUFFER_SIZE = 1024 * 1024;
     /** list of Patterns which are used to match against urls to prevent caching. */
     private final Collection<Pattern> noCachePatterns = new ArrayList<>();
     /** flag if the URLStreamHandlerfactory is initialized */
@@ -72,7 +76,7 @@ public enum OfflineCache {
      * helper method to recursively delete all files in a directory and the directory itself.
      *
      * @param path
-     *         the directory to delete
+     *     the directory to delete
      */
     static void clearDirectory(final Path path) throws IOException {
         Files.walkFileTree(path, new DeletingFileVisitor(path));
@@ -97,11 +101,11 @@ public enum OfflineCache {
      * sets the cacheDirectory.
      *
      * @param cacheDirectory
-     *         the new directory
+     *     the new directory
      * @throws NullPointerException
-     *         if cacheDirectory is null
+     *     if cacheDirectory is null
      * @throws IllegalArgumentException
-     *         if cacheDirectory does not exist or is not writeable
+     *     if cacheDirectory does not exist or is not writeable
      */
     public void setCacheDirectory(final Path cacheDirectory) {
         final Path dir = Objects.requireNonNull(cacheDirectory);
@@ -115,11 +119,11 @@ public enum OfflineCache {
      * sets the cacheDirectory.
      *
      * @param cacheDirectory
-     *         the new directory
+     *     the new directory
      * @throws NullPointerException
-     *         if cacheDirectory is null
+     *     if cacheDirectory is null
      * @throws IllegalArgumentException
-     *         if cacheDirectory does not exist or is not writeable
+     *     if cacheDirectory does not exist or is not writeable
      */
     public void setCacheDirectory(final String cacheDirectory) {
         setCacheDirectory(FileSystems.getDefault().getPath(Objects.requireNonNull(cacheDirectory)));
@@ -129,34 +133,33 @@ public enum OfflineCache {
      * checks wether a URL should be cached at all.
      *
      * @param u
-     *         the URL to check
+     *     the URL to check
      * @return true if the URL should be cached.
      */
     boolean urlShouldBeCached(final URL u) {
-        if (!isActive()) {
+        if (isNotActive()) {
             return false;
         }
         final String urlString = u.toString();
 
         return noCachePatterns.stream().
-                filter(pattern -> pattern.matcher(urlString).matches())
-                .noneMatch(pattern -> true);
+            filter(pattern -> pattern.matcher(urlString).matches())
+            .noneMatch(pattern -> true);
     }
 
-
-    public boolean isActive() {
-        return active;
+    public boolean isNotActive() {
+        return !active;
     }
 
     /**
      * sets the active state of the cache
      *
      * @param active
-     *         new state
+     *     new state
      * @throws IllegalArgumentException
-     *         if active is true and no cacheDirectory has been set.
+     *     if active is true and no cacheDirectory has been set.
      * @throws IllegalStateException
-     *         if the factory cannot be initialized.
+     *     if the factory cannot be initialized.
      */
     public void setActive(final boolean active) {
         if (active && null == cacheDirectory) {
@@ -172,7 +175,7 @@ public enum OfflineCache {
      * sets up the URLStreamHandlerFactory.
      *
      * @throws IllegalStateException
-     *         if the factory cannot be initialized.
+     *     if the factory cannot be initialized.
      */
     private void setupURLStreamHandlerFactory() {
         if (!urlStreamHandlerFactoryIsInitialized) {
@@ -200,7 +203,7 @@ public enum OfflineCache {
      * check wether an URL is cached.
      *
      * @param url
-     *         the URL to check
+     *     the URL to check
      * @return true if cached
      */
     boolean isCached(final URL url) {
@@ -219,14 +222,14 @@ public enum OfflineCache {
      * returns the filename path for a cachefile
      *
      * @param url
-     *         the url to store in the cache
+     *     the url to store in the cache
      * @return the filename path for the url
      * @throws IllegalStateException
-     *         if no cacheDirectory is set.
+     *     if no cacheDirectory is set.
      * @throws UnsupportedEncodingException
-     *         if the url cannot be UTF-8
+     *     if the url cannot be UTF-8
      * @throws NullPointerException
-     *         if url or it's external form is null
+     *     if url or it's external form is null
      */
     Path filenameForURL(final URL url) throws UnsupportedEncodingException {
         if (null == cacheDirectory) {
@@ -242,7 +245,7 @@ public enum OfflineCache {
      * .openstreetmap.org.
      *
      * @param urlString
-     *         the string to map
+     *     the string to map
      * @return the mapped string
      */
     private String doMappings(final String urlString) {
@@ -257,9 +260,9 @@ public enum OfflineCache {
      * writes the datainfo for a cache file.
      *
      * @param cacheFile
-     *         the cache file
+     *     the cache file
      * @param cachedDataInfo
-     *         the data info
+     *     the data info
      */
     void saveCachedDataInfo(final Path cacheFile, final CachedDataInfo cachedDataInfo) {
         final Path cacheDataFile = Paths.get(cacheFile + ".dataInfo");
@@ -267,7 +270,8 @@ public enum OfflineCache {
             oos.writeObject(cachedDataInfo);
             oos.flush();
             if (logger.isTraceEnabled()) {
-                logger.trace("saved dataInfo {}", cacheDataFile);
+                logger.trace("saving dataInfo {}", cachedDataInfo);
+                logger.trace("saved dataInfo to {}", cacheDataFile);
             }
         } catch (final Exception e) {
             if (logger.isWarnEnabled()) {
@@ -280,7 +284,7 @@ public enum OfflineCache {
      * reads the cached data info for a cache file
      *
      * @param cacheFile
-     *         the cache file
+     *     the cache file
      * @return the cached data info.
      */
     CachedDataInfo readCachedDataInfo(final Path cacheFile) {
@@ -305,6 +309,42 @@ public enum OfflineCache {
     public void clear() throws IOException {
         if (null != cacheDirectory) {
             clearDirectory(cacheDirectory);
+        }
+    }
+
+    /**
+     * loads the given URL and so puts them into the cache. If the cache is disabled, the call is ignored.
+     * Any errors during load are logged and further ignored.
+     *
+     * @param urls
+     *     the list of URLs
+     */
+    public void preloadURLs(final Collection<String> urls) {
+
+        if (urls == null || isNotActive()) {
+            return;
+        }
+
+        ForkJoinPool customThreadPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
+        try {
+            customThreadPool.submit(() -> urls.parallelStream().forEach(url -> {
+                try {
+                    URLConnection urlConnection = new URL(url).openConnection();
+                    urlConnection.setRequestProperty("User-Agent", "Mozilla/5.0 (X11; Linux x86_64; rv:66.0) Gecko/20100101 Firefox/66.0");
+                    try (BufferedInputStream in = new BufferedInputStream(urlConnection.getInputStream())) {
+                        byte[] dataBuffer = new byte[PRELOAD_DATABUFFER_SIZE];
+                        while (in.read(dataBuffer, 0, PRELOAD_DATABUFFER_SIZE) != -1) {
+                            // NOOP
+                        }
+                    }
+                } catch (Exception e) {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("could not load data from url {}", url, e);
+                    }
+                }
+            }));
+        } finally {
+            customThreadPool.shutdown();
         }
     }
 

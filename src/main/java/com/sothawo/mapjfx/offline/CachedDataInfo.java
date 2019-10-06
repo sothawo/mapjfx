@@ -16,8 +16,12 @@
 package com.sothawo.mapjfx.offline;
 
 import java.io.Serializable;
+import java.net.HttpURLConnection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A class that keeps information about a cached object.
@@ -33,7 +37,7 @@ public class CachedDataInfo implements Serializable {
     private String contentEncoding;
 
     /** the response headers. */
-    private Map<String,List<String>> headerFields;
+    private Map<String, List<String>> headerFields = Collections.emptyMap();
 
     public Map<String, List<String>> getHeaderFields() {
         return headerFields;
@@ -57,5 +61,21 @@ public class CachedDataInfo implements Serializable {
 
     public void setContentType(String contentType) {
         this.contentType = contentType;
+    }
+
+    @Override
+    public String toString() {
+        return "CachedDataInfo{" +
+            "contentType='" + contentType + '\'' +
+            ", contentEncoding='" + contentEncoding + '\'' +
+            ", headerFields=" + headerFields +
+            '}';
+    }
+
+    public void setFromHttpUrlConnection(HttpURLConnection httpUrlConnection) {
+        contentType = httpUrlConnection.getContentType();
+        contentEncoding = httpUrlConnection.getContentEncoding();
+        headerFields = new HashMap<>();
+        headerFields.putAll(httpUrlConnection.getHeaderFields());
     }
 }

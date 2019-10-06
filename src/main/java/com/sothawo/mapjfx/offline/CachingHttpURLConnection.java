@@ -223,9 +223,13 @@ public class CachingHttpURLConnection extends HttpURLConnection {
 
     public Map<String, List<String>> getHeaderFields() {
         if (!readFromCache) {
-            cachedDataInfo.setHeaderFields(delegate.getHeaderFields());
+            setHeaderFieldsInCachedDataInfo();
         }
         return cachedDataInfo.getHeaderFields();
+    }
+
+    private void setHeaderFieldsInCachedDataInfo() {
+        cachedDataInfo.setHeaderFields(delegate.getHeaderFields());
     }
 
     public long getIfModifiedSince() {
@@ -248,6 +252,7 @@ public class CachingHttpURLConnection extends HttpURLConnection {
                         new FileOutputStream(cacheFile.toFile()));
                 wis.onInputStreamClose(() -> {
                     try {
+                        cachedDataInfo.setFromHttpUrlConnection(delegate);
                         final int responseCode = delegate.getResponseCode();
                         if (responseCode == HTTP_OK) {
                             cache.saveCachedDataInfo(cacheFile, cachedDataInfo);
