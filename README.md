@@ -42,6 +42,8 @@ The test application does not contain all the features, to have that, check
 
 ## version history
 
+### 1.28.0
+
 * add possibility to preload URLs in the offline cache
 * fix URLStreamHandler implementation
 
