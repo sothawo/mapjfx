@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.util.Collections;
+import java.util.LinkedList;
 
 /**
  * Test application.
@@ -277,6 +278,7 @@ public class TestApp extends Application {
         mapView.setCustomMapviewCssURL(getClass().getResource("/custom_mapview.css"));
 
         // now initialize the mapView
+        mapView.setMapType(MapType.XYZ);
 //        mapView.initialize();
         mapView.initialize(Configuration.builder()
             .showZoomControls(false)
@@ -301,8 +303,30 @@ public class TestApp extends Application {
     private void initOfflineCache() {
         final OfflineCache offlineCache = OfflineCache.INSTANCE;
         offlineCache.setCacheDirectory(FileSystems.getDefault().getPath("tmpdata/cache"));
-        offlineCache.setActive(false);
+        offlineCache.setActive(true);
         offlineCache.setNoCacheFilters(Collections.singletonList(".*\\.sothawo\\.com/.*"));
+
+        LinkedList<String> urls = new LinkedList<>();
+        urls.add("https://c.tile.openstreetmap.org/14/8572/5626.png");
+        urls.add("https://b.tile.openstreetmap.org/14/8571/5626.png");
+        urls.add("https://a.tile.openstreetmap.org/14/8572/5625.png");
+        urls.add("https://c.tile.openstreetmap.org/14/8571/5625.png");
+        urls.add("https://b.tile.openstreetmap.org/14/8570/5625.png");
+        urls.add("https://a.tile.openstreetmap.org/14/8572/5625.png");
+        urls.add("https://a.tile.openstreetmap.org/14/8570/5626.png");
+        urls.add("https://a.tile.openstreetmap.org/14/8571/5627.png");
+        urls.add("https://a.tile.openstreetmap.org/14/8573/5626.png");
+        urls.add("https://a.tile.openstreetmap.org/14/8574/5627.png");
+        urls.add("https://b.tile.openstreetmap.org/14/8571/5626.png");
+        urls.add("https://b.tile.openstreetmap.org/14/8573/5625.png");
+        urls.add("https://b.tile.openstreetmap.org/14/8572/5627.png");
+        urls.add("https://b.tile.openstreetmap.org/14/8574/5626.png");
+        urls.add("https://c.tile.openstreetmap.org/14/8572/5626.png");
+        urls.add("https://c.tile.openstreetmap.org/14/8570/5627.png");
+        urls.add("https://c.tile.openstreetmap.org/14/8574/5625.png");
+        urls.add("https://c.tile.openstreetmap.org/14/8573/5627.png");
+
+        offlineCache.preloadURLs(urls);
     }
 
     /**

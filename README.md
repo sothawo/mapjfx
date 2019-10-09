@@ -52,7 +52,13 @@ the run the test application:
 The test application does not contain all the features, to have that, check
  [mapjfx-demo](http://www.sothawo.com/projects/mapjfx-demo/)
 
+*Note:* To use the offline cache with Java 11 and up, it is necessary to add `--add-opens java.base/java.net=com.sothawo.mapjfx` to the java call.
+
 ## current version
+
+* add possibility to preload URLs in the offline cache
+* fix URLStreamHandler implementation
+* use Java 12
 
 ### 2.8.0
 

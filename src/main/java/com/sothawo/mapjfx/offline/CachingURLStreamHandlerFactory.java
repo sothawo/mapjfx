@@ -60,8 +60,16 @@ public class CachingURLStreamHandlerFactory implements URLStreamHandlerFactory {
      */
     CachingURLStreamHandlerFactory(final OfflineCache cache) {
         this.cache = cache;
-        handlers.put(PROTO_HTTP, getURLStreamHandler(PROTO_HTTP));
-        handlers.put(PROTO_HTTPS, getURLStreamHandler(PROTO_HTTPS));
+
+        URLStreamHandler urlStreamHandler = getURLStreamHandler(PROTO_HTTP);
+        if (urlStreamHandler != null) {
+            handlers.put(PROTO_HTTP, urlStreamHandler);
+        }
+
+        urlStreamHandler = getURLStreamHandler(PROTO_HTTPS);
+        if (urlStreamHandler != null) {
+            handlers.put(PROTO_HTTPS, getURLStreamHandler(PROTO_HTTPS));
+        }
     }
 
     /**
@@ -78,7 +86,7 @@ public class CachingURLStreamHandlerFactory implements URLStreamHandlerFactory {
             return (URLStreamHandler) method.invoke(null, protocol);
         } catch (final Exception e) {
             if (logger.isWarnEnabled()) {
-                logger.warn("could not access URL.getUrlStreamHandler");
+                logger.warn("could not access URL.getUrlStreamHandler for protocol {}", protocol);
             }
             return null;
         }
@@ -97,6 +105,10 @@ public class CachingURLStreamHandlerFactory implements URLStreamHandlerFactory {
 
         final String proto = protocol.toLowerCase();
         if (PROTO_HTTP.equals(proto) || PROTO_HTTPS.equals(proto)) {
+            if (handlers.get(protocol) == null) {
+                logger.warn("default protocol handler for protocol {} not available", protocol);
+                return null;
+            }
             return new URLStreamHandler() {
                 @Override
                 protected URLConnection openConnection(final URL url) throws IOException {
