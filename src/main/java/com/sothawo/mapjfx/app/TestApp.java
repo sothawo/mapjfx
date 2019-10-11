@@ -281,7 +281,7 @@ public class TestApp extends Application {
         mapView.setMapType(MapType.XYZ);
 //        mapView.initialize();
         mapView.initialize(Configuration.builder()
-            .showZoomControls(false)
+//            .showZoomControls(false)
             .build());
 
         // show the whole thing
@@ -512,6 +512,16 @@ public class TestApp extends Application {
                 logger.warn("could not clear cache", e);
             }
         });
+        hbox.getChildren().add(btn);
+
+        btn = new Button();
+        btn.setText("set constrain");
+        btn.setOnAction(evt -> mapView.constrainExtent(extentAll));
+        hbox.getChildren().add(btn);
+
+        btn = new Button();
+        btn.setText("clear constrain");
+        btn.setOnAction(evt -> mapView.clearConstrainExtent());
         hbox.getChildren().add(btn);
 
         vbox.getChildren().add(hbox);
