@@ -42,6 +42,8 @@ The test application does not contain all the features, to have that, check
 
 ## version history
 
+### 1.29.0
+
 * MAPJFX-62 implement constrainExtent
 * MAPJFX-66 use OpenLayers 6.0.1
 
