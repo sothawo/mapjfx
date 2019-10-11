@@ -42,6 +42,9 @@ The test application does not contain all the features, to have that, check
 
 ## version history
 
+* MAPJFX-62 implement constrainExtent
+* MAPJFX-66 use OpenLayers 6.0.1
+
 ### 1.28.0
 
 * add possibility to preload URLs in the offline cache
