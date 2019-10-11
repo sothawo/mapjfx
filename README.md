@@ -56,6 +56,8 @@ The test application does not contain all the features, to have that, check
 
 ## current version
 
+### 2.10.0
+
 * MAPJFX-62 implement constrainExtent
 * MAPJFX-66 use OpenLayers 6.0.1
 
