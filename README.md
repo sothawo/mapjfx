@@ -56,6 +56,11 @@ The test application does not contain all the features, to have that, check
 
 ## current version
 
+* MAPJFX-62 implement constrainExtent
+* MAPJFX-66 use OpenLayers 6.0.1
+
+### 2.9.0
+
 * add possibility to preload URLs in the offline cache
 * fix URLStreamHandler implementation
 * use Java 12
