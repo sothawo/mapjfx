@@ -207,6 +207,35 @@ JSMapView.prototype.setExtent = function (minLat, minLon, maxLat, maxLon, animat
     }
 };
 
+/**
+ * sets the constrainextent of the map
+ *
+ * @param {number} minLat latitude value in WGS84
+ * @param {number} minLon longitude value in WGS84
+ * @param {number} maxLat latitude value in WGS84
+ * @param {number} maxLon longitude value in WGS84
+ */
+JSMapView.prototype.constrainExtent = function (minLat, minLon, maxLat, maxLon) {
+    var view = this.map.getView();
+    // lat/lon reversion
+    var extent = this.projections.eFromWGS84([minLon, minLat, maxLon, maxLat]);
+    var properties = view.getProperties();
+    properties["extent"] = extent;
+    properties["smoothExtentConstraint"] = false;
+    this.map.setView(new ol.View(properties));
+};
+
+/**
+ * clears the constrainExtent of the view.
+ */
+JSMapView.prototype.clearConstrainExtent = function () {
+    var view = this.map.getView();
+    var properties = view.getProperties();
+    delete properties.extent;
+    this.map.setView(new ol.View(properties));
+};
+
+
 JSMapView.prototype.getMapType = function () {
     return this.mapType;
 };

@@ -1272,6 +1272,50 @@ public final class MapView extends Region implements AutoCloseable {
         return this;
     }
 
+    /**
+     * constrains the map to the given extent so that it is not possible to zoom out or pan if this would make some area outside of this extent visible.
+     *
+     * @param extent
+     *     the constraining extent
+     * @return this object
+     * @throws java.lang.NullPointerException
+     *     when extent is null
+     */
+    public MapView constrainExtent(final Extent extent) {
+        if (!getInitialized()) {
+            if (logger.isWarnEnabled()) {
+                logger.warn(MAP_VIEW_NOT_YET_INITIALIZED);
+            }
+        } else {
+            requireNonNull(extent);
+            if (logger.isDebugEnabled()) {
+                logger.debug("constraining extent in OpenLayers map: {}: ", extent);
+            }
+            jsMapView.call("constrainExtent", extent.getMin().getLatitude(), extent.getMin().getLongitude(),
+                extent.getMax().getLatitude(), extent.getMax().getLongitude());
+        }
+        return this;
+    }
+
+    /**
+     * clears a given constrainExtent of the map, allowing panning and zooming without restriction.
+     *
+     * @return this object
+     */
+    public MapView clearConstrainExtent() {
+        if (!getInitialized()) {
+            if (logger.isWarnEnabled()) {
+                logger.warn(MAP_VIEW_NOT_YET_INITIALIZED);
+            }
+        } else {
+            if (logger.isDebugEnabled()) {
+                logger.debug("clearing constraining extent in OpenLayers map.");
+            }
+            jsMapView.call("clearConstrainExtent");
+        }
+        return this;
+    }
+
     public SimpleDoubleProperty zoomProperty() {
         return zoom;
     }
