@@ -42,6 +42,10 @@ The test application does not contain all the features, to have that, check
 
 ## version history
 
+### 1.29.1
+
+* MAPJFX-67 offline cache parallelism
+
 ### 1.29.0
 
 * MAPJFX-62 implement constrainExtent
