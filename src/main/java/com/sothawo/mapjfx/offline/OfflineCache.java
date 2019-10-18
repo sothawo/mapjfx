@@ -313,19 +313,30 @@ public enum OfflineCache {
     }
 
     /**
+     * calls {@link #preloadURLs(Collection, int)} with a paraellism value of zero.
+     *
+     * @param urls
+     */
+    public void preloadURLs(final Collection<String> urls) {
+        preloadURLs(urls, 0);
+    }
+
+    /**
      * loads the given URL and so puts them into the cache. If the cache is disabled, the call is ignored.
      * Any errors during load are logged and further ignored.
      *
      * @param urls
      *     the list of URLs
+     * @param parallelism
+     *     the number of threads to use for loading. If set to zero or below, the number of available processors is used.
      */
-    public void preloadURLs(final Collection<String> urls) {
+    public void preloadURLs(final Collection<String> urls, int parallelism) {
 
         if (urls == null || isNotActive()) {
             return;
         }
 
-        ForkJoinPool customThreadPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
+        ForkJoinPool customThreadPool = new ForkJoinPool(parallelism < 1 ? Runtime.getRuntime().availableProcessors() : parallelism);
         try {
             customThreadPool.submit(() -> urls.parallelStream().forEach(url -> {
                 try {

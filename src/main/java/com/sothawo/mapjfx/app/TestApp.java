@@ -326,7 +326,7 @@ public class TestApp extends Application {
         urls.add("https://c.tile.openstreetmap.org/14/8574/5625.png");
         urls.add("https://c.tile.openstreetmap.org/14/8573/5627.png");
 
-        offlineCache.preloadURLs(urls);
+        offlineCache.preloadURLs(urls, 2);
     }
 
     /**
