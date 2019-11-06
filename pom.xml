@@ -38,7 +38,6 @@
         <assertj.version>3.11.1</assertj.version>
         <jsonassert.version>1.5.0</jsonassert.version>
         <junit.jupiter.version>5.5.1</junit.jupiter.version>
-        <openjfx.version>11</openjfx.version>
         <slf4j.version>1.7.25</slf4j.version>
         <logback.version>1.2.3</logback.version>
     </properties>

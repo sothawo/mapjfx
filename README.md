@@ -42,6 +42,8 @@ The test application does not contain all the features, to have that, check
 
 ## version history
 
+* MAPJFX-69 - Implement cacheFilters in addition to noCacheFilters
+
 ### 1.29.1
 
 * MAPJFX-67 offline cache parallelism
