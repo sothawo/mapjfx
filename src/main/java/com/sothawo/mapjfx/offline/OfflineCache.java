@@ -63,8 +63,10 @@ public enum OfflineCache {
     /** the url pattern to be mapped. */
     private static final String TILE_OPENSTREETMAP_ORG = "[a-z]\\.tile\\.openstreetmap\\.org";
     private static final int PRELOAD_DATABUFFER_SIZE = 1024 * 1024;
-    /** list of Patterns which are used to match against urls to prevent caching. */
+    /** list of Patterns that are used to match against urls to prevent caching. */
     private final Collection<Pattern> noCachePatterns = new ArrayList<>();
+    /** list of Patterns that are used to match against urls to specify caching. */
+    private final Collection<Pattern> cachePatterns = new ArrayList<>();
     /** flag if the URLStreamHandlerfactory is initialized */
     private boolean urlStreamHandlerFactoryIsInitialized = false;
     /** flag if the cache is active. */
@@ -86,7 +88,37 @@ public enum OfflineCache {
         return noCachePatterns.stream().map(Pattern::toString).collect(Collectors.toList());
     }
 
+    public void clearAllCacheFilters() {
+        cachePatterns.clear();
+        noCachePatterns.clear();
+    }
+
+    /**
+     * Sets a list of Java pattern strings to define which URLs should be cached. Only URLs that do match one of the given patterns are cached.
+     *
+     * @param cacheFilters
+     *     the patterns defining what to cache.
+     */
+    public void setCacheFilters(final Collection<String> cacheFilters) {
+        if (!noCachePatterns.isEmpty()) {
+            throw new IllegalStateException("cannot set both cacheFilters and noCacheFilters");
+        }
+        this.cachePatterns.clear();
+        if (null != cacheFilters) {
+            cacheFilters.stream().map(Pattern::compile).forEach(this.cachePatterns::add);
+        }
+    }
+
+    /**
+     * Sets a list of Java pattern strings to define which URLs should not be cached. URLs that do match any of the given patterns are not cached.
+     *
+     * @param noCacheFilters
+     *     the patterns defining what not to cache.
+     */
     public void setNoCacheFilters(final Collection<String> noCacheFilters) {
+        if (!cachePatterns.isEmpty()) {
+            throw new IllegalStateException("cannot set both cacheFilters and noCacheFilters");
+        }
         this.noCachePatterns.clear();
         if (null != noCacheFilters) {
             noCacheFilters.stream().map(Pattern::compile).forEach(this.noCachePatterns::add);
@@ -130,21 +162,26 @@ public enum OfflineCache {
     }
 
     /**
-     * checks wether a URL should be cached at all.
+     * checks whether a URL should be cached at all.
      *
      * @param u
      *     the URL to check
      * @return true if the URL should be cached.
      */
     boolean urlShouldBeCached(final URL u) {
-        if (isNotActive()) {
-            return false;
-        }
         final String urlString = u.toString();
 
-        return noCachePatterns.stream().
-            filter(pattern -> pattern.matcher(urlString).matches())
-            .noneMatch(pattern -> true);
+        if (!noCachePatterns.isEmpty()) {
+            return noCachePatterns.stream()
+                .noneMatch(pattern -> pattern.matcher(urlString).matches());
+        }
+
+        if (!cachePatterns.isEmpty()) {
+            return cachePatterns.stream()
+                .anyMatch(pattern -> pattern.matcher(urlString).matches());
+        }
+
+        return true;
     }
 
     public boolean isNotActive() {
