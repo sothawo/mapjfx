@@ -44,6 +44,7 @@ public class OfflineCacheTest {
     public void setUp() throws Exception {
         Files.createDirectories(cacheDirectory);
         cache.setCacheDirectory(cacheDirectory);
+        cache.clearAllCacheFilters();
     }
 
     @AfterEach
@@ -57,9 +58,33 @@ public class OfflineCacheTest {
     }
 
     @Test
-    public void urlFilter() throws Exception {
-        // NOTE: setActive(true) can only be done once in a VM!
-        cache.setActive(true);
+    public void noCacheFiltersCannotBeSetWhenCacheFiltersAreSet() {
+        cache.setCacheFilters(Arrays.asList("https?://www\\.sothawo\\.com.*"));
+
+        assertThatThrownBy(() -> {
+            cache.setNoCacheFilters(Arrays.asList("https?://www\\.sothawo\\.com.*"));
+        }).isInstanceOf(IllegalStateException.class);
+    }
+
+    @Test
+    public void cacheFiltersCannotBeSetWhenNoCacheFiltersAreSet() {
+        cache.setNoCacheFilters(Arrays.asList("https?://www\\.sothawo\\.com.*"));
+
+        assertThatThrownBy(() -> {
+            cache.setCacheFilters(Arrays.asList("https?://www\\.sothawo\\.com.*"));
+        }).isInstanceOf(IllegalStateException.class);
+    }
+
+    @Test
+    public void cacheFilters() throws Exception {
+        cache.setCacheFilters(Arrays.asList("https?://www\\.sothawo\\.com.*"));
+        assertThat(cache.urlShouldBeCached(new URL("http://www.sothawo.com/"))).isTrue();
+        assertThat(cache.urlShouldBeCached(new URL("https://www.sothawo.com/"))).isTrue();
+        assertThat(cache.urlShouldBeCached(new URL("http://www.github.com/"))).isFalse();
+    }
+
+    @Test
+    public void noCacheFilters() throws Exception {
         cache.setNoCacheFilters(Arrays.asList("https?://www\\.sothawo\\.com.*"));
         assertThat(cache.urlShouldBeCached(new URL("http://www.sothawo.com/"))).isFalse();
         assertThat(cache.urlShouldBeCached(new URL("https://www.sothawo.com/"))).isFalse();
