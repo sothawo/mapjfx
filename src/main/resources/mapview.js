@@ -288,6 +288,58 @@ JSMapView.prototype.setMapType = function (newType) {
                 this.layerFeatures
             ]
         }));
+    } else if (newType === 'BINGMAPS_AERIAL_WITH_LABELS') {
+        this.map.setLayerGroup(new ol.layer.Group({
+            layers: [
+                new ol.layer.Tile({
+                    source: new ol.source.BingMaps({
+                        imagerySet: 'AerialWithLabelsOnDemand',
+                        key: this.bingMapsApiKey,
+                        projection: new ol.proj.Projection(this.projections.openlayers)
+                    })
+                }),
+                this.layerFeatures
+            ]
+        }));
+    } else if (newType === 'BINGMAPS_CANVAS_GRAY') {
+        this.map.setLayerGroup(new ol.layer.Group({
+            layers: [
+                new ol.layer.Tile({
+                    source: new ol.source.BingMaps({
+                        imagerySet: 'CanvasGray',
+                        key: this.bingMapsApiKey,
+                        projection: new ol.proj.Projection(this.projections.openlayers)
+                    })
+                }),
+                this.layerFeatures
+            ]
+        }));
+    } else if (newType === 'BINGMAPS_CANVAS_DARK') {
+        this.map.setLayerGroup(new ol.layer.Group({
+            layers: [
+                new ol.layer.Tile({
+                    source: new ol.source.BingMaps({
+                        imagerySet: 'CanvasDark',
+                        key: this.bingMapsApiKey,
+                        projection: new ol.proj.Projection(this.projections.openlayers)
+                    })
+                }),
+                this.layerFeatures
+            ]
+        }));
+    } else if (newType === 'BINGMAPS_CANVAS_LIGHT') {
+        this.map.setLayerGroup(new ol.layer.Group({
+            layers: [
+                new ol.layer.Tile({
+                    source: new ol.source.BingMaps({
+                        imagerySet: 'CanvasLight',
+                        key: this.bingMapsApiKey,
+                        projection: new ol.proj.Projection(this.projections.openlayers)
+                    })
+                }),
+                this.layerFeatures
+            ]
+        }));
     } else if (newType === 'STAMEN_WC') {
         this.map.setLayerGroup(new ol.layer.Group({
             layers: [
