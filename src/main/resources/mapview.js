@@ -267,7 +267,7 @@ JSMapView.prototype.setMapType = function (newType) {
             layers: [
                 new ol.layer.Tile({
                     source: new ol.source.BingMaps({
-                        imagerySet: 'Road',
+                        imagerySet: 'RoadOnDemand',
                         key: this.bingMapsApiKey,
                         projection: new ol.proj.Projection(this.projections.openlayers)
                     })
