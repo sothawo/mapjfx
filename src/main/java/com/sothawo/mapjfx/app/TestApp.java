@@ -27,6 +27,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.MenuButton;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -418,21 +420,54 @@ public class TestApp extends Application {
         btn.setOnAction(evt -> mapView.setMapType(MapType.STAMEN_WC));
         hbox.getChildren().add(btn);
 
-        btn = new Button();
-        btn.setText("BR");
-        btn.setOnAction(evt -> {
+        LinkedList<MenuItem> bingOptions = new LinkedList<>();
+        MenuItem item = new MenuItem("Bing Roads");
+        item.setOnAction(evt -> {
             mapView.setBingMapsApiKey(bingApiKey.getText());
             mapView.setMapType(MapType.BINGMAPS_ROAD);
         });
-        hbox.getChildren().add(btn);
+        bingOptions.add(item);
 
-        btn = new Button();
-        btn.setText("BA");
-        btn.setOnAction(evt -> {
+        item = new MenuItem("Bing Aerial");
+        item.setOnAction(evt -> {
             mapView.setBingMapsApiKey(bingApiKey.getText());
             mapView.setMapType(MapType.BINGMAPS_AERIAL);
         });
-        hbox.getChildren().add(btn);
+        bingOptions.add(item);
+
+        item = new MenuItem("Bing Aerial with Labels");
+        item.setOnAction(evt -> {
+            mapView.setBingMapsApiKey(bingApiKey.getText());
+            mapView.setMapType(MapType.BINGMAPS_AERIAL_WITH_LABELS);
+        });
+        bingOptions.add(item);
+
+        item = new MenuItem("Bing Roads - dark");
+        item.setOnAction(evt -> {
+            mapView.setBingMapsApiKey(bingApiKey.getText());
+            mapView.setMapType(MapType.BINGMAPS_CANVAS_DARK);
+        });
+        bingOptions.add(item);
+
+        item = new MenuItem("Bing Roads - grayscale");
+        item.setOnAction(evt -> {
+            mapView.setBingMapsApiKey(bingApiKey.getText());
+            mapView.setMapType(MapType.BINGMAPS_CANVAS_GRAY);
+        });
+        bingOptions.add(item);
+
+        item = new MenuItem("Bing Roads - light");
+        item.setOnAction(evt -> {
+            mapView.setBingMapsApiKey(bingApiKey.getText());
+            mapView.setMapType(MapType.BINGMAPS_CANVAS_LIGHT);
+        });
+        bingOptions.add(item);
+
+
+
+        MenuButton menuButton = new MenuButton("Bing", null, bingOptions.toArray(new MenuItem[0]));
+        hbox.getChildren().add(menuButton);
+
 
         btn = new Button();
         btn.setText("WMS");

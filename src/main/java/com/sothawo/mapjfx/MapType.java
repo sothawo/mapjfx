@@ -28,8 +28,16 @@ public enum MapType {
     STAMEN_WC,
     /** BingMaps Road. */
     BINGMAPS_ROAD,
+    /** BingMaps Road as a grayscale version */
+    BINGMAPS_CANVAS_GRAY,
+    /** BingMaps Road as a dark version*/
+    BINGMAPS_CANVAS_DARK,
+    /** BingMaps Road as a lighter version*/
+    BINGMAPS_CANVAS_LIGHT,
     /** BingMaps Aerial. */
     BINGMAPS_AERIAL,
+    /** BingMaps Aerial with labels. */
+    BINGMAPS_AERIAL_WITH_LABELS,
     /** custom WMS server. */
     WMS,
     /** custom Map server with XYZ support. */

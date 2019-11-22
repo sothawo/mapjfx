@@ -374,6 +374,10 @@ public final class MapView extends Region implements AutoCloseable {
         switch (requireNonNull(mapTypeToCheck)) {
             case BINGMAPS_ROAD:
             case BINGMAPS_AERIAL:
+            case BINGMAPS_AERIAL_WITH_LABELS:
+            case BINGMAPS_CANVAS_DARK:
+            case BINGMAPS_CANVAS_GRAY:
+            case BINGMAPS_CANVAS_LIGHT:
                 return bingMapsApiKey.isPresent();
             default:
                 return true;
