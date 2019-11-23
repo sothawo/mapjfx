@@ -3,7 +3,7 @@
 
     <groupId>com.sothawo</groupId>
     <artifactId>mapjfx</artifactId>
-    <version>2.10.2</version>
+    <version>2.11.0</version>
     <name>${project.groupId}:${project.artifactId}</name>
     <description>a JavaFX map component build by using OpenLayers</description>
     <url>http://www.sothawo.com/projects/mapjfx</url>
