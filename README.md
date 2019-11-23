@@ -42,6 +42,10 @@ The test application does not contain all the features, to have that, check
 
 ## version history
 
+### 1.30.0
+
+* Additional Bing Maps options.
+
 ### 1.29.2
 
 * MAPJFX-69 - Implement cacheFilters in addition to noCacheFilters
