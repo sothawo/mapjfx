@@ -7,7 +7,7 @@ More Information about the project can be found at [the sothawo website](http://
 
 ## license
 
- Copyright 2014-2019 Peter-Josef Meisch (pj.meisch@sothawo.com)
+ Copyright 2014-2020 Peter-Josef Meisch (pj.meisch@sothawo.com)
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
