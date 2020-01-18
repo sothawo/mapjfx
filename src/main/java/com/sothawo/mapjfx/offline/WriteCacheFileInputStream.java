@@ -25,7 +25,7 @@ import java.io.OutputStream;
  *
  * @author P.J. Meisch (pj.meisch@sothawo.com).
  */
-public class WriteCacheFileInputStream extends FilterInputStream {
+class WriteCacheFileInputStream extends FilterInputStream {
 
     /** the output stream where the data is stored. */
     private final OutputStream out;

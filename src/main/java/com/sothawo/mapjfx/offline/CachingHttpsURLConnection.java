@@ -41,7 +41,7 @@ import java.util.Map;
  *
  * @author P.J. Meisch (pj.meisch@sothawo.com).
  */
-public class CachingHttpsURLConnection extends HttpsURLConnection {
+class CachingHttpsURLConnection extends HttpsURLConnection {
 
     /** Logger for the class */
     private static final Logger logger = LoggerFactory.getLogger(CachingHttpsURLConnection.class);
