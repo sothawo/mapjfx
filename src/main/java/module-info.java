@@ -22,5 +22,7 @@ module com.sothawo.mapjfx {
     requires org.slf4j;
 
     exports com.sothawo.mapjfx;
+    exports com.sothawo.mapjfx.event;
+    exports com.sothawo.mapjfx.offline;
     exports com.sothawo.mapjfx.app to javafx.graphics; // for the test application
 }
