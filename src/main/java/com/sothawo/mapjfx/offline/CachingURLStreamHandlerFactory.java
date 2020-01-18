@@ -37,7 +37,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author P.J. Meisch (pj.meisch@sothawo.com).
  */
-public class CachingURLStreamHandlerFactory implements URLStreamHandlerFactory {
+class CachingURLStreamHandlerFactory implements URLStreamHandlerFactory {
 
     public static final String PROTO_HTTP = "http";
     public static final String PROTO_HTTPS = "https";
