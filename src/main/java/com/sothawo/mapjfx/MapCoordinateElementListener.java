@@ -24,7 +24,7 @@ import java.util.Objects;
  *
  * @author P.J. Meisch (pj.meisch@sothawo.com).
  */
-public final class MapCoordinateElementListener {
+final class MapCoordinateElementListener {
 
     /** listener for coordinate changes */
     private final ChangeListener<Coordinate> coordinateChangeListener;
@@ -36,13 +36,13 @@ public final class MapCoordinateElementListener {
 
     /**
      * @param coordinateChangeListener
-     *         coordinate change listener
+     *     coordinate change listener
      * @param visibileChangeListener
-     *         visibility change listener
+     *     visibility change listener
      * @param cssChangeListener
-     *         css change listener
+     *     css change listener
      * @throws java.lang.NullPointerException
-     *         if either argument is null
+     *     if either argument is null
      */
     public MapCoordinateElementListener(final ChangeListener<Coordinate> coordinateChangeListener,
                                         final ChangeListener<Boolean> visibileChangeListener,

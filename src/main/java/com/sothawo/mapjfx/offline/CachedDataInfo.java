@@ -28,7 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author P.J. Meisch (pj.meisch@sothawo.com).
  */
-public class CachedDataInfo implements Serializable {
+class CachedDataInfo implements Serializable {
 
     /** the content-type of the data. */
     private String contentType;

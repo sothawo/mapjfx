@@ -24,16 +24,16 @@ import java.util.Objects;
  *
  * @author P.J. Meisch (pj.meisch@sothawo.com).
  */
-public final class CoordinateLineListener {
+final class CoordinateLineListener {
 
     /** listener for visibilty changes */
     private final ChangeListener<Boolean> visibileChangeListener;
 
     /**
      * @param visibileChangeListener
-     *         visibility change listener
+     *     visibility change listener
      * @throws NullPointerException
-     *         if either argument is null
+     *     if either argument is null
      */
     public CoordinateLineListener(ChangeListener<Boolean> visibileChangeListener) {
         this.visibileChangeListener = Objects.requireNonNull(visibileChangeListener);
