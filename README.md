@@ -56,6 +56,13 @@ The test application does not contain all the features, to have that, check
 
 ## current version
 
+### 2.12.0
+
+* built with Java 13
+* MAPJFX-73 - Fixed module-info
+* MAPJFX-74 - Updated copyright headers.
+* MAPJFX-75 - Adjust visibility of classes that need not be public
+
 ### 2.11.0
 
 * Additional Bing Maps options.
