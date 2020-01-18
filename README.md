@@ -42,6 +42,11 @@ The test application does not contain all the features, to have that, check
 
 ## version history
 
+### 1.31.0
+
+* MAPJFX-74 - Updated copyright headers.
+* MAPJFX-75 - Adjust visibility of classes that need not be public
+
 ### 1.30.0
 
 * Additional Bing Maps options.
