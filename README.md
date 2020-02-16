@@ -42,6 +42,8 @@ The test application does not contain all the features, to have that, check
 
 ## version history
 
+### 1.31.1
+
 * MAPJFX-78 - fix marker and label events.
 
 ### 1.31.0
