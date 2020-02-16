@@ -56,6 +56,8 @@ The test application does not contain all the features, to have that, check
 
 ## current version
 
+### 2.13.1
+
 * MAPJFX-78 - fix marker and label events.
 
 ### 2.13.0
