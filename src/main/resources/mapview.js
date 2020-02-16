@@ -522,12 +522,17 @@ JSMapView.prototype.addMarker = function (name, url, latitude, longitude, offset
             evt.stopPropagation();
             evt.preventDefault();
         }).bind(this);
+        imgElement.onwheel = (function (evt) {
+            this.javaConnector.wheelEvent(evt.deltaY);
+            evt.stopPropagation();
+            evt.preventDefault();
+        }).bind(this);
 
         var overlay = new ol.Overlay({
             offset: [offsetX, offsetY],
             position: undefined,
             element: imgElement,
-            stopEvent: false
+            stopEvent: true
         });
         marker.setOverlay(overlay);
         this.map.addOverlay(overlay);
@@ -595,12 +600,17 @@ JSMapView.prototype.addLabel = function (name, text, cssClass, latitude, longitu
             evt.stopPropagation();
             evt.preventDefault();
         }).bind(this);
+        labelElement.onwheel = (function (evt) {
+            this.javaConnector.wheelEvent(evt.deltaY);
+            evt.stopPropagation();
+            evt.preventDefault();
+        }).bind(this);
 
         var overlay = new ol.Overlay({
             offset: [offsetX, offsetY],
             position: undefined,
             element: labelElement,
-            stopEvent: false
+            stopEvent: true
         });
         label.setOverlay(overlay);
         this.map.addOverlay(overlay);

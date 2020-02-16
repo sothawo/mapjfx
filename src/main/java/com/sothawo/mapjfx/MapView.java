@@ -1732,5 +1732,18 @@ public final class MapView extends Region implements AutoCloseable {
             }
             fireEvent(new MapViewEvent(MapViewEvent.MAP_BOUNDING_EXTENT, extent));
         }
+
+        /**
+         * called when a wheel event is detected on a marker or a label
+         *
+         * @param deltaY
+         *     the reported wheel delta.
+         */
+        public void wheelEvent(double deltaY) {
+            if (logger.isTraceEnabled()) {
+                logger.trace("JS reports wheel event: {}", deltaY);
+            }
+            setZoom(getZoom() - Math.signum(deltaY));
+        }
     }
 }
