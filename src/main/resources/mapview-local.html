@@ -157,8 +157,13 @@ Copyright 2015-2020 Peter-Josef Meisch (pj.meisch@sothawo.com)
         extentSelected: function (minLat, minLon, maxLat, maxLon) {
             console.log("extend: " + minLat + ", " + minLon + ", " + maxLat + ", " + maxLon);
         },
+
         extentChanged: function (minLat, minLon, maxLat, maxLon) {
             console.log("extent: " + minLat + ", " + minLon + ", " + maxLat + ", " + maxLon);
+        },
+
+        wheelEvent(deltaY) {
+            console.log("wheel event with deltaY " + deltaY);
         }
     };
 
