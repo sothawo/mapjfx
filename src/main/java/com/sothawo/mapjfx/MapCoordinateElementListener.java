@@ -28,28 +28,33 @@ final class MapCoordinateElementListener {
 
     /** listener for coordinate changes */
     private final ChangeListener<Coordinate> coordinateChangeListener;
-
     /** listener for visibility changes */
-    private final ChangeListener<Boolean> visibileChangeListener;
+    private final ChangeListener<Boolean> visibleChangeListener;
     /** listener for css changes */
     private final ChangeListener<String> cssChangeListener;
+    /** listener for rotation changes. */
+    private final ChangeListener<Number> rotationChangeListener;
 
     /**
      * @param coordinateChangeListener
      *     coordinate change listener
-     * @param visibileChangeListener
+     * @param visibleChangeListener
      *     visibility change listener
      * @param cssChangeListener
      *     css change listener
+     * @param rotationChangeListener
+     *     rotation change listener
      * @throws java.lang.NullPointerException
      *     if either argument is null
      */
     public MapCoordinateElementListener(final ChangeListener<Coordinate> coordinateChangeListener,
-                                        final ChangeListener<Boolean> visibileChangeListener,
-                                        final ChangeListener<String> cssChangeListener) {
+                                        final ChangeListener<Boolean> visibleChangeListener,
+                                        final ChangeListener<String> cssChangeListener,
+                                        final ChangeListener<Number> rotationChangeListener) {
         this.coordinateChangeListener = Objects.requireNonNull(coordinateChangeListener);
-        this.visibileChangeListener = Objects.requireNonNull(visibileChangeListener);
+        this.visibleChangeListener = Objects.requireNonNull(visibleChangeListener);
         this.cssChangeListener = Objects.requireNonNull(cssChangeListener);
+        this.rotationChangeListener = Objects.requireNonNull(rotationChangeListener);
     }
 
     public ChangeListener<String> getCssChangeListener() {
@@ -61,6 +66,10 @@ final class MapCoordinateElementListener {
     }
 
     public ChangeListener<Boolean> getVisibileChangeListener() {
-        return visibileChangeListener;
+        return visibleChangeListener;
+    }
+
+    public ChangeListener<Number> getRotationChangeListener() {
+        return rotationChangeListener;
     }
 }

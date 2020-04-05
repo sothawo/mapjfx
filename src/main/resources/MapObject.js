@@ -34,7 +34,7 @@ function MapObject(positionParam) {
 }
 
 /**
- * sets the flag wether the label is shown on the map
+ * sets the flag whether the label is shown on the map
  *
  * @param {boolean}
  */

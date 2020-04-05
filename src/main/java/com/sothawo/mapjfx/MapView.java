@@ -622,14 +622,19 @@ public final class MapView extends Region implements AutoCloseable {
             (observable, oldValue, newValue) -> setMarkerVisibleInMap(id);
         final ChangeListener<String> cssChangeListener = (observable, oldValue, newValue) -> setMapCoordinateElementCss(id,
             newValue);
+        final ChangeListener<Number> rotationChangeListener = (observable, oldvalue, newValue) -> setMapCoordinateElementRotation(id, newValue);
 
-        mapCoordinateElementListeners.put(id, new MapCoordinateElementListener(coordinateChangeListener,
-            visibileChangeListener, cssChangeListener));
+        mapCoordinateElementListeners.put(id, new MapCoordinateElementListener(
+            coordinateChangeListener,
+            visibileChangeListener,
+            cssChangeListener,
+            rotationChangeListener));
 
         // observe the mapCoordinateElements position, visibility and cssClass with the listeners
         mapCoordinateElement.positionProperty().addListener(coordinateChangeListener);
         mapCoordinateElement.visibleProperty().addListener(visibileChangeListener);
         mapCoordinateElement.cssClassProperty().addListener(cssChangeListener);
+        mapCoordinateElement.rotationProperty().addListener(rotationChangeListener);
 
         // keep a weak ref of the mapCoordinateELement
         mapCoordinateElements.put(id, new WeakReference<>(mapCoordinateElement, weakReferenceQueue));
@@ -645,6 +650,19 @@ public final class MapView extends Region implements AutoCloseable {
      */
     private void setMapCoordinateElementCss(final String id, final String cssclass) {
         jsMapView.call("setLabelCss", id, cssclass);
+    }
+
+
+    /**
+     * sets the rotation angle in degrees for a MapCoordinateElement.
+     *
+     * @param id
+     *     the id of the element
+     * @param rotation
+     *     the rotation angle
+     */
+    private void setMapCoordinateElementRotation(final String id, final Number rotation) {
+        jsMapView.call("rotateMapObject", id, rotation.intValue() % 360);
     }
 
     /**
@@ -1165,6 +1183,7 @@ public final class MapView extends Region implements AutoCloseable {
                     element.positionProperty().removeListener(markerListener.getCoordinateChangeListener());
                     element.visibleProperty().removeListener(markerListener.getVisibileChangeListener());
                     element.cssClassProperty().removeListener(markerListener.getCssChangeListener());
+                    element.rotationProperty().removeListener(markerListener.getRotationChangeListener());
                 }
 
                 mapCoordinateElementListeners.remove(id);
