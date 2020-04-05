@@ -680,6 +680,20 @@ JSMapView.prototype.hideMapObject = function (name) {
 
 
 /**
+ * rotates the html element of a MapObject using CSS.
+ * @param {string} name the name of the MapObject
+ * @param angle number the rotation angle in degrees
+ */
+JSMapView.prototype.rotateMapObject = function (name, angle) {
+    this.javaConnector.debug("should rotate " + name + " to " + angle);
+    var mapObject = this.mapObjects[name];
+    if (mapObject && mapObject.getOnMap()) {
+        let element = mapObject.getOverlay().element
+        element.style["transform"] = 'rotate(' + angle + 'deg)';
+    }
+};
+
+/**
  * shows a MapObject.
  * @param name the name of the MapObject to show
  */
