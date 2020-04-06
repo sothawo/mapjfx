@@ -15,6 +15,7 @@
 */
 package com.sothawo.mapjfx;
 
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 
@@ -24,7 +25,6 @@ import javafx.beans.property.SimpleStringProperty;
  * @author P.J. Meisch (pj.meisch@sothawo.com).
  */
 public abstract class MapCoordinateElement extends MapElement {
-// ------------------------------ FIELDS ------------------------------
 
     /** the coordinate */
     protected final SimpleObjectProperty<Coordinate> position = new SimpleObjectProperty<>();
@@ -34,8 +34,8 @@ public abstract class MapCoordinateElement extends MapElement {
     protected final int offsetY;
     /** custom css style name. */
     protected SimpleStringProperty cssClass = new SimpleStringProperty("");
-
-// --------------------------- CONSTRUCTORS ---------------------------
+    /** the rotation of the element. */
+    protected SimpleIntegerProperty rotation = new SimpleIntegerProperty(0);
 
     public MapCoordinateElement() {
         this(0, 0);
@@ -46,7 +46,6 @@ public abstract class MapCoordinateElement extends MapElement {
         this.offsetY = offsetY;
     }
 
-// --------------------- GETTER / SETTER METHODS ---------------------
 
     public int getOffsetX() {
         return offsetX;
@@ -56,8 +55,6 @@ public abstract class MapCoordinateElement extends MapElement {
         return offsetY;
     }
 
-// ------------------------ CANONICAL METHODS ------------------------
-
     public String getCssClass() {
         return cssClass.get();
     }
@@ -66,7 +63,7 @@ public abstract class MapCoordinateElement extends MapElement {
      * sets the cssClass for the Label
      *
      * @param cssClass
-     *         class name
+     *     class name
      * @return this object
      */
     public MapCoordinateElement setCssClass(final String cssClass) {
@@ -78,21 +75,42 @@ public abstract class MapCoordinateElement extends MapElement {
         return cssClass;
     }
 
+    public Integer getRotation() {
+        return rotation.get();
+    }
+
+    /**
+     * sets the rotation of the element on the map.
+     *
+     * @param rotation
+     *     rotation value
+     * @return this object
+     */
+    public MapCoordinateElement setRotation(final Integer rotation) {
+        this.rotation.set(rotation == null ? 0 : rotation);
+        return this;
+    }
+
+    public SimpleIntegerProperty rotationProperty() {
+        return rotation;
+    }
+
     /**
      * @return the marker's id
      */
-    public abstract String getId() ;
+    public abstract String getId();
 
     @Override
     public String toString() {
         return "MapCoordinateElement{" +
-                "position=" + position +
-                ", offsetX=" + offsetX +
-                ", offsetY=" + offsetY +
-                "} " + super.toString();
+            "position=" + position +
+            ", offsetX=" + offsetX +
+            ", offsetY=" + offsetY +
+            ", cssClass=" + cssClass +
+            ", rotation=" + rotation +
+            ", visible=" + visible +
+            "} " + super.toString();
     }
-
-// -------------------------- OTHER METHODS --------------------------
 
     public Coordinate getPosition() {
         return position.get();
@@ -106,7 +124,7 @@ public abstract class MapCoordinateElement extends MapElement {
      * sets the marker's new position
      *
      * @param position
-     *         new position
+     *     new position
      * @return this object
      */
     public MapCoordinateElement setPosition(Coordinate position) {

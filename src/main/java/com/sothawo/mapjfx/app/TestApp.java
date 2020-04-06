@@ -171,9 +171,12 @@ public class TestApp extends Application {
 
         // listen to MARKER_CLICKED event.
         mapView.addEventHandler(MarkerEvent.MARKER_CLICKED, event -> {
-            logger.info("MARKER_CLICKED event: {}", event.getMarker());
+            Marker marker = event.getMarker();
+            logger.info("MARKER_CLICKED event: {}", marker);
             event.consume();
+            marker.setRotation(marker.getRotation() + 5);
         });
+
         // listen to MARKER_MOUSEDOWN event.
         mapView.addEventHandler(MarkerEvent.MARKER_MOUSEDOWN, event -> {
             logger.info("MARKER_MOUSEDOWN event: {}", event.getMarker());
