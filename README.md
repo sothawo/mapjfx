@@ -56,6 +56,10 @@ The test application does not contain all the features, to have that, check
 
 ## current version
 
+### 2.14.0
+
+* MAPJFX-80 - Rotate markers.
+
 ### 2.13.1
 
 * MAPJFX-78 - fix marker and label events.
