@@ -42,9 +42,12 @@ The test application does not contain all the features, to have that, check
 
 ## version history
 
+### 1.32.1
+
 * MAPJFX-82 - Map pointer event not triggered when mouse moves over a Marker.
 
 ### 1.32.0
+
 * MAPJFX-80 - Rotate markers.
 
 ### 1.31.1
