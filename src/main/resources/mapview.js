@@ -527,6 +527,13 @@ JSMapView.prototype.addMarker = function (name, url, latitude, longitude, offset
             evt.stopPropagation();
             evt.preventDefault();
         }).bind(this);
+        imgElement.onmousemove = (function (evt) {
+            var coordinate = this.projections.cToWGS84(this.map.getEventCoordinate(evt));
+            // lat/lon reversion
+            this.javaConnector.pointerMovedTo(coordinate[1], coordinate[0]);
+            evt.stopPropagation();
+            evt.preventDefault();
+        }).bind(this);
 
         var overlay = new ol.Overlay({
             offset: [offsetX, offsetY],
@@ -602,6 +609,13 @@ JSMapView.prototype.addLabel = function (name, text, cssClass, latitude, longitu
         }).bind(this);
         labelElement.onwheel = (function (evt) {
             this.javaConnector.wheelEvent(evt.deltaY);
+            evt.stopPropagation();
+            evt.preventDefault();
+        }).bind(this);
+        labelElement.onmousemove = (function (evt) {
+            var coordinate = this.projections.cToWGS84(this.map.getEventCoordinate(evt));
+            // lat/lon reversion
+            this.javaConnector.pointerMovedTo(coordinate[1], coordinate[0]);
             evt.stopPropagation();
             evt.preventDefault();
         }).bind(this);
