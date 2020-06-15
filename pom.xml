@@ -35,11 +35,11 @@
         <maven.build.timestamp.format>yyyyMMdd-HHmm</maven.build.timestamp.format>
         <buildTimestamp>${maven.build.timestamp}</buildTimestamp>
 
-        <assertj.version>3.11.1</assertj.version>
+        <assertj.version>3.16.1</assertj.version>
         <jsonassert.version>1.5.0</jsonassert.version>
-        <junit.jupiter.version>5.5.1</junit.jupiter.version>
+        <junit.jupiter.version>5.6.2</junit.jupiter.version>
         <openjfx.version>11.0.2</openjfx.version>
-        <slf4j.version>1.7.28</slf4j.version>
+        <slf4j.version>1.7.30</slf4j.version>
     </properties>
 
     <dependencies>
