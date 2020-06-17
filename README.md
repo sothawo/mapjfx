@@ -42,6 +42,10 @@ The test application does not contain all the features, to have that, check
 
 ## version history
 
+### current version
+
+* use Openlayers 6.3.1
+
 ### 1.32.1
 
 * MAPJFX-82 - Map pointer event not triggered when mouse moves over a Marker.

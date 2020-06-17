@@ -700,10 +700,12 @@ JSMapView.prototype.hideMapObject = function (name) {
  */
 JSMapView.prototype.rotateMapObject = function (name, angle) {
     this.javaConnector.debug("should rotate " + name + " to " + angle);
-    var mapObject = this.mapObjects[name];
+    let mapObject = this.mapObjects[name];
     if (mapObject && mapObject.getOnMap()) {
         let element = mapObject.getOverlay().element
-        element.style["transform"] = 'rotate(' + angle + 'deg)';
+        let previousTransform = element.style["transform"];
+        let newTransform = previousTransform.replace(/rotate\(.*?\)/, '').trim() + ' rotate(' + angle + 'deg)';
+        element.style["transform"] = newTransform;
     }
 };
 
