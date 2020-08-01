@@ -1727,6 +1727,9 @@ public final class MapView extends Region implements AutoCloseable {
             }
             lastZoomFromMap.set(roundedZoom);
             setZoom(roundedZoom);
+
+            // map circles need to be redrawn on the changed zoom rate
+            revalidateMapCircles();
         }
 
         /**
@@ -1883,6 +1886,18 @@ public final class MapView extends Region implements AutoCloseable {
 
                 mapCircles.remove(id);
             }
+        }
+    }
+
+    protected void revalidateMapCircles() {
+        if( !this.mapCircles.isEmpty() ) {
+            List<WeakReference<MapCircle>> circleRefs = new ArrayList<>( this.mapCircles.values() );
+            ArrayList<MapCircle> circles = new ArrayList<>();
+
+            circleRefs.forEach( (v) -> circles.add( v.get() ));
+
+            circles.forEach( this::removeMapCircle );
+            circles.forEach( this::addMapCircle );
         }
     }
 }
