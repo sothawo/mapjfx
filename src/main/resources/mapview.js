@@ -24,6 +24,7 @@ function JSMapView(javaConnector) {
     this.sourceFeatures = {};
     this.layerFeatures = {};
     this.coordinateLines = {};
+    this.circles = {};
     this.mapObjects = {};
     this.mapType = '';
     this.javaConnector = javaConnector;
@@ -827,5 +828,73 @@ function createJSMapView(config) {
 function getJSMapView() {
     return _jsMapView;
 }
+
+
+//==================================================================================================================
+// Map circle
+//==================================================================================================================
+
+JSMapView.prototype.getCircle = function (name) {
+    var circle = this.circles[name];
+    if (!circle) {
+        circle = new MapCircle(this.projections, this.map);
+        this.circles[name] = circle;
+        this.javaConnector.debug("created Circle object named " + name);
+
+
+    }
+    return circle;
+};
+
+
+/**
+ * shows a circle.
+ *
+ * @param {string} name the name of the circle
+ */
+JSMapView.prototype.showCircle = function (name) {
+    this.javaConnector.debug("should show Circle object named " + name);
+    var circle = this.circles[name];
+    if (circle && !circle.getOnMap()) {
+        var feature = circle.getFeature()
+
+        this.javaConnector.debug(" - center: " + circle.getCenter() );
+        this.javaConnector.debug(" - radius: " + circle.getRadius() );
+        this.javaConnector.debug(" - feature: " +  JSON.stringify(feature) );
+
+        this.sourceFeatures.addFeature( feature );
+        this.javaConnector.debug("showed Circle object named " + name);
+        circle.setOnMap(true);
+    }
+};
+
+/**
+ * hides a circle.
+ *
+ * @param {string} name the name of the circle
+ */
+JSMapView.prototype.hideCircle = function (name) {
+    this.javaConnector.debug("should hide Circle object named " + name);
+    var circle = this.circles[name];
+    if (circle && circle.getOnMap()) {
+        this.sourceFeatures.removeFeature(circle.getFeature());
+        this.javaConnector.debug("hid Circle object named " + name);
+        circle.setOnMap(false);
+    }
+};
+
+/**
+ * removes a circle.
+ *
+ * @param {string} name the name of the circle
+ */
+JSMapView.prototype.removeCircle = function (name) {
+    this.javaConnector.debug("should delete Circle object named " + name);
+    if (this.circles[name]) {
+        this.hideCircle(name);
+        delete this.circles[name];
+        this.javaConnector.debug("deleted Circle object named " + name);
+    }
+};
 
 
