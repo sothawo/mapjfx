@@ -178,6 +178,8 @@ public final class MapView extends Region implements AutoCloseable {
     /** the thread to clean weak references. */
     private Thread weakRefCleaner;
 
+    private final Map<String, WeakReference<MapCircle>> mapCircles = new HashMap<>();
+
     /**
      * create a MapView with no initial center coordinate.
      */
@@ -299,6 +301,21 @@ public final class MapView extends Region implements AutoCloseable {
                     }
                     // run on the JavaFX thread, as removeCoordinateLineWithId() calls methods from the WebView
                     Platform.runLater(() -> coordinateLinesToRemove.forEach(this::removeCoordinateLineWithId));
+
+                    // clean up the coordinateLines entries
+                    final Set<String> mapCirclesToRemove = new HashSet<>();
+                    synchronized (mapCircles) {
+                        mapCircles.forEach((k, v) -> {
+                            if (null == v.get()) {
+                                mapCirclesToRemove.add(k);
+                                if (logger.isTraceEnabled()) {
+                                    logger.trace("need to cleanup gc'ed map circle {}", k);
+                                }
+                            }
+                        });
+                    }
+                    // run on the JavaFX thread, as removeCoordinateLineWithId() calls methods from the WebView
+                    Platform.runLater(() -> mapCirclesToRemove.forEach(this::removeMapCircleWithId));
 
                     // clean up the MapCoordinateElement entries
                     final Set<String> mapCoordinateElementsToRemove = new HashSet<>();
@@ -1763,6 +1780,109 @@ public final class MapView extends Region implements AutoCloseable {
                 logger.trace("JS reports wheel event: {}", deltaY);
             }
             setZoom(getZoom() - Math.signum(deltaY));
+        }
+    }
+
+    //==================================================================================================================
+    // Map circle
+    //==================================================================================================================
+    public MapView addMapCircle(final MapCircle mapCircle) {
+        if (!getInitialized()) {
+            if (logger.isWarnEnabled()) {
+                logger.warn(MAP_VIEW_NOT_YET_INITIALIZED);
+            }
+        } else {
+            // sync on the mapCircle map as the cleaner thread accesses this as well
+            synchronized (this.mapCircles) {
+                final String id = requireNonNull(mapCircle).getId();
+
+                if (!this.mapCircles.containsKey(id)) {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("adding circle {}", mapCircle);
+                    }
+                    final JSObject jsCircle = (JSObject) jsMapView.call("getCircle", id);
+
+                    logger.debug("  - setCenter: (" + mapCircle.getCenter().getLatitude() + ", " + mapCircle.getCenter().getLongitude() +")" );
+                    jsCircle.call( "setCenter", mapCircle.getCenter().getLatitude(), mapCircle.getCenter().getLongitude() );
+
+                    logger.debug("  - setRadius: " + mapCircle.getRadius() );
+                    jsCircle.call( "setRadius", mapCircle.getRadius() );
+
+                    final javafx.scene.paint.Color color = mapCircle.getColor();
+                    jsCircle.call("setColor",
+                            color.getRed() * 255, color.getGreen() * 255, color.getBlue() * 255,
+                            color.getOpacity());
+                    final javafx.scene.paint.Color fillColor = mapCircle.getFillColor();
+                    jsCircle.call("setFillColor",
+                            fillColor.getRed() * 255, fillColor.getGreen() * 255, fillColor.getBlue() * 255,
+                            fillColor.getOpacity());
+                    jsCircle.call("setWidth", mapCircle.getWidth());
+                    jsCircle.call("seal");
+
+                    // store a weak reference to be able to remove the line from the map if the caller forgets to do so
+                    mapCircles.put(id, new WeakReference<>(mapCircle, weakReferenceQueue));
+
+                    setMapCircleVisibleInMap(id);
+                }
+            }
+        }
+        return this;
+    }
+
+    /**
+     * shows or hides the mapCircle in the map according to it's visible property.
+     *
+     */
+    private void setMapCircleVisibleInMap(final String circleId) {
+        if (null != circleId) {
+            final WeakReference<MapCircle> mapCircleWeakReference = this.mapCircles.get( circleId );
+            if( null != mapCircleWeakReference ) {
+                final MapCircle mapCircle = mapCircleWeakReference.get();
+                if( null != mapCircle) {
+                    if( mapCircle.getVisible() ) {
+                        jsMapView.call("showCircle", circleId );
+                    } else {
+                        jsMapView.call("hideCircle", circleId );
+                    }
+                }
+            }
+        }
+    }
+
+    public MapView removeMapCircle(final MapCircle mapCircle) {
+        if (!getInitialized()) {
+            if (logger.isWarnEnabled()) {
+                logger.warn(MAP_VIEW_NOT_YET_INITIALIZED);
+            }
+        } else {
+            removeMapCircleWithId(requireNonNull(mapCircle).getId());
+        }
+        return this;
+    }
+
+    /**
+     * removes the MapCircle with the given id. if no such element is found, nothing happens.
+     *
+     * @param id
+     *     id of the map circle, may not be null
+     */
+    private void removeMapCircleWithId(final String id) {
+        // sync on the map as the cleaner thread accesses this as well
+        synchronized (mapCircles) {
+            if (mapCircles.containsKey(id)) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("removing circle {}", id);
+                }
+
+                jsMapView.call("hideCircle", id);
+                jsMapView.call("removeCircle", id);
+
+                if (logger.isTraceEnabled()) {
+                    logger.trace("removing circle {}, after JS calls", id);
+                }
+
+                mapCircles.remove(id);
+            }
         }
     }
 }
