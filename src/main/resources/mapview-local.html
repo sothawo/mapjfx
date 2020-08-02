@@ -172,7 +172,7 @@ Copyright 2015-2020 Peter-Josef Meisch (pj.meisch@sothawo.com)
 <script src="MapObject.js" type="text/javascript"></script>
 <script src="WMSParams.js" type="text/javascript"></script>
 <script src="coordinateline.js" type="text/javascript"></script>
-<script src="map_circle.js" type="text/javascript"></script>
+<script src="mapcircle.js" type="text/javascript"></script>
 <script src="mapview.js" type="text/javascript"></script>
 <script>
     var jsMapView = createJSMapView('{"projection":"EPSG:3857","interactive":true}');
@@ -209,18 +209,25 @@ Copyright 2015-2020 Peter-Josef Meisch (pj.meisch@sothawo.com)
         cl.addCoordinate(48.993284, 8.402186);
         cl.setClosed(true);
         cl.seal()
+
+        var circle = jsMapView.getCircle('circ');
+        circle.setCenter(49.013517, 8.404435);
+        circle.setRadius(100);
+        circle.seal()
     };
 
     var showAll = function () {
         jsMapView.showMapObject('castle-marker');
         jsMapView.showMapObject('castle-label');
-        jsMapView.showCoordinateLine('coli')
+        jsMapView.showCoordinateLine('coli');
+        jsMapView.showCircle('circ');
     };
 
     var hideAll = function () {
         jsMapView.hideMapObject('castle-marker');
         jsMapView.hideMapObject('castle-label');
-        jsMapView.hideCoordinateLine('coli')
+        jsMapView.hideCoordinateLine('coli');
+        jsMapView.hideCircle('circ');
     };
 
     var removeAll = function () {
@@ -235,13 +242,14 @@ Copyright 2015-2020 Peter-Josef Meisch (pj.meisch@sothawo.com)
         jsMapView.rotateMapObject('castle-marker', angle);
 
     }
+
 </script>
 <!-- replaced by: -->
 <!--<script type="text/javascript">-->
 <!--#projections.js#-->
 <!--#MapObject.js#-->
 <!--#coordinateline.js#-->
-<!--#map_circle.js#-->
+<!--#mapcircle.js#-->
 <!--#mapview.js#-->
 <!--</script>-->
 

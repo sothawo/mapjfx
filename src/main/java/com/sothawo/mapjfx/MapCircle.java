@@ -1,25 +1,25 @@
 /*
- Copyright 2020 Peter-Josef Meisch (pj.meisch@sothawo.com)
-
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-*/
+ * Copyright 2020 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.sothawo.mapjfx;
 
 import javafx.scene.paint.Color;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-import static java.util.Objects.requireNonNull;
+import static java.util.Objects.*;
 
 /**
  * MapCircle object to show circle
@@ -36,7 +36,7 @@ public class MapCircle extends MapElement {
     public static final int DEFAULT_WIDTH = 3;
 
     /** counter for creating the id */
-    private final static AtomicLong nextId = new AtomicLong(1);
+    private static final AtomicLong nextId = new AtomicLong(1);
 
     /** unique id for this object */
     private final String id;
@@ -55,15 +55,15 @@ public class MapCircle extends MapElement {
     /** width of the line */
     private int width;
 
-    public MapCircle(Coordinate centerCoord, double radiusInMeter ) {
+    public MapCircle(Coordinate centerCoord, double radiusInMeter) {
         this.id = "mapcircle-" + nextId.getAndIncrement();
 
         this.centerCoord = centerCoord;
         this.radiusInMeter = radiusInMeter;
 
-        this.color      = DEFAULT_COLOR;
-        this.fillColor  = DEFAULT_FILL_COLOR;
-        this.width      = DEFAULT_WIDTH;
+        this.color = DEFAULT_COLOR;
+        this.fillColor = DEFAULT_FILL_COLOR;
+        this.width = DEFAULT_WIDTH;
     }
 
     public Coordinate getCenter() {
@@ -83,10 +83,10 @@ public class MapCircle extends MapElement {
      * make the change visible.
      *
      * @param color
-     *         the new color
+     *     the new color
      * @return this object
      * @throws NullPointerException
-     *         when color is null
+     *     when color is null
      */
     public MapCircle setColor(final Color color) {
         this.color = requireNonNull(color);
@@ -102,10 +102,10 @@ public class MapCircle extends MapElement {
      * make the change visible.
      *
      * @param color
-     *         the new color
+     *     the new color
      * @return this object
      * @throws NullPointerException
-     *         when color is null
+     *     when color is null
      */
     public MapCircle setFillColor(final Color color) {
         this.fillColor = requireNonNull(color);
@@ -124,7 +124,7 @@ public class MapCircle extends MapElement {
      * sets the width
      *
      * @param width
-     *         the new width
+     *     the new width
      * @return this object
      */
     public MapCircle setWidth(final int width) {
@@ -152,13 +152,13 @@ public class MapCircle extends MapElement {
     @Override
     public String toString() {
         return "MapCircle{" +
-                "id='" + id + '\'' +
-                ", center=" + centerCoord +
-                ", radius=" + radiusInMeter +
-                ", color=" + color +
-                ", fillCclor=" + fillColor +
-                ", width=" + width +
-                "} " + super.toString();
+            "id='" + id + '\'' +
+            ", center=" + centerCoord +
+            ", radius=" + radiusInMeter +
+            ", color=" + color +
+            ", fillCclor=" + fillColor +
+            ", width=" + width +
+            "} " + super.toString();
     }
 
     @Override

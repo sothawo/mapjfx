@@ -1195,12 +1195,12 @@ public final class MapView extends Region implements AutoCloseable {
                 // if the element was not gc'ed we need to unregister the listeners so we dont' react to events from
                 // removed elements
                 final MapCoordinateElement element = mapCoordinateElements.get(id).get();
-                final MapCoordinateElementListener markerListener = mapCoordinateElementListeners.get(id);
-                if (null != element && null != markerListener) {
-                    element.positionProperty().removeListener(markerListener.getCoordinateChangeListener());
-                    element.visibleProperty().removeListener(markerListener.getVisibileChangeListener());
-                    element.cssClassProperty().removeListener(markerListener.getCssChangeListener());
-                    element.rotationProperty().removeListener(markerListener.getRotationChangeListener());
+                final MapCoordinateElementListener mapCoordinateElementListener = mapCoordinateElementListeners.get(id);
+                if (null != element && null != mapCoordinateElementListener) {
+                    element.positionProperty().removeListener(mapCoordinateElementListener.getCoordinateChangeListener());
+                    element.visibleProperty().removeListener(mapCoordinateElementListener.getVisibileChangeListener());
+                    element.cssClassProperty().removeListener(mapCoordinateElementListener.getCssChangeListener());
+                    element.rotationProperty().removeListener(mapCoordinateElementListener.getRotationChangeListener());
                 }
 
                 mapCoordinateElementListeners.remove(id);

@@ -70,6 +70,8 @@ public class TestApp extends Application {
 
     private static final Marker marker;
 
+    private static final MapCircle circle;
+
     private static final MapLabel mapLabel;
 
     private static final WMSParam wmsParam;
@@ -84,6 +86,8 @@ public class TestApp extends Application {
             .setVisible(true);
 
         marker.attachLabel(mapLabel);
+
+        circle = new MapCircle(coordKarlsruheCastle, 1_000).setVisible(true);
 
 //        wmsParam = new WMSParam()
 //                .setUrl("http://irs.gis-lab.info/?")
@@ -275,6 +279,11 @@ public class TestApp extends Application {
                 // add a label to be gc'ed
                 mapView.addLabel(new MapLabel("clean me up").setPosition(coordKarlsruheStation)
                     .setVisible(true));
+
+                // add normal circle and a circle to be gc'ed
+                mapView.addMapCircle(circle);
+                mapView.addMapCircle(new MapCircle(coordKarlsruheHarbour, 100).setVisible(true));
+
                 topPane.setDisable(false);
             }
         });
