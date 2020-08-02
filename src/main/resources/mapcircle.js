@@ -11,7 +11,6 @@ function MapCircle(projections, map) {
     this.fillColor = [255, 255, 0, 0.3];
     // default width 3
     this.width = 3;
-    // default is not closed
     this.radius = 0.0;
     this.projections = projections;
     this.map = map;
@@ -39,13 +38,19 @@ MapCircle.prototype.setCenter = function (latitude, longitude) {
  * finishes construction of the object and builds the OL Feature based in the centre coordinate and radius that were set.
  */
 MapCircle.prototype.seal = function () {
-    var center = new ol.geom.Point( this.coordinate );
-
     this.feature = new ol.Feature({
-                   		geometry: center
+                   		geometry: new ol.geom.Point(this.coordinate)
                    	});
 
-    var circle = new ol.style.Circle({
+    this.map.getView().on('change:resolution', (function (evt) {
+        this.addCircleToFeature();
+    }).bind(this));
+
+    this.addCircleToFeature()
+};
+
+MapCircle.prototype.addCircleToFeature = function() {
+    const circle = new ol.style.Circle({
         fill: new ol.style.Fill({color: this.fillColor}),
         stroke: new ol.style.Stroke({color: this.color, width: this.width}),
         points: 4,
@@ -53,9 +58,9 @@ MapCircle.prototype.seal = function () {
         angle: Math.PI / 4
     });
 
-    var style = new ol.style.Style({
-                        image: circle
-                	});
+    const style = new ol.style.Style({
+        image: circle
+    });
 
     this.feature.setStyle( style );
 };

@@ -840,8 +840,6 @@ JSMapView.prototype.getCircle = function (name) {
         circle = new MapCircle(this.projections, this.map);
         this.circles[name] = circle;
         this.javaConnector.debug("created Circle object named " + name);
-
-
     }
     return circle;
 };
@@ -858,11 +856,11 @@ JSMapView.prototype.showCircle = function (name) {
     if (circle && !circle.getOnMap()) {
         var feature = circle.getFeature()
 
-        this.javaConnector.debug(" - center: " + circle.getCenter() );
-        this.javaConnector.debug(" - radius: " + circle.getRadius() );
-        this.javaConnector.debug(" - feature: " +  JSON.stringify(feature) );
+        this.javaConnector.debug(" - center: " + circle.getCenter());
+        this.javaConnector.debug(" - radius: " + circle.getRadius());
+        this.javaConnector.debug(" - feature: " + JSON.stringify(feature));
 
-        this.sourceFeatures.addFeature( feature );
+        this.sourceFeatures.addFeature(feature);
         this.javaConnector.debug("showed Circle object named " + name);
         circle.setOnMap(true);
     }
