@@ -56,6 +56,8 @@ The test application does not contain all the features, to have that, check
 
 ## current version
 
+## 2.15.0
+
 * use Openlayers 6.4.2
 * add MapCircle objects
 * updates assertj, junit and slf4j versions.
