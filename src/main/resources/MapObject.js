@@ -79,3 +79,19 @@ MapObject.prototype.setOverlay = function (o) {
 MapObject.prototype.getOverlay = function () {
     return this.overlay;
 }
+
+/**
+ * sets the MapObject's element
+ * @param the element
+ */
+MapObject.prototype.setElement = function (e) {
+    this.element = e;
+}
+
+/**
+ * @retuns the MapObject's element
+ */
+MapObject.prototype.getElement = function () {
+    return this.element;
+}
+
