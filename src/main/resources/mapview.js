@@ -543,6 +543,7 @@ JSMapView.prototype.addMarker = function (name, url, latitude, longitude, offset
             stopEvent: true
         });
         marker.setOverlay(overlay);
+        marker.setElement(imgElement);
         this.map.addOverlay(overlay);
         this.mapObjects[name] = marker;
     }
@@ -628,6 +629,7 @@ JSMapView.prototype.addLabel = function (name, text, cssClass, latitude, longitu
             stopEvent: true
         });
         label.setOverlay(overlay);
+        label.setElement(labelElement);
         this.map.addOverlay(overlay);
         this.mapObjects[name] = label;
     }
@@ -703,7 +705,7 @@ JSMapView.prototype.rotateMapObject = function (name, angle) {
     this.javaConnector.debug("should rotate " + name + " to " + angle);
     let mapObject = this.mapObjects[name];
     if (mapObject && mapObject.getOnMap()) {
-        let element = mapObject.getOverlay().element
+        let element = mapObject.getElement();
         let previousTransform = element.style["transform"];
         let newTransform = previousTransform.replace(/rotate\(.*?\)/, '').trim() + ' rotate(' + angle + 'deg)';
         element.style["transform"] = newTransform;

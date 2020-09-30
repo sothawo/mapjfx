@@ -56,6 +56,8 @@ The test application does not contain all the features, to have that, check
 
 ## current version
 
+* MAPJFX-92 - Rotate the img/label element, not the overlay.
+
 ## 2.15.0
 
 * use Openlayers 6.4.2
