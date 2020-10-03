@@ -25,10 +25,10 @@ import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuButton;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.MenuButton;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -79,10 +79,15 @@ public class TestApp extends Application {
     private static final XYZParam xyzParam;
 
     static {
-        marker = Marker.createProvided(Marker.Provided.BLUE).setPosition(coordKarlsruheCastle).setVisible(true);
+        marker = Marker.createProvided(Marker.Provided.BLUE)
+            .setPosition(coordKarlsruheCastle)
+            .setRotation(90)
+            .setVisible(true);
+
         mapLabel = new MapLabel("blau!")
             .setCssClass("blue-label")
             .setPosition(coordKarlsruheCastle)
+            .setRotation(90)
             .setVisible(true);
 
         marker.attachLabel(mapLabel);
@@ -474,7 +479,6 @@ public class TestApp extends Application {
             mapView.setMapType(MapType.BINGMAPS_CANVAS_LIGHT);
         });
         bingOptions.add(item);
-
 
 
         MenuButton menuButton = new MenuButton("Bing", null, bingOptions.toArray(new MenuItem[0]));

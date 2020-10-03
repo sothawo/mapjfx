@@ -15,13 +15,11 @@
 */
 package com.sothawo.mapjfx;
 
-import javafx.beans.property.SimpleStringProperty;
-
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static java.util.Objects.requireNonNull;
+import static java.util.Objects.*;
 
 /**
  * A label in the map. A label has a position where it is displayed, a text to be displayed and offset values for x and
@@ -60,7 +58,7 @@ public class MapLabel extends MapCoordinateElement {
      * creates a Label with the given text and the offset values set to 0, 0.
      *
      * @param text
-     *         label text
+     *     label text
      */
     public MapLabel(String text) {
         this(text, 0, 0);
@@ -70,15 +68,15 @@ public class MapLabel extends MapCoordinateElement {
      * creates a Label with the given text and offset values.
      *
      * @param text
-     *         label text
+     *     label text
      * @param offsetX
-     *         horizontal offset, positive to the right
+     *     horizontal offset, positive to the right
      * @param offsetY
-     *         vertical offset, positive down
+     *     vertical offset, positive down
      * @throws NullPointerException
-     *         if text is null
+     *     if text is null
      * @throws IllegalArgumentException
-     *         if text is empty
+     *     if text is empty
      */
     public MapLabel(String text, int offsetX, int offsetY) {
         super(offsetX, offsetY);
@@ -94,6 +92,12 @@ public class MapLabel extends MapCoordinateElement {
         return (MapLabel) super.setCssClass(cssClass);
     }
 
+    @Override
+    public MapLabel setRotation(Integer rotation) {
+        super.setRotation(rotation);
+        return this;
+    }
+
     public String getId() {
         return id;
     }
@@ -101,9 +105,9 @@ public class MapLabel extends MapCoordinateElement {
     @Override
     public String toString() {
         return "Label{" +
-                "id='" + id + '\'' +
-                ", text='" + text + '\'' +
-                "} " + super.toString();
+            "id='" + id + '\'' +
+            ", text='" + text + '\'' +
+            "} " + super.toString();
     }
 
     @Override
