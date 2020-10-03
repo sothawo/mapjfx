@@ -704,7 +704,7 @@ JSMapView.prototype.hideMapObject = function (name) {
 JSMapView.prototype.rotateMapObject = function (name, angle) {
     this.javaConnector.debug("should rotate " + name + " to " + angle);
     let mapObject = this.mapObjects[name];
-    if (mapObject && mapObject.getOnMap()) {
+    if (mapObject) {
         let element = mapObject.getElement();
         let previousTransform = element.style["transform"];
         let newTransform = previousTransform.replace(/rotate\(.*?\)/, '').trim() + ' rotate(' + angle + 'deg)';

@@ -19,7 +19,7 @@ import java.net.URL;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static java.util.Objects.requireNonNull;
+import static java.util.Objects.*;
 
 /**
  * A marker in the map. A marker has a position where it is displayed, an image URL for the image to be displayed and
@@ -58,15 +58,15 @@ public final class Marker extends MapCoordinateElement {
      * return a provided Marker with the given color.
      *
      * @param provided
-     *         desired color
+     *     desired color
      * @return Marker
      * @throws NullPointerException
-     *         when provided is null
+     *     when provided is null
      */
     public static Marker createProvided(Provided provided) {
         requireNonNull(provided);
         return new Marker(Marker.class.getResource("/markers/" + provided.getFilename()), provided.getOffsetX(),
-                provided.getOffsetY());
+            provided.getOffsetY());
     }
 
 // --------------------------- CONSTRUCTORS ---------------------------
@@ -75,7 +75,7 @@ public final class Marker extends MapCoordinateElement {
      * constructs an object with the given URL and offset values set to 0.
      *
      * @param imageURL
-     *         the image URL
+     *     the image URL
      */
     public Marker(URL imageURL) {
         this(imageURL, 0, 0);
@@ -85,13 +85,13 @@ public final class Marker extends MapCoordinateElement {
      * constructs a Marker with the given values.
      *
      * @param imageURL
-     *         image URL
+     *     image URL
      * @param offsetX
-     *         horizontal pixel offset
+     *     horizontal pixel offset
      * @param offsetY
-     *         vertical pixel offset
+     *     vertical pixel offset
      * @throws java.lang.NullPointerException
-     *         if imageURL is null
+     *     if imageURL is null
      */
     public Marker(URL imageURL, int offsetX, int offsetY) {
         super(offsetX, offsetY);
@@ -100,6 +100,12 @@ public final class Marker extends MapCoordinateElement {
     }
 
 // --------------------- GETTER / SETTER METHODS ---------------------
+
+    @Override
+    public Marker setRotation(Integer rotation) {
+        super.setRotation(rotation);
+        return this;
+    }
 
     @Override
     public String getId() {
@@ -130,9 +136,9 @@ public final class Marker extends MapCoordinateElement {
     @Override
     public String toString() {
         return "Marker{" +
-                "id='" + id + '\'' +
-                ", imageURL=" + imageURL +
-                "} " + super.toString();
+            "id='" + id + '\'' +
+            ", imageURL=" + imageURL +
+            "} " + super.toString();
     }
 
 // -------------------------- OTHER METHODS --------------------------
@@ -141,10 +147,10 @@ public final class Marker extends MapCoordinateElement {
      * attaches the MapLabel to this Marker
      *
      * @param mapLabel
-     *         the MapLabel to attach
+     *     the MapLabel to attach
      * @return this object
      * @throws NullPointerException
-     *         of mapLabel is null
+     *     of mapLabel is null
      */
     public Marker attachLabel(MapLabel mapLabel) {
         optMapLabel = Optional.of(requireNonNull(mapLabel));

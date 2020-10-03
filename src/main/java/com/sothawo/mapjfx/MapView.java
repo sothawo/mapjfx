@@ -617,6 +617,7 @@ public final class MapView extends Region implements AutoCloseable {
                         logger.trace("add label in OpenLayers map {}", mapLabel);
                     }
                     setMarkerVisibleInMap(id);
+                    setMapCoordinateElementRotation(id, mapLabel.getRotation());
                 }
             }
         }
@@ -766,6 +767,7 @@ public final class MapView extends Region implements AutoCloseable {
                         logger.trace("add marker in OpenLayers map {}", marker);
                     }
                     setMarkerVisibleInMap(id);
+                    setMapCoordinateElementRotation(id, marker.getRotation());
                 }
             }
             marker.getMapLabel().ifPresent(this::addLabel);
@@ -1802,20 +1804,20 @@ public final class MapView extends Region implements AutoCloseable {
                     }
                     final JSObject jsCircle = (JSObject) jsMapView.call("getCircle", id);
 
-                    logger.debug("  - setCenter: (" + mapCircle.getCenter().getLatitude() + ", " + mapCircle.getCenter().getLongitude() +")" );
-                    jsCircle.call( "setCenter", mapCircle.getCenter().getLatitude(), mapCircle.getCenter().getLongitude() );
+                    logger.debug("  - setCenter: (" + mapCircle.getCenter().getLatitude() + ", " + mapCircle.getCenter().getLongitude() + ")");
+                    jsCircle.call("setCenter", mapCircle.getCenter().getLatitude(), mapCircle.getCenter().getLongitude());
 
-                    logger.debug("  - setRadius: " + mapCircle.getRadius() );
-                    jsCircle.call( "setRadius", mapCircle.getRadius() );
+                    logger.debug("  - setRadius: " + mapCircle.getRadius());
+                    jsCircle.call("setRadius", mapCircle.getRadius());
 
                     final javafx.scene.paint.Color color = mapCircle.getColor();
                     jsCircle.call("setColor",
-                            color.getRed() * 255, color.getGreen() * 255, color.getBlue() * 255,
-                            color.getOpacity());
+                        color.getRed() * 255, color.getGreen() * 255, color.getBlue() * 255,
+                        color.getOpacity());
                     final javafx.scene.paint.Color fillColor = mapCircle.getFillColor();
                     jsCircle.call("setFillColor",
-                            fillColor.getRed() * 255, fillColor.getGreen() * 255, fillColor.getBlue() * 255,
-                            fillColor.getOpacity());
+                        fillColor.getRed() * 255, fillColor.getGreen() * 255, fillColor.getBlue() * 255,
+                        fillColor.getOpacity());
                     jsCircle.call("setWidth", mapCircle.getWidth());
                     jsCircle.call("seal");
 
@@ -1831,18 +1833,17 @@ public final class MapView extends Region implements AutoCloseable {
 
     /**
      * shows or hides the mapCircle in the map according to it's visible property.
-     *
      */
     private void setMapCircleVisibleInMap(final String circleId) {
         if (null != circleId) {
-            final WeakReference<MapCircle> mapCircleWeakReference = this.mapCircles.get( circleId );
-            if( null != mapCircleWeakReference ) {
+            final WeakReference<MapCircle> mapCircleWeakReference = this.mapCircles.get(circleId);
+            if (null != mapCircleWeakReference) {
                 final MapCircle mapCircle = mapCircleWeakReference.get();
-                if( null != mapCircle) {
-                    if( mapCircle.getVisible() ) {
-                        jsMapView.call("showCircle", circleId );
+                if (null != mapCircle) {
+                    if (mapCircle.getVisible()) {
+                        jsMapView.call("showCircle", circleId);
                     } else {
-                        jsMapView.call("hideCircle", circleId );
+                        jsMapView.call("hideCircle", circleId);
                     }
                 }
             }
