@@ -44,6 +44,10 @@ The test application does not contain all the features, to have that, check
 
 ### current version
 
+### 1.33.2
+
+* MAPJFX-93 - Initial marker rotation.
+
 ### 1.33.1
 
 * MAPJFX-92 - Rotate the img/label element, not the overlay.
