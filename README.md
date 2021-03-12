@@ -1,5 +1,7 @@
 # mapjfx
 
+**NOTE:** branch 1.x based on Java 1.8 is not developed further.
+
 mapjfx provides a JavaFX region containing a map, allowing to zoom, pan, and use markers.
 
 It uses [OpenLayers](http://openlayers.org) as the map technology.
@@ -7,7 +9,7 @@ More Information about the project can be found at [the sothawo website](http://
 
 ## license
 
- Copyright 2014-2020 Peter-Josef Meisch (pj.meisch@sothawo.com)
+ Copyright 2014-2021 Peter-Josef Meisch (pj.meisch@sothawo.com)
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
