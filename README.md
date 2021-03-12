@@ -11,7 +11,7 @@ Donate via **PayPal** [![Donate](https://www.paypalobjects.com/en_US/i/btn/btn_d
 
 ## license
 
- Copyright 20142021 Peter-Josef Meisch (pj.meisch@sothawo.com)
+ Copyright 2014-2021 Peter-Josef Meisch (pj.meisch@sothawo.com)
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -57,6 +57,10 @@ The test application does not contain all the features, to have that, check
 *Note:* To use the offline cache with Java 11 and up, it is necessary to add `--add-opens java.base/java.net=com.sothawo.mapjfx` to the java call.
 
 ## current version
+
+## 3.0.1
+
+* fix copyright year formats
 
 ## 3.0.0
 
