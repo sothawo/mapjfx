@@ -11,7 +11,7 @@ Donate via **PayPal** [![Donate](https://www.paypalobjects.com/en_US/i/btn/btn_d
 
 ## license
 
- Copyright 2014-2020 Peter-Josef Meisch (pj.meisch@sothawo.com)
+ Copyright 2014-2021 Peter-Josef Meisch (pj.meisch@sothawo.com)
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
