@@ -3,7 +3,7 @@
 
     <groupId>com.sothawo</groupId>
     <artifactId>mapjfx</artifactId>
-    <version>2.15.2</version>
+    <version>3.0.0</version>
     <name>${project.groupId}:${project.artifactId}</name>
     <description>a JavaFX map component build by using OpenLayers</description>
     <url>http://www.sothawo.com/projects/mapjfx</url>
@@ -38,7 +38,7 @@
         <assertj.version>3.16.1</assertj.version>
         <jsonassert.version>1.5.0</jsonassert.version>
         <junit.jupiter.version>5.6.2</junit.jupiter.version>
-        <openjfx.version>11.0.2</openjfx.version>
+        <openjfx.version>15.0.1</openjfx.version>
         <slf4j.version>1.7.30</slf4j.version>
     </properties>
 
@@ -195,7 +195,7 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.1</version>
                 <configuration>
-                    <release>11</release>
+                    <release>15</release>
                 </configuration>
             </plugin>
             <plugin>

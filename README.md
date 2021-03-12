@@ -31,12 +31,14 @@ this project is built using mvn. The library jar is created by running `mvn pack
 
 ## Java versions and branches
 
-the original version started with JDK8. In November 2018 I started the branch _2.x_ which is set to use Java 11 as the
- main development branch.
+* branch 3.x uses Java 15
+* branch 2.x uses Java 11
+* branch 1.x uses Java 8   (not developed further)
 
 Pull requests should be based on _1.x_ for changes/backports in the Java 8 version and to _2.x_ for the current version.
 
-Releases are based on _master_ for the _2.x_ branch ad on _master-1.x_ for the _1.x_ branch.
+Releases are based on main for the 3.x branch, on _main-2.x_ for the _2.x_ branch ad on _main-1.x_ for the _1.x_ 
+branch.
  
 ## running the test application
 
@@ -46,7 +48,7 @@ within an IDE by using the `com.sothawo.mapjfx.app.TestAppLauncher` class. To ge
 to run it from the commandline it is first necessary to build the library with all dependencies as a shaded jar and 
 the run the test application:
 
-     mvn -P shaded package
+     ./mvnw -P shaded package
      java -Dlogback.configurationFile=logback.xml -jar target/mapjfx.jar
 
 The test application does not contain all the features, to have that, check
@@ -55,6 +57,10 @@ The test application does not contain all the features, to have that, check
 *Note:* To use the offline cache with Java 11 and up, it is necessary to add `--add-opens java.base/java.net=com.sothawo.mapjfx` to the java call.
 
 ## current version
+
+## 3.0.0
+
+* use Java 15, JFX 15.0.1
 
 ## 2.15.2
 
