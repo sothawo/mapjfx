@@ -46,6 +46,10 @@ The test application does not contain all the features, to have that, check
 
 ### current version
 
+### 1.33.3
+
+* last version of 1.x branch to be published
+
 ### 1.33.2
 
 * MAPJFX-93 - Initial marker rotation.

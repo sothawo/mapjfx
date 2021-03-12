@@ -6,4 +6,4 @@ target
 
 .DS_Store
 
-!/.java-version
+!/.sdkmanrc
