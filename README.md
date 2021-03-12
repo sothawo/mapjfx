@@ -36,7 +36,7 @@ the original version started with JDK8. In November 2018 I started the branch _2
 
 Pull requests should be based on _1.x_ for changes/backports in the Java 8 version and to _2.x_ for the current version.
 
-Releases are based on _master_ for the _2.x_ branch ad on _master-1.x_ for the _1.x_ branch.
+Releases are based on _main_ for the _2.x_ branch ad on _main-1.x_ for the _1.x_ branch.
  
 ## running the test application
 
