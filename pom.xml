@@ -36,9 +36,10 @@
         <buildTimestamp>${maven.build.timestamp}</buildTimestamp>
 
         <assertj.version>3.16.1</assertj.version>
+        <java.version>16</java.version>
         <jsonassert.version>1.5.0</jsonassert.version>
         <junit.jupiter.version>5.6.2</junit.jupiter.version>
-        <openjfx.version>15.0.1</openjfx.version>
+        <openjfx.version>16</openjfx.version>
         <slf4j.version>1.7.30</slf4j.version>
     </properties>
 
@@ -195,7 +196,7 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.1</version>
                 <configuration>
-                    <release>15</release>
+                    <release>${java.version}</release>
                 </configuration>
             </plugin>
             <plugin>
