@@ -35,12 +35,12 @@
         <maven.build.timestamp.format>yyyyMMdd-HHmm</maven.build.timestamp.format>
         <buildTimestamp>${maven.build.timestamp}</buildTimestamp>
 
-        <assertj.version>3.16.1</assertj.version>
+        <assertj.version>3.20.2</assertj.version>
         <java.version>16</java.version>
         <jsonassert.version>1.5.0</jsonassert.version>
-        <junit.jupiter.version>5.6.2</junit.jupiter.version>
+        <junit.jupiter.version>5.7.2</junit.jupiter.version>
         <openjfx.version>16</openjfx.version>
-        <slf4j.version>1.7.30</slf4j.version>
+        <slf4j.version>1.7.31</slf4j.version>
     </properties>
 
     <dependencies>
@@ -69,7 +69,8 @@
             <artifactId>junit-jupiter</artifactId>
             <version>${junit.jupiter.version}</version>
             <scope>test</scope>
-        </dependency>        <dependency>
+        </dependency>
+        <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
             <version>${assertj.version}</version>
