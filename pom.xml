@@ -3,7 +3,7 @@
 
     <groupId>com.sothawo</groupId>
     <artifactId>mapjfx</artifactId>
-    <version>3.0.1</version>
+    <version>3.1.0</version>
     <name>${project.groupId}:${project.artifactId}</name>
     <description>a JavaFX map component build by using OpenLayers</description>
     <url>http://www.sothawo.com/projects/mapjfx</url>
@@ -36,10 +36,10 @@
         <buildTimestamp>${maven.build.timestamp}</buildTimestamp>
 
         <assertj.version>3.20.2</assertj.version>
-        <java.version>16</java.version>
+        <java.version>17</java.version>
         <jsonassert.version>1.5.0</jsonassert.version>
         <junit.jupiter.version>5.7.2</junit.jupiter.version>
-        <openjfx.version>16</openjfx.version>
+        <openjfx.version>17.0.0.1</openjfx.version>
         <slf4j.version>1.7.31</slf4j.version>
     </properties>
 
@@ -83,13 +83,18 @@
             <scope>test</scope>
         </dependency>
 
-    </dependencies>
+		</dependencies>
 
     <profiles>
         <profile>
             <id>release</id>
             <build>
                 <plugins>
+									<plugin>
+										<groupId>org.apache.maven.plugins</groupId>
+										<artifactId>maven-compiler-plugin</artifactId>
+										<version>3.8.1</version>
+									</plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
@@ -106,7 +111,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>3.1.1</version>
+                        <version>3.3.1</version>
                         <executions>
                             <execution>
                                 <id>attach-javadocs</id>
@@ -119,7 +124,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.6</version>
+                        <version>3.0.1</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
@@ -172,6 +177,7 @@
 
     <build>
         <plugins>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
