@@ -31,8 +31,8 @@ this project is built using mvn. The library jar is created by running `mvn pack
 
 ## Java versions and branches
 
-* branch 3.x uses Java 15
-* branch 2.x uses Java 11
+* branch 3.x uses Java 17
+* branch 2.x uses Java 11 (not developed further)
 * branch 1.x uses Java 8   (not developed further)
 
 Pull requests should be based on _1.x_ for changes/backports in the Java 8 version and to _2.x_ for the current version.
@@ -57,6 +57,11 @@ The test application does not contain all the features, to have that, check
 *Note:* To use the offline cache with Java 11 and up, it is necessary to add `--add-opens java.base/java.net=com.sothawo.mapjfx` to the java call.
 
 ## current version
+
+## 3.1.0
+
+* MAPJFX-102 - upgrade to OpenLayers 6.7.0 
+* MAPJFX-101 - upgrade to Java 17
 
 ## 3.0.1
 
