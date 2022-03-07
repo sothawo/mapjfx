@@ -1,5 +1,8 @@
 # mapjfx
 
+> **Note March 2022**: I started mapjfx in December 2014 as a side project. In these seven years I learned quite some things by developing and maintaining it. But my focus has shifted and I don't have the time anymore to take care of this project. So from **March 2022** on, mapjfx will be out of maintenance. I'll do no further development on it.
+
+
 mapjfx provides a JavaFX region containing a map, allowing to zoom, pan, and use markers.
 
 It uses [OpenLayers](http://openlayers.org) as the map technology.
