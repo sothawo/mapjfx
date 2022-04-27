@@ -8,13 +8,9 @@ mapjfx provides a JavaFX region containing a map, allowing to zoom, pan, and use
 It uses [OpenLayers](http://openlayers.org) as the map technology.
 More Information about the project can be found at [the sothawo website](http://www.sothawo.com/projects/mapjfx/).
 
-## Want to support mapjfx?
-
-Donate via **PayPal** [![Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=PKA5VXADATSVN&source=url)
-
 ## license
 
- Copyright 2014-2021 Peter-Josef Meisch (pj.meisch@sothawo.com)
+ Copyright 2014-2022 Peter-Josef Meisch (pj.meisch@sothawo.com)
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
